@@ -5,11 +5,13 @@ import {
   MousePointer2,
   Layers,
   Library,
+  Blocks as BlocksIcon,
   PaintRoller,
   Paperclip,
   Shapes,
   Spline,
   Pencil,
+  SquarePen,
   Undo2,
   Redo2,
   ChevronDown,
@@ -18,6 +20,7 @@ import {
   ArrowUp,
   ArrowDown,
   Trash2,
+  Info,
 } from "lucide-react";
 import {
   createBoard,
