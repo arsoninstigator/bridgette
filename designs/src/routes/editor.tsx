@@ -456,13 +456,16 @@ function IconBtn({
   );
 }
 
-function PanelHeader({ title, onClose }: { title: string; onClose: () => void }) {
+function PanelHeader({ title, onClose, right }: { title: string; onClose: () => void; right?: React.ReactNode }) {
   return (
     <div className="flex items-center justify-between px-4 py-3 border-b border-border/60">
       <h2 className="font-display text-base lowercase">{title}</h2>
-      <button onClick={onClose} className="p-1 rounded hover:bg-black/5">
-        <X size={14} />
-      </button>
+      <div className="flex items-center gap-1">
+        {right}
+        <button onClick={onClose} className="p-1 rounded hover:bg-black/5">
+          <X size={14} />
+        </button>
+      </div>
     </div>
   );
 }
