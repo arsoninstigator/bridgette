@@ -45,7 +45,7 @@ export const Route = createFileRoute("/editor")({
   component: EditorRoute,
 });
 
-type PanelKey = "select" | "layers" | "library" | "styles" | "assets" | "shape" | "string";
+type PanelKey = "select" | "layers" | "library" | "blocks" | "styles" | "assets" | "shape" | "string";
 
 function EditorRoute() {
   const { id, k } = Route.useSearch();
