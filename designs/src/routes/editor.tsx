@@ -337,6 +337,24 @@ function Editor({ board, setBoard }: { board: Board; setBoard: (b: Board) => voi
       {showPublish && (
         <PublishDialog board={board} onClose={() => setShowPublish(false)} onPublish={publish} />
       )}
+
+      {/* Bottom status bar */}
+      <footer className="bg-editor-header border-t border-stone-900/10 px-5 py-2 flex items-center justify-between font-mono text-[11px] lowercase tracking-wide">
+        <div className="flex items-center gap-2">
+          <span className="text-rose-600">status:</span>
+          <span className="text-stone-700">{board.publishedKey ? "published" : "not published"}</span>
+        </div>
+        <div className="flex items-center gap-3 text-stone-700">
+          <button className="hover:text-stone-900">pages</button>
+          <span className="text-stone-500/60">|</span>
+          <button className="hover:text-stone-900">canvas</button>
+          <span className="text-stone-500/60">|</span>
+          <button className="hover:text-stone-900">connections</button>
+          <span className="text-stone-500/60">|</span>
+          <button className="hover:text-stone-900">settings</button>
+          <Info size={14} className="ml-2 text-stone-600" />
+        </div>
+      </footer>
     </div>
   );
 }
