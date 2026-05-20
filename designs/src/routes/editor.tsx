@@ -555,6 +555,23 @@ function StylesPanel() {
   );
 }
 
+function BlocksPanel() {
+  const blocks = ["hero", "two-up", "gallery", "list", "quote", "footer"];
+  return (
+    <div className="space-y-2">
+      <p className="font-mono text-[10px] lowercase text-muted-foreground mb-2">prebuilt layout blocks</p>
+      <div className="grid grid-cols-2 gap-2">
+        {blocks.map((b) => (
+          <div key={b} className="rounded-md border border-border bg-card/60 px-2 py-4 flex flex-col items-center gap-2">
+            <div className="h-10 w-full rounded-sm bg-stone-200/60 border border-border" />
+            <span className="font-mono text-[10px] lowercase text-muted-foreground">{b}</span>
+          </div>
+        ))}
+      </div>
+    </div>
+  );
+}
+
 function AssetsPanel() {
   return (
     <div className="space-y-3">
