@@ -85,6 +85,8 @@ function EditorRoute() {
   return <Editor board={board} setBoard={setBoard} />;
 }
 
+type RightPanelKey = "pages" | "canvas" | "connections" | "settings";
+
 function Editor({ board, setBoard }: { board: Board; setBoard: (b: Board) => void }) {
   const [selectedId, setSelectedId] = useState<string | null>(null);
   const [stringFromId, setStringFromId] = useState<string | null>(null);
@@ -92,6 +94,25 @@ function Editor({ board, setBoard }: { board: Board; setBoard: (b: Board) => voi
   const [activePanel, setActivePanel] = useState<PanelKey | null>("library");
   const [previewMode, setPreviewMode] = useState(false);
   const [showSettings, setShowSettings] = useState(false);
+  const [libraryView, setLibraryView] = useState<LibraryView>({ mode: "index" });
+  const [favorites, setFavorites] = useState<string[]>(() => readFavs());
+  const [recent, setRecent] = useState<string[]>(() => readRecent());
+  const [rightPanel, setRightPanel] = useState<RightPanelKey | null>(null);
+
+  function toggleFav(setId: string) {
+    setFavorites((prev) => {
+      const next = prev.includes(setId) ? prev.filter((x) => x !== setId) : [setId, ...prev];
+      writeFavs(next);
+      return next;
+    });
+  }
+  function bumpRecent(setId: string) {
+    setRecent((prev) => {
+      const next = [setId, ...prev.filter((x) => x !== setId)].slice(0, 12);
+      writeRecent(next);
+      return next;
+    });
+  }
 
   // history
   const pastRef = useRef<Board[]>([]);
