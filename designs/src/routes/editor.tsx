@@ -223,16 +223,16 @@ function Editor({ board, setBoard }: { board: Board; setBoard: (b: Board) => voi
         <div className="flex items-center gap-2">
           <button
             onClick={() => setPreviewMode((v) => !v)}
-            className="flex items-center gap-2 rounded-md border border-stone-900/20 bg-white/40 px-3 py-1.5 font-mono text-[11px] lowercase tracking-wide hover:bg-white/60"
+            className="flex items-center gap-2 rounded-md border-2 border-stone-700/40 bg-pink-50/60 px-4 py-2 font-mono text-[12px] lowercase tracking-wide text-stone-700 hover:bg-pink-50"
           >
-            {previewMode ? <Eye size={14} /> : <Pencil size={14} />}
             {previewMode ? "preview mode" : "edit mode"}
+            {previewMode ? <Eye size={14} /> : <SquarePen size={14} />}
           </button>
           <button
             onClick={() => setShowPublish(true)}
-            className="rounded-md bg-stone-700 px-4 py-1.5 font-mono text-[11px] lowercase tracking-wide text-stone-50 hover:bg-stone-800"
+            className="rounded-md bg-stone-500/80 px-5 py-2 font-mono text-[12px] lowercase tracking-wide text-stone-50 hover:bg-stone-600"
           >
-            publish screen
+            publish
           </button>
         </div>
       </header>
