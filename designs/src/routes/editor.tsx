@@ -240,10 +240,11 @@ function Editor({ board, setBoard }: { board: Board; setBoard: (b: Board) => voi
       <div className="flex-1 flex overflow-hidden">
         {/* Icon sidebar */}
         {!previewMode && (
-          <nav className="w-[88px] shrink-0 bg-editor-canvas border-r border-border/60 py-3 flex flex-col gap-1 overflow-y-auto">
+          <nav className="w-[88px] shrink-0 bg-editor-canvas border-r border-border/60 py-4 flex flex-col gap-2 overflow-y-auto">
             <IconBtn icon={MousePointer2} label="select" k="select" active={activePanel} onClick={setActivePanel} />
             <IconBtn icon={Layers} label="layers" k="layers" active={activePanel} onClick={setActivePanel} />
             <IconBtn icon={Library} label="library" k="library" active={activePanel} onClick={setActivePanel} />
+            <IconBtn icon={BlocksIcon} label="blocks" k="blocks" active={activePanel} onClick={setActivePanel} />
             <IconBtn icon={PaintRoller} label="styles" k="styles" active={activePanel} onClick={setActivePanel} />
             <IconBtn icon={Paperclip} label="assets" k="assets" active={activePanel} onClick={setActivePanel} />
             <IconBtn icon={Shapes} label="shape" k="shape" active={activePanel} onClick={setActivePanel} />
