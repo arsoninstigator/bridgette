@@ -21,6 +21,9 @@ import {
   ArrowDown,
   Trash2,
   Info,
+  Heart,
+  History,
+  ChevronLeft,
 } from "lucide-react";
 import {
   createBoard,
