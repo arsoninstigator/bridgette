@@ -531,30 +531,373 @@ function LayersPanel({
   );
 }
 
-const LIBRARY_ITEMS: { kind: AssetKind; label: string }[] = [
-  { kind: "sticky", label: "sticky" },
-  { kind: "polaroid", label: "polaroid" },
-  { kind: "photostrip", label: "photo strip" },
-  { kind: "photo", label: "photo" },
-  { kind: "paper", label: "paper" },
-  { kind: "washi", label: "washi tape" },
-  { kind: "pin", label: "push pin" },
+// ---------- Library sets ----------
+
+type LibraryView =
+  | { mode: "index" }
+  | { mode: "set"; setId: string }
+  | { mode: "element"; setId: string; itemId: string }
+  | { mode: "favorites" }
+  | { mode: "recent" };
+
+interface LibraryItem {
+  id: string;
+  label: string;
+  kind: AssetKind;
+  extra?: Partial<AssetBase>;
+}
+
+interface LibrarySet {
+  id: string;
+  label: string;
+  blurb: string;
+  items: LibraryItem[];
+  available: boolean; // false → placeholder coming soon
+}
+
+const LIBRARY_SETS: LibrarySet[] = [
+  {
+    id: "sticky", label: "sticky notes", available: true,
+    blurb: "cardstock squares for marginalia, half-thoughts, and pinned reminders.",
+    items: [
+      { id: "sticky-yellow", label: "classic yellow", kind: "sticky", extra: { color: "#fff59d" } },
+      { id: "sticky-pink", label: "soft pink", kind: "sticky", extra: { color: "#fbcfe8" } },
+      { id: "sticky-mint", label: "mint", kind: "sticky", extra: { color: "#bbf7d0" } },
+      { id: "sticky-blue", label: "sky", kind: "sticky", extra: { color: "#bfdbfe" } },
+      { id: "sticky-lilac", label: "lilac", kind: "sticky", extra: { color: "#e9d5ff" } },
+      { id: "sticky-cream", label: "cream", kind: "sticky", extra: { color: "#fef3c7" } },
+    ],
+  },
+  {
+    id: "polaroid", label: "polaroid", available: true,
+    blurb: "instant photographs with caption strips. flip to reveal hidden notes.",
+    items: [
+      { id: "polaroid-classic", label: "classic", kind: "polaroid" },
+      { id: "polaroid-wide", label: "wide", kind: "polaroid", extra: { width: 240 } },
+      { id: "polaroid-mini", label: "mini", kind: "polaroid", extra: { width: 140 } },
+    ],
+  },
+  {
+    id: "photostrip", label: "photostrip", available: true,
+    blurb: "photo-booth strips. four frames, one story.",
+    items: [
+      { id: "photostrip-bw", label: "black & white", kind: "photostrip" },
+      { id: "photostrip-sepia", label: "sepia", kind: "photostrip" },
+    ],
+  },
+  {
+    id: "paper", label: "loose sheets", available: true,
+    blurb: "torn papers, receipts, library cards, and clipped documents.",
+    items: [
+      { id: "paper-torn", label: "torn note", kind: "paper" },
+      { id: "paper-receipt", label: "receipt", kind: "paper", extra: { width: 140, color: "#fffaf0" } },
+      { id: "paper-card", label: "index card", kind: "paper", extra: { width: 220, color: "#fefce8" } },
+    ],
+  },
+  {
+    id: "washi", label: "washi tapes", available: true,
+    blurb: "decorative tape strips to anchor and label.",
+    items: [
+      { id: "washi-lavender", label: "lavender", kind: "washi", extra: { tapeColor: "rgba(180,160,210,0.85)" } },
+      { id: "washi-rose", label: "rose", kind: "washi", extra: { tapeColor: "rgba(244,114,182,0.7)" } },
+      { id: "washi-mint", label: "mint", kind: "washi", extra: { tapeColor: "rgba(134,239,172,0.75)" } },
+      { id: "washi-amber", label: "amber", kind: "washi", extra: { tapeColor: "rgba(251,191,36,0.75)" } },
+    ],
+  },
+  {
+    id: "pin", label: "pushpins", available: true,
+    blurb: "anchors that connect threads, conspiracy-board style.",
+    items: [
+      { id: "pin-red", label: "red", kind: "pin" },
+      { id: "pin-blue", label: "blue", kind: "pin" },
+      { id: "pin-brass", label: "brass", kind: "pin" },
+    ],
+  },
+  { id: "decoration", label: "decoration", available: false, blurb: "stickers, doodles, marginalia.", items: [] },
+  { id: "lettering", label: "lettering", available: false, blurb: "stamps, headlines, hand-lettered titles.", items: [] },
+  { id: "flags", label: "flags, maps", available: false, blurb: "pennants, cartography, location markers.", items: [] },
+  { id: "anchoring", label: "anchoring", available: false, blurb: "paperclips, binder clips, brass fasteners.", items: [] },
+  { id: "scrapbook", label: "scrapbooking", available: false, blurb: "pressed flowers, ticket stubs, ephemera.", items: [] },
+  { id: "charms", label: "charms", available: false, blurb: "small enamel bits, beads, talismans.", items: [] },
 ];
 
-function LibraryPanel({ onAdd }: { onAdd: (kind: AssetKind) => void }) {
+const SETS_BY_ID = Object.fromEntries(LIBRARY_SETS.map((s) => [s.id, s]));
+
+// ---------- favorites & recents storage ----------
+const FAVS_KEY = "boardr:favSets";
+const RECENT_KEY = "boardr:recentSets";
+function readFavs(): string[] {
+  if (typeof window === "undefined") return [];
+  try { return JSON.parse(localStorage.getItem(FAVS_KEY) || "[]"); } catch { return []; }
+}
+function writeFavs(v: string[]) {
+  if (typeof window !== "undefined") localStorage.setItem(FAVS_KEY, JSON.stringify(v));
+}
+function readRecent(): string[] {
+  if (typeof window === "undefined") return [];
+  try { return JSON.parse(localStorage.getItem(RECENT_KEY) || "[]"); } catch { return []; }
+}
+function writeRecent(v: string[]) {
+  if (typeof window !== "undefined") localStorage.setItem(RECENT_KEY, JSON.stringify(v));
+}
+
+// ---------- Library Panel ----------
+
+function LibraryPanel({
+  view,
+  setView,
+  favorites,
+  recent,
+  onToggleFav,
+  onAdd,
+}: {
+  view: LibraryView;
+  setView: (v: LibraryView) => void;
+  favorites: string[];
+  recent: string[];
+  onToggleFav: (setId: string) => void;
+  onAdd: (kind: AssetKind, extra: Partial<AssetBase> | undefined, setId?: string) => void;
+}) {
+  if (view.mode === "favorites" || view.mode === "recent") {
+    const ids = view.mode === "favorites" ? favorites : recent;
+    const sets = ids.map((id) => SETS_BY_ID[id]).filter(Boolean);
+    return (
+      <div>
+        <button
+          onClick={() => setView({ mode: "index" })}
+          className="mb-2 flex items-center gap-1 font-mono text-[10px] lowercase text-muted-foreground hover:text-foreground"
+        >
+          <ChevronLeft size={12} /> back
+        </button>
+        <p className="font-mono text-[10px] lowercase text-muted-foreground mb-3">
+          {view.mode === "favorites" ? "hearted sets" : "recently used sets"}
+        </p>
+        {sets.length === 0 ? (
+          <p className="font-mono text-[11px] lowercase text-muted-foreground">nothing here yet.</p>
+        ) : (
+          <SetGrid sets={sets} favorites={favorites} onPick={(s) => setView({ mode: "set", setId: s.id })} onToggleFav={onToggleFav} onView={(s) => s.items[0] && setView({ mode: "element", setId: s.id, itemId: s.items[0].id })} />
+        )}
+      </div>
+    );
+  }
+
+  if (view.mode === "set") {
+    const set = SETS_BY_ID[view.setId];
+    if (!set) return null;
+    return (
+      <div>
+        <button
+          onClick={() => setView({ mode: "index" })}
+          className="mb-2 flex items-center gap-1 font-mono text-[10px] lowercase text-muted-foreground hover:text-foreground"
+        >
+          <ChevronLeft size={12} /> all sets
+        </button>
+        <div className="flex items-start justify-between gap-2 mb-1">
+          <h3 className="font-display text-lg lowercase">{set.label}</h3>
+          <button onClick={() => onToggleFav(set.id)} className={`p-1 rounded hover:bg-black/5 ${favorites.includes(set.id) ? "text-rose-600" : "text-stone-500"}`}>
+            <Heart size={14} fill={favorites.includes(set.id) ? "currentColor" : "none"} />
+          </button>
+        </div>
+        <p className="font-mono text-[10px] lowercase text-muted-foreground mb-3">{set.blurb}</p>
+        {!set.available ? (
+          <div className="rounded-md border border-dashed border-border p-4 text-center font-mono text-[11px] lowercase text-muted-foreground">
+            coming soon
+          </div>
+        ) : (
+          <div className="grid grid-cols-3 gap-2">
+            {set.items.map((it) => (
+              <button
+                key={it.id}
+                onClick={() => onAdd(it.kind, it.extra, set.id)}
+                onContextMenu={(e) => { e.preventDefault(); setView({ mode: "element", setId: set.id, itemId: it.id }); }}
+                draggable
+                onDragStart={(e) => {
+                  e.dataTransfer.setData("application/x-boardr-kind", it.kind);
+                  if (it.extra) e.dataTransfer.setData("application/x-boardr-extra", JSON.stringify(it.extra));
+                }}
+                className="group flex flex-col items-center gap-2 rounded-md border border-border bg-card/60 px-2 py-3 hover:bg-accent/30 cursor-grab active:cursor-grabbing"
+                title="click to add · right-click to view"
+              >
+                <div className="h-12 flex items-center justify-center">
+                  <LibraryPreview kind={it.kind} extra={it.extra} />
+                </div>
+                <span className="font-mono text-[10px] lowercase text-center text-muted-foreground leading-tight">{it.label}</span>
+              </button>
+            ))}
+          </div>
+        )}
+      </div>
+    );
+  }
+
+  if (view.mode === "element") {
+    const set = SETS_BY_ID[view.setId];
+    const item = set?.items.find((i) => i.id === view.itemId);
+    if (!set || !item) return null;
+    return (
+      <div>
+        <button
+          onClick={() => setView({ mode: "set", setId: set.id })}
+          className="mb-3 flex items-center gap-1 font-mono text-[10px] lowercase text-muted-foreground hover:text-foreground"
+        >
+          <ChevronLeft size={12} /> back to {set.label}
+        </button>
+        <div className="rounded-md border border-border bg-card/60 p-5 flex items-center justify-center min-h-[140px]">
+          <LibraryPreview kind={item.kind} extra={item.extra} large />
+        </div>
+        <h3 className="mt-4 font-display text-lg lowercase">{item.label}</h3>
+        <p className="font-mono text-[10px] lowercase text-muted-foreground mt-1">from {set.label}</p>
+        <dl className="mt-4 space-y-2 font-mono text-[11px] lowercase">
+          <div className="flex justify-between"><dt className="text-muted-foreground">kind</dt><dd>{item.kind}</dd></div>
+          {item.extra?.color && <div className="flex justify-between"><dt className="text-muted-foreground">color</dt><dd>{item.extra.color}</dd></div>}
+          {item.extra?.width && <div className="flex justify-between"><dt className="text-muted-foreground">width</dt><dd>{item.extra.width}px</dd></div>}
+        </dl>
+        <button
+          onClick={() => onAdd(item.kind, item.extra, set.id)}
+          className="mt-5 w-full rounded-md bg-stone-900 text-stone-50 py-2 font-mono text-[11px] lowercase tracking-wider hover:bg-stone-800"
+        >
+          add to board
+        </button>
+      </div>
+    );
+  }
+
+  // index
   return (
     <div>
-      <p className="font-mono text-[10px] lowercase text-muted-foreground mb-2">drag to canvas, or click to add</p>
-      <div className="grid grid-cols-2 gap-2">
-        {LIBRARY_ITEMS.map((it) => (
-          <DraggableItem key={it.kind} kind={it.kind} label={it.label} onAdd={onAdd}>
-            <LibraryPreview kind={it.kind} />
-          </DraggableItem>
-        ))}
-      </div>
+      <p className="font-mono text-[10px] lowercase text-muted-foreground mb-3">tap a set to browse, right-click any element to inspect.</p>
+      <SetGrid
+        sets={LIBRARY_SETS}
+        favorites={favorites}
+        onPick={(s) => setView({ mode: "set", setId: s.id })}
+        onToggleFav={onToggleFav}
+        onView={(s) => s.items[0] && setView({ mode: "element", setId: s.id, itemId: s.items[0].id })}
+      />
     </div>
   );
 }
+
+function SetGrid({
+  sets, favorites, onPick, onToggleFav, onView,
+}: {
+  sets: LibrarySet[];
+  favorites: string[];
+  onPick: (s: LibrarySet) => void;
+  onToggleFav: (id: string) => void;
+  onView: (s: LibrarySet) => void;
+}) {
+  return (
+    <div className="grid grid-cols-3 gap-2">
+      {sets.map((set) => (
+        <button
+          key={set.id}
+          onClick={() => onPick(set)}
+          onContextMenu={(e) => { e.preventDefault(); onView(set); }}
+          className="group relative flex flex-col items-center gap-1.5 rounded-md border border-border bg-card/60 px-2 py-3 hover:bg-accent/30 text-center"
+          title="click to open set · right-click to view first element"
+        >
+          <button
+            onClick={(e) => { e.stopPropagation(); onToggleFav(set.id); }}
+            className={`absolute top-1 right-1 p-0.5 rounded ${favorites.includes(set.id) ? "text-rose-600" : "text-stone-400 opacity-0 group-hover:opacity-100"}`}
+          >
+            <Heart size={10} fill={favorites.includes(set.id) ? "currentColor" : "none"} />
+          </button>
+          <div className="h-10 flex items-center justify-center">
+            {set.items[0]
+              ? <LibraryPreview kind={set.items[0].kind} extra={set.items[0].extra} />
+              : <div className="size-8 rounded-sm border border-dashed border-border" />}
+          </div>
+          <span className="font-mono text-[10px] lowercase text-muted-foreground leading-tight">{set.label}</span>
+        </button>
+      ))}
+    </div>
+  );
+}
+
+// ---------- Right meta panel ----------
+
+function RightMetaPanel({
+  which, board, onClose, onPickSurface, onRename,
+}: {
+  which: RightPanelKey;
+  board: Board;
+  onClose: () => void;
+  onPickSurface: (k: BoardKind) => void;
+  onRename: (n: string) => void;
+}) {
+  return (
+    <aside className="w-[300px] shrink-0 bg-card/95 backdrop-blur-sm border-l border-border/60 overflow-y-auto z-10">
+      <div className="flex items-center justify-between px-4 py-3 border-b border-border/60">
+        <h2 className="font-display text-base lowercase">{which}</h2>
+        <button onClick={onClose} className="p-1 rounded hover:bg-black/5"><X size={14} /></button>
+      </div>
+      <div className="p-4 space-y-4 font-mono text-[11px] lowercase">
+        {which === "pages" && (
+          <div className="space-y-2">
+            <p className="text-muted-foreground">frames in this board.</p>
+            <div className="rounded-md border border-border bg-card/60 px-3 py-2 flex items-center justify-between">
+              <span>frame one (index)</span>
+              <span className="text-[9px] text-muted-foreground">active</span>
+            </div>
+            <button className="w-full rounded-md border border-dashed border-border py-2 text-muted-foreground hover:bg-black/5">+ new frame</button>
+          </div>
+        )}
+        {which === "canvas" && (
+          <div className="space-y-3">
+            <p className="text-muted-foreground">surface for this frame</p>
+            <div className="grid grid-cols-2 gap-2">
+              {(["cork", "mat", "wall", "metal"] as BoardKind[]).map((k) => (
+                <button
+                  key={k}
+                  onClick={() => onPickSurface(k)}
+                  className={`rounded-md overflow-hidden border ${board.kind === k ? "border-stone-900 ring-2 ring-stone-900/30" : "border-border"}`}
+                >
+                  <div className={`h-14 bg-board-${k}`} />
+                  <div className="bg-card px-2 py-1 text-[10px] text-left">{k}</div>
+                </button>
+              ))}
+            </div>
+          </div>
+        )}
+        {which === "connections" && (
+          <div className="space-y-2">
+            <p className="text-muted-foreground">{board.strings.length} thread(s)</p>
+            {board.strings.length === 0 && <p className="text-[10px] text-muted-foreground/80">use the string tool to connect pinned assets.</p>}
+            {board.strings.map((s) => (
+              <div key={s.id} className="rounded border border-border bg-card/60 px-2 py-1.5 text-[10px]">
+                {s.from.slice(0, 5)} ↔ {s.to.slice(0, 5)}
+              </div>
+            ))}
+          </div>
+        )}
+        {which === "settings" && (
+          <div className="space-y-3">
+            <label className="block">
+              <span className="text-muted-foreground">board name</span>
+              <input
+                value={board.name}
+                onChange={(e) => onRename(e.target.value)}
+                className="mt-1 w-full rounded-md border border-input bg-background px-2 py-1.5 text-[11px]"
+              />
+            </label>
+            <div className="rounded-md border border-border bg-card/60 px-3 py-2 space-y-1">
+              <div className="flex justify-between"><span className="text-muted-foreground">id</span><span>{board.id.slice(0, 8)}</span></div>
+              <div className="flex justify-between"><span className="text-muted-foreground">assets</span><span>{board.assets.length}</span></div>
+              <div className="flex justify-between"><span className="text-muted-foreground">published</span><span>{board.publishedKey ? board.publishedKey : "—"}</span></div>
+            </div>
+          </div>
+        )}
+      </div>
+    </aside>
+  );
+}
+
+// ---------- Library item draggable (legacy, kept for shape panel) ----------
+
+const LIBRARY_ITEMS: { kind: AssetKind; label: string }[] = [
+  { kind: "sticky", label: "sticky" },
+];
+void LIBRARY_ITEMS;
 
 function DraggableItem({
   kind,
