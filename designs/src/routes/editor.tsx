@@ -270,6 +270,7 @@ function Editor({ board, setBoard }: { board: Board; setBoard: (b: Board) => voi
                 />
               )}
               {activePanel === "library" && <LibraryPanel onAdd={addAsset} />}
+              {activePanel === "blocks" && <BlocksPanel />}
               {activePanel === "styles" && <StylesPanel />}
               {activePanel === "assets" && <AssetsPanel />}
               {activePanel === "shape" && <ShapePanel onAdd={addAsset} />}
