@@ -71,12 +71,12 @@ function Index() {
             </span>
             <h1 className="mt-6 font-display text-5xl md:text-7xl leading-[0.92] tracking-tight lowercase">
               zinegeist.<br />
-              <span className="text-stone-700/70">build living spaces for thought.</span>
+              <span className="text-stone-700/70">build places for thought to live.</span>
             </h1>
             <p className="mt-6 max-w-xl font-mono text-sm leading-relaxed text-stone-700">
-              zinegeist is a tactile spatial publishing platform for rabbit holes, archives, 
-              investigations, nonlinear storytelling, and obsessive curation. messy, 
-              layered, interconnected, and deeply personal.
+              a tactile spatial publishing platform for rabbit holes, archives, investigations,
+              nonlinear storytelling, and obsessive curation. part corkboard, part scrapbook,
+              part dossier archive, part evidence wall, part indie web artifact.
             </p>
             <div className="mt-8 flex flex-wrap gap-3">
               <Link

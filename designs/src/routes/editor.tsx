@@ -21,6 +21,9 @@ import {
   ArrowDown,
   Trash2,
   Info,
+  Heart,
+  History,
+  ChevronLeft,
 } from "lucide-react";
 import {
   createBoard,
@@ -82,6 +85,8 @@ function EditorRoute() {
   return <Editor board={board} setBoard={setBoard} />;
 }
 
+type RightPanelKey = "pages" | "canvas" | "connections" | "settings";
+
 function Editor({ board, setBoard }: { board: Board; setBoard: (b: Board) => void }) {
   const [selectedId, setSelectedId] = useState<string | null>(null);
   const [stringFromId, setStringFromId] = useState<string | null>(null);
@@ -89,6 +94,25 @@ function Editor({ board, setBoard }: { board: Board; setBoard: (b: Board) => voi
   const [activePanel, setActivePanel] = useState<PanelKey | null>("library");
   const [previewMode, setPreviewMode] = useState(false);
   const [showSettings, setShowSettings] = useState(false);
+  const [libraryView, setLibraryView] = useState<LibraryView>({ mode: "index" });
+  const [favorites, setFavorites] = useState<string[]>(() => readFavs());
+  const [recent, setRecent] = useState<string[]>(() => readRecent());
+  const [rightPanel, setRightPanel] = useState<RightPanelKey | null>(null);
+
+  function toggleFav(setId: string) {
+    setFavorites((prev) => {
+      const next = prev.includes(setId) ? prev.filter((x) => x !== setId) : [setId, ...prev];
+      writeFavs(next);
+      return next;
+    });
+  }
+  function bumpRecent(setId: string) {
+    setRecent((prev) => {
+      const next = [setId, ...prev.filter((x) => x !== setId)].slice(0, 12);
+      writeRecent(next);
+      return next;
+    });
+  }
 
   // history
   const pastRef = useRef<Board[]>([]);
@@ -254,8 +278,29 @@ function Editor({ board, setBoard }: { board: Board; setBoard: (b: Board) => voi
 
         {/* Slide-out panel */}
         {!previewMode && activePanel && (
-          <aside className="w-[280px] shrink-0 bg-card border-r border-border/60 overflow-y-auto">
-            <PanelHeader title={activePanel} onClose={() => setActivePanel(null)} />
+          <aside className="w-[360px] shrink-0 bg-card/95 backdrop-blur-sm border-r border-border/60 overflow-y-auto z-10">
+            <PanelHeader
+              title={activePanel}
+              onClose={() => setActivePanel(null)}
+              right={activePanel === "library" ? (
+                <div className="flex items-center gap-1">
+                  <button
+                    onClick={() => setLibraryView({ mode: "favorites" })}
+                    className={`p-1.5 rounded hover:bg-black/5 ${libraryView.mode === "favorites" ? "text-rose-600" : ""}`}
+                    title="favorites"
+                  >
+                    <Heart size={14} />
+                  </button>
+                  <button
+                    onClick={() => setLibraryView({ mode: "recent" })}
+                    className={`p-1.5 rounded hover:bg-black/5 ${libraryView.mode === "recent" ? "text-stone-900" : ""}`}
+                    title="recent"
+                  >
+                    <History size={14} />
+                  </button>
+                </div>
+              ) : null}
+            />
             <div className="p-3">
               {activePanel === "select" && (
                 <SelectPanel board={board} onPick={(kind) => update({ kind })} />
@@ -269,7 +314,19 @@ function Editor({ board, setBoard }: { board: Board; setBoard: (b: Board) => voi
                   onDelete={deleteAsset}
                 />
               )}
-              {activePanel === "library" && <LibraryPanel onAdd={addAsset} />}
+              {activePanel === "library" && (
+                <LibraryPanel
+                  view={libraryView}
+                  setView={setLibraryView}
+                  favorites={favorites}
+                  recent={recent}
+                  onToggleFav={toggleFav}
+                  onAdd={(kind, extra, setId) => {
+                    addAsset(kind, undefined, undefined, extra);
+                    if (setId) bumpRecent(setId);
+                  }}
+                />
+              )}
               {activePanel === "blocks" && <BlocksPanel />}
               {activePanel === "styles" && <StylesPanel />}
               {activePanel === "assets" && <AssetsPanel />}
@@ -281,41 +338,40 @@ function Editor({ board, setBoard }: { board: Board; setBoard: (b: Board) => voi
           </aside>
         )}
 
-        {/* Canvas area */}
-        <main className="flex-1 flex flex-col overflow-hidden">
-          <div className="flex-1 overflow-auto p-6">
-            <div className="mx-auto max-w-5xl">
-              <div className="font-display text-lg lowercase mb-3 px-1">frame one (index)</div>
-              <div className="rounded-md overflow-hidden analog-shadow border border-border/60">
-                <div className="aspect-[16/9] flex">
-                  <BoardCanvas
-                    kind={board.kind}
-                    assets={board.assets}
-                    strings={board.strings}
-                    interactive={!previewMode}
-                    selectedId={selectedId}
-                    stringMode={stringMode}
-                    stringFromId={stringFromId}
-                    onSelect={(id) => {
-                      setSelectedId(id);
-                      if (id) setShowSettings(true);
-                    }}
-                    onMove={(id, x, y) => updateAsset(id, { x, y }, false)}
-                    onAssetClick={handleAssetClickStringMode}
-                    onDropAsset={(kind, x, y, extra) => addAsset(kind, x, y, extra)}
-                  />
-                </div>
-              </div>
-              {stringMode && (
-                <div className="mt-3 rounded-md bg-stone-900/85 text-stone-50 px-3 py-2 font-mono text-[10px] lowercase tracking-wider text-center">
-                  string mode — click a pinned asset, then click another to connect
-                </div>
-              )}
+        {/* Canvas area — full-bleed corkboard always large in background */}
+        <main className="flex-1 relative overflow-hidden">
+          <div className="absolute inset-0">
+            <BoardCanvas
+              kind={board.kind}
+              assets={board.assets}
+              strings={board.strings}
+              interactive={!previewMode}
+              selectedId={selectedId}
+              stringMode={stringMode}
+              stringFromId={stringFromId}
+              onSelect={(id) => {
+                setSelectedId(id);
+                if (id) setShowSettings(true);
+              }}
+              onMove={(id, x, y) => updateAsset(id, { x, y }, false)}
+              onAssetClick={handleAssetClickStringMode}
+              onDropAsset={(kind, x, y, extra) => addAsset(kind, x, y, extra)}
+            />
+          </div>
+          {/* floating frame label */}
+          <div className="absolute top-4 left-5 pointer-events-none">
+            <div className="inline-block bg-pink-50/85 backdrop-blur-sm border border-stone-700/20 rounded px-3 py-1 font-display text-sm lowercase shadow-sm">
+              frame one (index)
             </div>
           </div>
+          {stringMode && (
+            <div className="absolute top-4 left-1/2 -translate-x-1/2 rounded-md bg-stone-900/85 text-stone-50 px-3 py-2 font-mono text-[10px] lowercase tracking-wider">
+              string mode — click a pinned asset, then click another to connect
+            </div>
+          )}
           {!previewMode && (
-            <div className="px-6 pb-4">
-              <button className="w-full max-w-5xl mx-auto flex items-center justify-center gap-2 rounded-md bg-pink-100/60 hover:bg-pink-100 border border-border/60 py-3 font-mono text-xs lowercase text-muted-foreground">
+            <div className="absolute bottom-5 left-1/2 -translate-x-1/2 w-[min(680px,80%)]">
+              <button className="w-full flex items-center justify-center gap-2 rounded-md bg-pink-100/80 hover:bg-pink-100 backdrop-blur-sm border border-stone-700/30 py-2.5 font-mono text-xs lowercase text-stone-700 shadow-sm">
                 add pages or sections
                 <ChevronDown size={14} />
               </button>
@@ -323,13 +379,24 @@ function Editor({ board, setBoard }: { board: Board; setBoard: (b: Board) => voi
           )}
         </main>
 
-        {/* Right settings drawer */}
+        {/* Right settings drawer (selected asset) */}
         {showSettings && selected && !previewMode && (
           <SettingsPanel
             asset={selected}
             onChange={(patch) => updateAsset(selected.id, patch, false)}
             onDelete={() => deleteAsset(selected.id)}
             onClose={() => setShowSettings(false)}
+          />
+        )}
+
+        {/* Right meta panel (pages / canvas / connections / settings) */}
+        {rightPanel && !previewMode && (
+          <RightMetaPanel
+            which={rightPanel}
+            board={board}
+            onClose={() => setRightPanel(null)}
+            onPickSurface={(kind) => update({ kind })}
+            onRename={(name) => update({ name }, false)}
           />
         )}
       </div>
@@ -345,13 +412,17 @@ function Editor({ board, setBoard }: { board: Board; setBoard: (b: Board) => voi
           <span className="text-stone-700">{board.publishedKey ? "published" : "not published"}</span>
         </div>
         <div className="flex items-center gap-3 text-stone-700">
-          <button className="hover:text-stone-900">pages</button>
-          <span className="text-stone-500/60">|</span>
-          <button className="hover:text-stone-900">canvas</button>
-          <span className="text-stone-500/60">|</span>
-          <button className="hover:text-stone-900">connections</button>
-          <span className="text-stone-500/60">|</span>
-          <button className="hover:text-stone-900">settings</button>
+          {(["pages", "canvas", "connections", "settings"] as RightPanelKey[]).map((k, i) => (
+            <span key={k} className="flex items-center gap-3">
+              {i > 0 && <span className="text-stone-500/60">|</span>}
+              <button
+                onClick={() => setRightPanel((cur) => (cur === k ? null : k))}
+                className={`hover:text-stone-900 ${rightPanel === k ? "text-stone-900 underline underline-offset-4" : ""}`}
+              >
+                {k}
+              </button>
+            </span>
+          ))}
           <Info size={14} className="ml-2 text-stone-600" />
         </div>
       </footer>
@@ -385,13 +456,16 @@ function IconBtn({
   );
 }
 
-function PanelHeader({ title, onClose }: { title: string; onClose: () => void }) {
+function PanelHeader({ title, onClose, right }: { title: string; onClose: () => void; right?: React.ReactNode }) {
   return (
     <div className="flex items-center justify-between px-4 py-3 border-b border-border/60">
       <h2 className="font-display text-base lowercase">{title}</h2>
-      <button onClick={onClose} className="p-1 rounded hover:bg-black/5">
-        <X size={14} />
-      </button>
+      <div className="flex items-center gap-1">
+        {right}
+        <button onClick={onClose} className="p-1 rounded hover:bg-black/5">
+          <X size={14} />
+        </button>
+      </div>
     </div>
   );
 }
@@ -457,30 +531,373 @@ function LayersPanel({
   );
 }
 
-const LIBRARY_ITEMS: { kind: AssetKind; label: string }[] = [
-  { kind: "sticky", label: "sticky" },
-  { kind: "polaroid", label: "polaroid" },
-  { kind: "photostrip", label: "photo strip" },
-  { kind: "photo", label: "photo" },
-  { kind: "paper", label: "paper" },
-  { kind: "washi", label: "washi tape" },
-  { kind: "pin", label: "push pin" },
+// ---------- Library sets ----------
+
+type LibraryView =
+  | { mode: "index" }
+  | { mode: "set"; setId: string }
+  | { mode: "element"; setId: string; itemId: string }
+  | { mode: "favorites" }
+  | { mode: "recent" };
+
+interface LibraryItem {
+  id: string;
+  label: string;
+  kind: AssetKind;
+  extra?: Partial<AssetBase>;
+}
+
+interface LibrarySet {
+  id: string;
+  label: string;
+  blurb: string;
+  items: LibraryItem[];
+  available: boolean; // false → placeholder coming soon
+}
+
+const LIBRARY_SETS: LibrarySet[] = [
+  {
+    id: "sticky", label: "sticky notes", available: true,
+    blurb: "cardstock squares for marginalia, half-thoughts, and pinned reminders.",
+    items: [
+      { id: "sticky-yellow", label: "classic yellow", kind: "sticky", extra: { color: "#fff59d" } },
+      { id: "sticky-pink", label: "soft pink", kind: "sticky", extra: { color: "#fbcfe8" } },
+      { id: "sticky-mint", label: "mint", kind: "sticky", extra: { color: "#bbf7d0" } },
+      { id: "sticky-blue", label: "sky", kind: "sticky", extra: { color: "#bfdbfe" } },
+      { id: "sticky-lilac", label: "lilac", kind: "sticky", extra: { color: "#e9d5ff" } },
+      { id: "sticky-cream", label: "cream", kind: "sticky", extra: { color: "#fef3c7" } },
+    ],
+  },
+  {
+    id: "polaroid", label: "polaroid", available: true,
+    blurb: "instant photographs with caption strips. flip to reveal hidden notes.",
+    items: [
+      { id: "polaroid-classic", label: "classic", kind: "polaroid" },
+      { id: "polaroid-wide", label: "wide", kind: "polaroid", extra: { width: 240 } },
+      { id: "polaroid-mini", label: "mini", kind: "polaroid", extra: { width: 140 } },
+    ],
+  },
+  {
+    id: "photostrip", label: "photostrip", available: true,
+    blurb: "photo-booth strips. four frames, one story.",
+    items: [
+      { id: "photostrip-bw", label: "black & white", kind: "photostrip" },
+      { id: "photostrip-sepia", label: "sepia", kind: "photostrip" },
+    ],
+  },
+  {
+    id: "paper", label: "loose sheets", available: true,
+    blurb: "torn papers, receipts, library cards, and clipped documents.",
+    items: [
+      { id: "paper-torn", label: "torn note", kind: "paper" },
+      { id: "paper-receipt", label: "receipt", kind: "paper", extra: { width: 140, color: "#fffaf0" } },
+      { id: "paper-card", label: "index card", kind: "paper", extra: { width: 220, color: "#fefce8" } },
+    ],
+  },
+  {
+    id: "washi", label: "washi tapes", available: true,
+    blurb: "decorative tape strips to anchor and label.",
+    items: [
+      { id: "washi-lavender", label: "lavender", kind: "washi", extra: { tapeColor: "rgba(180,160,210,0.85)" } },
+      { id: "washi-rose", label: "rose", kind: "washi", extra: { tapeColor: "rgba(244,114,182,0.7)" } },
+      { id: "washi-mint", label: "mint", kind: "washi", extra: { tapeColor: "rgba(134,239,172,0.75)" } },
+      { id: "washi-amber", label: "amber", kind: "washi", extra: { tapeColor: "rgba(251,191,36,0.75)" } },
+    ],
+  },
+  {
+    id: "pin", label: "pushpins", available: true,
+    blurb: "anchors that connect threads, conspiracy-board style.",
+    items: [
+      { id: "pin-red", label: "red", kind: "pin" },
+      { id: "pin-blue", label: "blue", kind: "pin" },
+      { id: "pin-brass", label: "brass", kind: "pin" },
+    ],
+  },
+  { id: "decoration", label: "decoration", available: false, blurb: "stickers, doodles, marginalia.", items: [] },
+  { id: "lettering", label: "lettering", available: false, blurb: "stamps, headlines, hand-lettered titles.", items: [] },
+  { id: "flags", label: "flags, maps", available: false, blurb: "pennants, cartography, location markers.", items: [] },
+  { id: "anchoring", label: "anchoring", available: false, blurb: "paperclips, binder clips, brass fasteners.", items: [] },
+  { id: "scrapbook", label: "scrapbooking", available: false, blurb: "pressed flowers, ticket stubs, ephemera.", items: [] },
+  { id: "charms", label: "charms", available: false, blurb: "small enamel bits, beads, talismans.", items: [] },
 ];
 
-function LibraryPanel({ onAdd }: { onAdd: (kind: AssetKind) => void }) {
+const SETS_BY_ID = Object.fromEntries(LIBRARY_SETS.map((s) => [s.id, s]));
+
+// ---------- favorites & recents storage ----------
+const FAVS_KEY = "boardr:favSets";
+const RECENT_KEY = "boardr:recentSets";
+function readFavs(): string[] {
+  if (typeof window === "undefined") return [];
+  try { return JSON.parse(localStorage.getItem(FAVS_KEY) || "[]"); } catch { return []; }
+}
+function writeFavs(v: string[]) {
+  if (typeof window !== "undefined") localStorage.setItem(FAVS_KEY, JSON.stringify(v));
+}
+function readRecent(): string[] {
+  if (typeof window === "undefined") return [];
+  try { return JSON.parse(localStorage.getItem(RECENT_KEY) || "[]"); } catch { return []; }
+}
+function writeRecent(v: string[]) {
+  if (typeof window !== "undefined") localStorage.setItem(RECENT_KEY, JSON.stringify(v));
+}
+
+// ---------- Library Panel ----------
+
+function LibraryPanel({
+  view,
+  setView,
+  favorites,
+  recent,
+  onToggleFav,
+  onAdd,
+}: {
+  view: LibraryView;
+  setView: (v: LibraryView) => void;
+  favorites: string[];
+  recent: string[];
+  onToggleFav: (setId: string) => void;
+  onAdd: (kind: AssetKind, extra: Partial<AssetBase> | undefined, setId?: string) => void;
+}) {
+  if (view.mode === "favorites" || view.mode === "recent") {
+    const ids = view.mode === "favorites" ? favorites : recent;
+    const sets = ids.map((id) => SETS_BY_ID[id]).filter(Boolean);
+    return (
+      <div>
+        <button
+          onClick={() => setView({ mode: "index" })}
+          className="mb-2 flex items-center gap-1 font-mono text-[10px] lowercase text-muted-foreground hover:text-foreground"
+        >
+          <ChevronLeft size={12} /> back
+        </button>
+        <p className="font-mono text-[10px] lowercase text-muted-foreground mb-3">
+          {view.mode === "favorites" ? "hearted sets" : "recently used sets"}
+        </p>
+        {sets.length === 0 ? (
+          <p className="font-mono text-[11px] lowercase text-muted-foreground">nothing here yet.</p>
+        ) : (
+          <SetGrid sets={sets} favorites={favorites} onPick={(s) => setView({ mode: "set", setId: s.id })} onToggleFav={onToggleFav} onView={(s) => s.items[0] && setView({ mode: "element", setId: s.id, itemId: s.items[0].id })} />
+        )}
+      </div>
+    );
+  }
+
+  if (view.mode === "set") {
+    const set = SETS_BY_ID[view.setId];
+    if (!set) return null;
+    return (
+      <div>
+        <button
+          onClick={() => setView({ mode: "index" })}
+          className="mb-2 flex items-center gap-1 font-mono text-[10px] lowercase text-muted-foreground hover:text-foreground"
+        >
+          <ChevronLeft size={12} /> all sets
+        </button>
+        <div className="flex items-start justify-between gap-2 mb-1">
+          <h3 className="font-display text-lg lowercase">{set.label}</h3>
+          <button onClick={() => onToggleFav(set.id)} className={`p-1 rounded hover:bg-black/5 ${favorites.includes(set.id) ? "text-rose-600" : "text-stone-500"}`}>
+            <Heart size={14} fill={favorites.includes(set.id) ? "currentColor" : "none"} />
+          </button>
+        </div>
+        <p className="font-mono text-[10px] lowercase text-muted-foreground mb-3">{set.blurb}</p>
+        {!set.available ? (
+          <div className="rounded-md border border-dashed border-border p-4 text-center font-mono text-[11px] lowercase text-muted-foreground">
+            coming soon
+          </div>
+        ) : (
+          <div className="grid grid-cols-3 gap-2">
+            {set.items.map((it) => (
+              <button
+                key={it.id}
+                onClick={() => onAdd(it.kind, it.extra, set.id)}
+                onContextMenu={(e) => { e.preventDefault(); setView({ mode: "element", setId: set.id, itemId: it.id }); }}
+                draggable
+                onDragStart={(e) => {
+                  e.dataTransfer.setData("application/x-boardr-kind", it.kind);
+                  if (it.extra) e.dataTransfer.setData("application/x-boardr-extra", JSON.stringify(it.extra));
+                }}
+                className="group flex flex-col items-center gap-2 rounded-md border border-border bg-card/60 px-2 py-3 hover:bg-accent/30 cursor-grab active:cursor-grabbing"
+                title="click to add · right-click to view"
+              >
+                <div className="h-12 flex items-center justify-center">
+                  <LibraryPreview kind={it.kind} extra={it.extra} />
+                </div>
+                <span className="font-mono text-[10px] lowercase text-center text-muted-foreground leading-tight">{it.label}</span>
+              </button>
+            ))}
+          </div>
+        )}
+      </div>
+    );
+  }
+
+  if (view.mode === "element") {
+    const set = SETS_BY_ID[view.setId];
+    const item = set?.items.find((i) => i.id === view.itemId);
+    if (!set || !item) return null;
+    return (
+      <div>
+        <button
+          onClick={() => setView({ mode: "set", setId: set.id })}
+          className="mb-3 flex items-center gap-1 font-mono text-[10px] lowercase text-muted-foreground hover:text-foreground"
+        >
+          <ChevronLeft size={12} /> back to {set.label}
+        </button>
+        <div className="rounded-md border border-border bg-card/60 p-5 flex items-center justify-center min-h-[140px]">
+          <LibraryPreview kind={item.kind} extra={item.extra} large />
+        </div>
+        <h3 className="mt-4 font-display text-lg lowercase">{item.label}</h3>
+        <p className="font-mono text-[10px] lowercase text-muted-foreground mt-1">from {set.label}</p>
+        <dl className="mt-4 space-y-2 font-mono text-[11px] lowercase">
+          <div className="flex justify-between"><dt className="text-muted-foreground">kind</dt><dd>{item.kind}</dd></div>
+          {item.extra?.color && <div className="flex justify-between"><dt className="text-muted-foreground">color</dt><dd>{item.extra.color}</dd></div>}
+          {item.extra?.width && <div className="flex justify-between"><dt className="text-muted-foreground">width</dt><dd>{item.extra.width}px</dd></div>}
+        </dl>
+        <button
+          onClick={() => onAdd(item.kind, item.extra, set.id)}
+          className="mt-5 w-full rounded-md bg-stone-900 text-stone-50 py-2 font-mono text-[11px] lowercase tracking-wider hover:bg-stone-800"
+        >
+          add to board
+        </button>
+      </div>
+    );
+  }
+
+  // index
   return (
     <div>
-      <p className="font-mono text-[10px] lowercase text-muted-foreground mb-2">drag to canvas, or click to add</p>
-      <div className="grid grid-cols-2 gap-2">
-        {LIBRARY_ITEMS.map((it) => (
-          <DraggableItem key={it.kind} kind={it.kind} label={it.label} onAdd={onAdd}>
-            <LibraryPreview kind={it.kind} />
-          </DraggableItem>
-        ))}
-      </div>
+      <p className="font-mono text-[10px] lowercase text-muted-foreground mb-3">tap a set to browse, right-click any element to inspect.</p>
+      <SetGrid
+        sets={LIBRARY_SETS}
+        favorites={favorites}
+        onPick={(s) => setView({ mode: "set", setId: s.id })}
+        onToggleFav={onToggleFav}
+        onView={(s) => s.items[0] && setView({ mode: "element", setId: s.id, itemId: s.items[0].id })}
+      />
     </div>
   );
 }
+
+function SetGrid({
+  sets, favorites, onPick, onToggleFav, onView,
+}: {
+  sets: LibrarySet[];
+  favorites: string[];
+  onPick: (s: LibrarySet) => void;
+  onToggleFav: (id: string) => void;
+  onView: (s: LibrarySet) => void;
+}) {
+  return (
+    <div className="grid grid-cols-3 gap-2">
+      {sets.map((set) => (
+        <button
+          key={set.id}
+          onClick={() => onPick(set)}
+          onContextMenu={(e) => { e.preventDefault(); onView(set); }}
+          className="group relative flex flex-col items-center gap-1.5 rounded-md border border-border bg-card/60 px-2 py-3 hover:bg-accent/30 text-center"
+          title="click to open set · right-click to view first element"
+        >
+          <button
+            onClick={(e) => { e.stopPropagation(); onToggleFav(set.id); }}
+            className={`absolute top-1 right-1 p-0.5 rounded ${favorites.includes(set.id) ? "text-rose-600" : "text-stone-400 opacity-0 group-hover:opacity-100"}`}
+          >
+            <Heart size={10} fill={favorites.includes(set.id) ? "currentColor" : "none"} />
+          </button>
+          <div className="h-10 flex items-center justify-center">
+            {set.items[0]
+              ? <LibraryPreview kind={set.items[0].kind} extra={set.items[0].extra} />
+              : <div className="size-8 rounded-sm border border-dashed border-border" />}
+          </div>
+          <span className="font-mono text-[10px] lowercase text-muted-foreground leading-tight">{set.label}</span>
+        </button>
+      ))}
+    </div>
+  );
+}
+
+// ---------- Right meta panel ----------
+
+function RightMetaPanel({
+  which, board, onClose, onPickSurface, onRename,
+}: {
+  which: RightPanelKey;
+  board: Board;
+  onClose: () => void;
+  onPickSurface: (k: BoardKind) => void;
+  onRename: (n: string) => void;
+}) {
+  return (
+    <aside className="w-[300px] shrink-0 bg-card/95 backdrop-blur-sm border-l border-border/60 overflow-y-auto z-10">
+      <div className="flex items-center justify-between px-4 py-3 border-b border-border/60">
+        <h2 className="font-display text-base lowercase">{which}</h2>
+        <button onClick={onClose} className="p-1 rounded hover:bg-black/5"><X size={14} /></button>
+      </div>
+      <div className="p-4 space-y-4 font-mono text-[11px] lowercase">
+        {which === "pages" && (
+          <div className="space-y-2">
+            <p className="text-muted-foreground">frames in this board.</p>
+            <div className="rounded-md border border-border bg-card/60 px-3 py-2 flex items-center justify-between">
+              <span>frame one (index)</span>
+              <span className="text-[9px] text-muted-foreground">active</span>
+            </div>
+            <button className="w-full rounded-md border border-dashed border-border py-2 text-muted-foreground hover:bg-black/5">+ new frame</button>
+          </div>
+        )}
+        {which === "canvas" && (
+          <div className="space-y-3">
+            <p className="text-muted-foreground">surface for this frame</p>
+            <div className="grid grid-cols-2 gap-2">
+              {(["cork", "mat", "wall", "metal"] as BoardKind[]).map((k) => (
+                <button
+                  key={k}
+                  onClick={() => onPickSurface(k)}
+                  className={`rounded-md overflow-hidden border ${board.kind === k ? "border-stone-900 ring-2 ring-stone-900/30" : "border-border"}`}
+                >
+                  <div className={`h-14 bg-board-${k}`} />
+                  <div className="bg-card px-2 py-1 text-[10px] text-left">{k}</div>
+                </button>
+              ))}
+            </div>
+          </div>
+        )}
+        {which === "connections" && (
+          <div className="space-y-2">
+            <p className="text-muted-foreground">{board.strings.length} thread(s)</p>
+            {board.strings.length === 0 && <p className="text-[10px] text-muted-foreground/80">use the string tool to connect pinned assets.</p>}
+            {board.strings.map((s) => (
+              <div key={s.id} className="rounded border border-border bg-card/60 px-2 py-1.5 text-[10px]">
+                {s.from.slice(0, 5)} ↔ {s.to.slice(0, 5)}
+              </div>
+            ))}
+          </div>
+        )}
+        {which === "settings" && (
+          <div className="space-y-3">
+            <label className="block">
+              <span className="text-muted-foreground">board name</span>
+              <input
+                value={board.name}
+                onChange={(e) => onRename(e.target.value)}
+                className="mt-1 w-full rounded-md border border-input bg-background px-2 py-1.5 text-[11px]"
+              />
+            </label>
+            <div className="rounded-md border border-border bg-card/60 px-3 py-2 space-y-1">
+              <div className="flex justify-between"><span className="text-muted-foreground">id</span><span>{board.id.slice(0, 8)}</span></div>
+              <div className="flex justify-between"><span className="text-muted-foreground">assets</span><span>{board.assets.length}</span></div>
+              <div className="flex justify-between"><span className="text-muted-foreground">published</span><span>{board.publishedKey ? board.publishedKey : "—"}</span></div>
+            </div>
+          </div>
+        )}
+      </div>
+    </aside>
+  );
+}
+
+// ---------- Library item draggable (legacy, kept for shape panel) ----------
+
+const LIBRARY_ITEMS: { kind: AssetKind; label: string }[] = [
+  { kind: "sticky", label: "sticky" },
+];
+void LIBRARY_ITEMS;
 
 function DraggableItem({
   kind,
@@ -511,36 +928,39 @@ function DraggableItem({
   );
 }
 
-function LibraryPreview({ kind }: { kind: AssetKind }) {
+function LibraryPreview({ kind, extra, large }: { kind: AssetKind; extra?: Partial<AssetBase>; large?: boolean }) {
+  const scale = large ? 2 : 1;
+  const color = extra?.color;
+  const tape = extra?.tapeColor;
   switch (kind) {
     case "sticky":
-      return <div className="size-10 rounded-[2px] analog-shadow-sm" style={{ background: "#fff59d" }} />;
+      return <div className="rounded-[2px] analog-shadow-sm" style={{ width: 40 * scale, height: 40 * scale, background: color || "#fff59d" }} />;
     case "polaroid":
       return (
-        <div className="bg-white p-1 analog-shadow-sm" style={{ width: 40, height: 48 }}>
+        <div className="bg-white p-1 analog-shadow-sm" style={{ width: 40 * scale, height: 48 * scale }}>
           <div className="size-full" style={{ background: "linear-gradient(135deg,#c9b99a,#8b7355)" }} />
         </div>
       );
     case "photostrip":
       return (
-        <div className="bg-stone-900 p-[2px] analog-shadow-sm" style={{ width: 22, height: 50 }}>
+        <div className="bg-stone-900 p-[2px] analog-shadow-sm" style={{ width: 22 * scale, height: 50 * scale }}>
           <div className="grid grid-rows-4 gap-[1px] h-full">{[0,1,2,3].map((i) => <div key={i} style={{ background: "#999" }} />)}</div>
         </div>
       );
     case "photo":
       return (
-        <div className="bg-white p-[2px] analog-shadow-sm" style={{ width: 46, height: 34 }}>
+        <div className="bg-white p-[2px] analog-shadow-sm" style={{ width: 46 * scale, height: 34 * scale }}>
           <div className="size-full" style={{ background: "linear-gradient(135deg,#a8957a,#5c4a36)" }} />
         </div>
       );
     case "paper":
-      return <div className="analog-shadow-sm" style={{ width: 46, height: 36, background: "#fbf7ec", clipPath: "polygon(0 8%, 6% 0, 96% 4%, 100% 8%, 96% 96%, 90% 100%, 8% 96%, 0% 92%)" }} />;
+      return <div className="analog-shadow-sm" style={{ width: 46 * scale, height: 36 * scale, background: color || "#fbf7ec", clipPath: "polygon(0 8%, 6% 0, 96% 4%, 100% 8%, 96% 96%, 90% 100%, 8% 96%, 0% 92%)" }} />;
     case "washi":
-      return <div style={{ width: 50, height: 12, background: "rgba(180,160,210,0.85)", backgroundImage: "repeating-linear-gradient(45deg, rgba(255,255,255,0.25) 0 4px, transparent 4px 8px)", transform: "rotate(-10deg)" }} />;
+      return <div style={{ width: 50 * scale, height: 12 * scale, background: tape || "rgba(180,160,210,0.85)", backgroundImage: "repeating-linear-gradient(45deg, rgba(255,255,255,0.25) 0 4px, transparent 4px 8px)", transform: "rotate(-10deg)" }} />;
     case "pin":
-      return <div className="size-5 rounded-full" style={{ background: "radial-gradient(circle at 30% 30%, #ff8a8a, #c0212a 60%, #6e0a10)", boxShadow: "0 2px 4px rgba(0,0,0,0.4)" }} />;
+      return <div className="rounded-full" style={{ width: 20 * scale, height: 20 * scale, background: "radial-gradient(circle at 30% 30%, #ff8a8a, #c0212a 60%, #6e0a10)", boxShadow: "0 2px 4px rgba(0,0,0,0.4)" }} />;
     case "shape":
-      return <div className="size-8 rounded-sm" style={{ background: "#c9b99a" }} />;
+      return <div className="rounded-sm" style={{ width: 32 * scale, height: 32 * scale, background: "#c9b99a" }} />;
   }
 }
 
