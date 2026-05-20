@@ -13,93 +13,112 @@ export const Route = createFileRoute("/positioning")({
   component: PositioningPage,
 });
 
+const NOT = [
+  "rigid folders", "sterile productivity software", "linear note apps",
+  "static canvases", "project management dashboards", "infinite zoom whiteboards",
+];
+
+const IS = [
+  "detective apartment walls", "media studies thesis boards",
+  "internet archivist desks", "junk journals", "fan conspiracy boards",
+  "indie web scrapbooks", "obsessive scholar workspaces",
+];
+
+const PRINCIPLES = [
+  { n: "01", t: "mess carries meaning", d: "the disorder is signal, not noise. cluster, overlap, and adjacency tell a story." },
+  { n: "02", t: "arrangement matters", d: "where you place something on the board is part of what it means." },
+  { n: "03", t: "texture matters", d: "cork, paper, metal, plaster. the surface tints the thought." },
+  { n: "04", t: "overlap matters", d: "tape over photo over note. layered traces, not flat documents." },
+  { n: "05", t: "interfaces are environments", d: "you don't open a file. you walk into a place you built." },
+  { n: "06", t: "nothing is throwaway", d: "every receipt, every margin scrawl can become evidence later." },
+];
+
 const VOCAB = [
   "nonlinear", "tactile", "obsessive", "spatial", "archival", "interconnected",
   "dossier", "artifact", "scrapbook", "evidence wall", "rabbit hole", "archive",
   "marginalia", "ephemera", "annotation", "fragments", "traces", "constellation",
 ];
 
-function Section({ title, subtitle, children, className = "" }: { title: string; subtitle?: string; children: React.ReactNode; className?: string }) {
-  return (
-    <section className={`border-b border-border/60 py-20 ${className}`}>
-      <div className="max-w-4xl mx-auto px-6">
-        <span className="font-mono text-[10px] uppercase tracking-[0.25em] text-muted-foreground">/ {title}</span>
-        {subtitle && <h2 className="mt-2 font-display text-3xl md:text-4xl lowercase">{subtitle}</h2>}
-        <div className="mt-10">{children}</div>
-      </div>
-    </section>
-  );
-}
-
 function PositioningPage() {
   return (
     <div className="min-h-screen bg-background text-foreground">
       <SiteHeader />
 
+      {/* HERO */}
       <section className="bg-editor-header border-b border-border/60">
         <div className="max-w-4xl mx-auto px-6 pt-20 pb-20">
           <span className="font-mono text-[10px] uppercase tracking-[0.25em] text-stone-700">/ positioning</span>
           <h1 className="mt-4 font-display text-5xl md:text-6xl leading-[0.95] lowercase tracking-tight">
-            thought doesn’t happen in straight lines.
+            interfaces like environments,<br />
+            <span className="text-stone-700/70">not software.</span>
           </h1>
           <p className="mt-6 max-w-2xl font-mono text-sm leading-relaxed text-stone-700">
-            zinegeist was built for the way curiosity actually feels: nonlinear, tactile, 
-            obsessive, and spatial. it's not about organizing your thoughts perfectly; 
-            it's about building places for them to live.
+            most tools treat your thoughts like rows in a database. zinegeist treats them
+            like objects on a wall. the difference is everything.
           </p>
         </div>
       </section>
 
-      <Section title="environment" subtitle="software vs environment">
-        <div className="grid md:grid-cols-2 gap-10 font-mono text-sm leading-relaxed text-stone-700">
-          <div className="space-y-4">
-            <p className="font-bold text-stone-900 uppercase tracking-widest text-[10px]">less "project management"</p>
-            <ul className="space-y-2 opacity-80">
-              <li>· rigid folders</li>
-              <li>· sterile productivity software</li>
-              <li>· linear note apps</li>
-              <li>· static canvases</li>
+      {/* NOT / IS */}
+      <section className="border-b border-border/60">
+        <div className="max-w-4xl mx-auto px-6 py-20 grid md:grid-cols-2 gap-12">
+          <div>
+            <span className="font-mono text-[10px] uppercase tracking-[0.25em] text-muted-foreground">/ less</span>
+            <h2 className="mt-2 font-display text-2xl lowercase">less "project management"</h2>
+            <ul className="mt-6 space-y-2 font-mono text-sm text-stone-500 lowercase line-through decoration-stone-400/40">
+              {NOT.map((n) => <li key={n}>· {n}</li>)}
             </ul>
           </div>
-          <div className="space-y-4">
-            <p className="font-bold text-stone-900 uppercase tracking-widest text-[10px]">more "obsessive curation"</p>
-            <ul className="space-y-2">
-              <li>· detective apartment walls</li>
-              <li>· internet archivist desks</li>
-              <li>· junk journals</li>
-              <li>· fan conspiracy boards</li>
+          <div>
+            <span className="font-mono text-[10px] uppercase tracking-[0.25em] text-muted-foreground">/ more</span>
+            <h2 className="mt-2 font-display text-2xl lowercase">more "obsessive curation"</h2>
+            <ul className="mt-6 space-y-2 font-mono text-sm text-stone-800 lowercase">
+              {IS.map((n) => <li key={n}>· {n}</li>)}
             </ul>
           </div>
         </div>
-      </Section>
+      </section>
 
-      <Section title="meaning" subtitle="mess carries meaning">
-        <p className="font-mono text-sm leading-relaxed text-stone-700 max-w-2xl">
-          in zinegeist, arrangement matters. texture matters. overlap matters. 
-          the board itself becomes part of the meaning. everything is interactive — 
-          cards unfold, folders expand, and photographs flip over to reveal hidden notes.
-          boards become explorable archives instead of static canvases.
-        </p>
-      </Section>
-
-      <Section title="feeling" subtitle="the 2am feeling">
-        <p className="font-mono text-sm leading-relaxed text-stone-700 max-w-2xl italic">
-          zinegeist preserves the feeling of finding something at 2am and opening 
-          twelve more tabs because suddenly everything connects.
-        </p>
-        <div className="mt-10 flex flex-wrap gap-2">
-          {VOCAB.map((w, i) => (
-            <span
-              key={w}
-              className="font-mono text-[11px] lowercase tracking-wide rounded-sm border border-border bg-secondary/50 px-3 py-1.5"
-              style={{ transform: `rotate(${((i % 5) - 2) * 0.8}deg)` }}
-            >
-              {w}
-            </span>
-          ))}
+      {/* PRINCIPLES */}
+      <section className="bg-secondary/40 border-b border-border/60">
+        <div className="max-w-4xl mx-auto px-6 py-20">
+          <span className="font-mono text-[10px] uppercase tracking-[0.25em] text-muted-foreground">/ principles</span>
+          <h2 className="mt-2 font-display text-3xl lowercase">what we hold to</h2>
+          <div className="mt-10 grid sm:grid-cols-2 gap-3">
+            {PRINCIPLES.map((p) => (
+              <div key={p.n} className="bg-card rounded-md border border-border p-5 analog-shadow-sm">
+                <div className="font-mono text-[10px] text-muted-foreground">{p.n}</div>
+                <div className="mt-2 font-display text-xl lowercase">{p.t}</div>
+                <p className="mt-2 font-mono text-xs text-muted-foreground leading-relaxed">{p.d}</p>
+              </div>
+            ))}
+          </div>
         </div>
-      </Section>
+      </section>
 
+      {/* 2AM */}
+      <section className="border-b border-border/60">
+        <div className="max-w-4xl mx-auto px-6 py-24">
+          <span className="font-mono text-[10px] uppercase tracking-[0.25em] text-muted-foreground">/ the 2am feeling</span>
+          <p className="mt-6 font-display text-2xl md:text-3xl lowercase leading-snug text-stone-800">
+            zinegeist preserves the feeling of finding something at 2am and opening
+            twelve more tabs because suddenly everything connects.
+          </p>
+          <div className="mt-10 flex flex-wrap gap-2">
+            {VOCAB.map((w, i) => (
+              <span
+                key={w}
+                className="font-mono text-[11px] lowercase tracking-wide rounded-sm border border-border bg-secondary/50 px-3 py-1.5"
+                style={{ transform: `rotate(${((i % 5) - 2) * 0.8}deg)` }}
+              >
+                {w}
+              </span>
+            ))}
+          </div>
+        </div>
+      </section>
+
+      {/* CTA */}
       <section className="bg-board-cork py-24 text-center">
         <div className="max-w-4xl mx-auto px-6">
           <h2 className="font-display text-4xl lowercase text-stone-50">build your own rabbit hole.</h2>
