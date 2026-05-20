@@ -278,8 +278,29 @@ function Editor({ board, setBoard }: { board: Board; setBoard: (b: Board) => voi
 
         {/* Slide-out panel */}
         {!previewMode && activePanel && (
-          <aside className="w-[280px] shrink-0 bg-card border-r border-border/60 overflow-y-auto">
-            <PanelHeader title={activePanel} onClose={() => setActivePanel(null)} />
+          <aside className="w-[360px] shrink-0 bg-card/95 backdrop-blur-sm border-r border-border/60 overflow-y-auto z-10">
+            <PanelHeader
+              title={activePanel}
+              onClose={() => setActivePanel(null)}
+              right={activePanel === "library" ? (
+                <div className="flex items-center gap-1">
+                  <button
+                    onClick={() => setLibraryView({ mode: "favorites" })}
+                    className={`p-1.5 rounded hover:bg-black/5 ${libraryView.mode === "favorites" ? "text-rose-600" : ""}`}
+                    title="favorites"
+                  >
+                    <Heart size={14} />
+                  </button>
+                  <button
+                    onClick={() => setLibraryView({ mode: "recent" })}
+                    className={`p-1.5 rounded hover:bg-black/5 ${libraryView.mode === "recent" ? "text-stone-900" : ""}`}
+                    title="recent"
+                  >
+                    <History size={14} />
+                  </button>
+                </div>
+              ) : null}
+            />
             <div className="p-3">
               {activePanel === "select" && (
                 <SelectPanel board={board} onPick={(kind) => update({ kind })} />
@@ -293,7 +314,19 @@ function Editor({ board, setBoard }: { board: Board; setBoard: (b: Board) => voi
                   onDelete={deleteAsset}
                 />
               )}
-              {activePanel === "library" && <LibraryPanel onAdd={addAsset} />}
+              {activePanel === "library" && (
+                <LibraryPanel
+                  view={libraryView}
+                  setView={setLibraryView}
+                  favorites={favorites}
+                  recent={recent}
+                  onToggleFav={toggleFav}
+                  onAdd={(kind, extra, setId) => {
+                    addAsset(kind, undefined, undefined, extra);
+                    if (setId) bumpRecent(setId);
+                  }}
+                />
+              )}
               {activePanel === "blocks" && <BlocksPanel />}
               {activePanel === "styles" && <StylesPanel />}
               {activePanel === "assets" && <AssetsPanel />}
@@ -305,41 +338,40 @@ function Editor({ board, setBoard }: { board: Board; setBoard: (b: Board) => voi
           </aside>
         )}
 
-        {/* Canvas area */}
-        <main className="flex-1 flex flex-col overflow-hidden">
-          <div className="flex-1 overflow-auto p-6">
-            <div className="mx-auto max-w-5xl">
-              <div className="font-display text-lg lowercase mb-3 px-1">frame one (index)</div>
-              <div className="rounded-md overflow-hidden analog-shadow border border-border/60">
-                <div className="aspect-[16/9] flex">
-                  <BoardCanvas
-                    kind={board.kind}
-                    assets={board.assets}
-                    strings={board.strings}
-                    interactive={!previewMode}
-                    selectedId={selectedId}
-                    stringMode={stringMode}
-                    stringFromId={stringFromId}
-                    onSelect={(id) => {
-                      setSelectedId(id);
-                      if (id) setShowSettings(true);
-                    }}
-                    onMove={(id, x, y) => updateAsset(id, { x, y }, false)}
-                    onAssetClick={handleAssetClickStringMode}
-                    onDropAsset={(kind, x, y, extra) => addAsset(kind, x, y, extra)}
-                  />
-                </div>
-              </div>
-              {stringMode && (
-                <div className="mt-3 rounded-md bg-stone-900/85 text-stone-50 px-3 py-2 font-mono text-[10px] lowercase tracking-wider text-center">
-                  string mode — click a pinned asset, then click another to connect
-                </div>
-              )}
+        {/* Canvas area — full-bleed corkboard always large in background */}
+        <main className="flex-1 relative overflow-hidden">
+          <div className="absolute inset-0">
+            <BoardCanvas
+              kind={board.kind}
+              assets={board.assets}
+              strings={board.strings}
+              interactive={!previewMode}
+              selectedId={selectedId}
+              stringMode={stringMode}
+              stringFromId={stringFromId}
+              onSelect={(id) => {
+                setSelectedId(id);
+                if (id) setShowSettings(true);
+              }}
+              onMove={(id, x, y) => updateAsset(id, { x, y }, false)}
+              onAssetClick={handleAssetClickStringMode}
+              onDropAsset={(kind, x, y, extra) => addAsset(kind, x, y, extra)}
+            />
+          </div>
+          {/* floating frame label */}
+          <div className="absolute top-4 left-5 pointer-events-none">
+            <div className="inline-block bg-pink-50/85 backdrop-blur-sm border border-stone-700/20 rounded px-3 py-1 font-display text-sm lowercase shadow-sm">
+              frame one (index)
             </div>
           </div>
+          {stringMode && (
+            <div className="absolute top-4 left-1/2 -translate-x-1/2 rounded-md bg-stone-900/85 text-stone-50 px-3 py-2 font-mono text-[10px] lowercase tracking-wider">
+              string mode — click a pinned asset, then click another to connect
+            </div>
+          )}
           {!previewMode && (
-            <div className="px-6 pb-4">
-              <button className="w-full max-w-5xl mx-auto flex items-center justify-center gap-2 rounded-md bg-pink-100/60 hover:bg-pink-100 border border-border/60 py-3 font-mono text-xs lowercase text-muted-foreground">
+            <div className="absolute bottom-5 left-1/2 -translate-x-1/2 w-[min(680px,80%)]">
+              <button className="w-full flex items-center justify-center gap-2 rounded-md bg-pink-100/80 hover:bg-pink-100 backdrop-blur-sm border border-stone-700/30 py-2.5 font-mono text-xs lowercase text-stone-700 shadow-sm">
                 add pages or sections
                 <ChevronDown size={14} />
               </button>
@@ -347,13 +379,24 @@ function Editor({ board, setBoard }: { board: Board; setBoard: (b: Board) => voi
           )}
         </main>
 
-        {/* Right settings drawer */}
+        {/* Right settings drawer (selected asset) */}
         {showSettings && selected && !previewMode && (
           <SettingsPanel
             asset={selected}
             onChange={(patch) => updateAsset(selected.id, patch, false)}
             onDelete={() => deleteAsset(selected.id)}
             onClose={() => setShowSettings(false)}
+          />
+        )}
+
+        {/* Right meta panel (pages / canvas / connections / settings) */}
+        {rightPanel && !previewMode && (
+          <RightMetaPanel
+            which={rightPanel}
+            board={board}
+            onClose={() => setRightPanel(null)}
+            onPickSurface={(kind) => update({ kind })}
+            onRename={(name) => update({ name }, false)}
           />
         )}
       </div>
@@ -369,13 +412,17 @@ function Editor({ board, setBoard }: { board: Board; setBoard: (b: Board) => voi
           <span className="text-stone-700">{board.publishedKey ? "published" : "not published"}</span>
         </div>
         <div className="flex items-center gap-3 text-stone-700">
-          <button className="hover:text-stone-900">pages</button>
-          <span className="text-stone-500/60">|</span>
-          <button className="hover:text-stone-900">canvas</button>
-          <span className="text-stone-500/60">|</span>
-          <button className="hover:text-stone-900">connections</button>
-          <span className="text-stone-500/60">|</span>
-          <button className="hover:text-stone-900">settings</button>
+          {(["pages", "canvas", "connections", "settings"] as RightPanelKey[]).map((k, i) => (
+            <span key={k} className="flex items-center gap-3">
+              {i > 0 && <span className="text-stone-500/60">|</span>}
+              <button
+                onClick={() => setRightPanel((cur) => (cur === k ? null : k))}
+                className={`hover:text-stone-900 ${rightPanel === k ? "text-stone-900 underline underline-offset-4" : ""}`}
+              >
+                {k}
+              </button>
+            </span>
+          ))}
           <Info size={14} className="ml-2 text-stone-600" />
         </div>
       </footer>
