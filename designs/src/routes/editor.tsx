@@ -928,36 +928,39 @@ function DraggableItem({
   );
 }
 
-function LibraryPreview({ kind }: { kind: AssetKind }) {
+function LibraryPreview({ kind, extra, large }: { kind: AssetKind; extra?: Partial<AssetBase>; large?: boolean }) {
+  const scale = large ? 2 : 1;
+  const color = extra?.color;
+  const tape = extra?.tapeColor;
   switch (kind) {
     case "sticky":
-      return <div className="size-10 rounded-[2px] analog-shadow-sm" style={{ background: "#fff59d" }} />;
+      return <div className="rounded-[2px] analog-shadow-sm" style={{ width: 40 * scale, height: 40 * scale, background: color || "#fff59d" }} />;
     case "polaroid":
       return (
-        <div className="bg-white p-1 analog-shadow-sm" style={{ width: 40, height: 48 }}>
+        <div className="bg-white p-1 analog-shadow-sm" style={{ width: 40 * scale, height: 48 * scale }}>
           <div className="size-full" style={{ background: "linear-gradient(135deg,#c9b99a,#8b7355)" }} />
         </div>
       );
     case "photostrip":
       return (
-        <div className="bg-stone-900 p-[2px] analog-shadow-sm" style={{ width: 22, height: 50 }}>
+        <div className="bg-stone-900 p-[2px] analog-shadow-sm" style={{ width: 22 * scale, height: 50 * scale }}>
           <div className="grid grid-rows-4 gap-[1px] h-full">{[0,1,2,3].map((i) => <div key={i} style={{ background: "#999" }} />)}</div>
         </div>
       );
     case "photo":
       return (
-        <div className="bg-white p-[2px] analog-shadow-sm" style={{ width: 46, height: 34 }}>
+        <div className="bg-white p-[2px] analog-shadow-sm" style={{ width: 46 * scale, height: 34 * scale }}>
           <div className="size-full" style={{ background: "linear-gradient(135deg,#a8957a,#5c4a36)" }} />
         </div>
       );
     case "paper":
-      return <div className="analog-shadow-sm" style={{ width: 46, height: 36, background: "#fbf7ec", clipPath: "polygon(0 8%, 6% 0, 96% 4%, 100% 8%, 96% 96%, 90% 100%, 8% 96%, 0% 92%)" }} />;
+      return <div className="analog-shadow-sm" style={{ width: 46 * scale, height: 36 * scale, background: color || "#fbf7ec", clipPath: "polygon(0 8%, 6% 0, 96% 4%, 100% 8%, 96% 96%, 90% 100%, 8% 96%, 0% 92%)" }} />;
     case "washi":
-      return <div style={{ width: 50, height: 12, background: "rgba(180,160,210,0.85)", backgroundImage: "repeating-linear-gradient(45deg, rgba(255,255,255,0.25) 0 4px, transparent 4px 8px)", transform: "rotate(-10deg)" }} />;
+      return <div style={{ width: 50 * scale, height: 12 * scale, background: tape || "rgba(180,160,210,0.85)", backgroundImage: "repeating-linear-gradient(45deg, rgba(255,255,255,0.25) 0 4px, transparent 4px 8px)", transform: "rotate(-10deg)" }} />;
     case "pin":
-      return <div className="size-5 rounded-full" style={{ background: "radial-gradient(circle at 30% 30%, #ff8a8a, #c0212a 60%, #6e0a10)", boxShadow: "0 2px 4px rgba(0,0,0,0.4)" }} />;
+      return <div className="rounded-full" style={{ width: 20 * scale, height: 20 * scale, background: "radial-gradient(circle at 30% 30%, #ff8a8a, #c0212a 60%, #6e0a10)", boxShadow: "0 2px 4px rgba(0,0,0,0.4)" }} />;
     case "shape":
-      return <div className="size-8 rounded-sm" style={{ background: "#c9b99a" }} />;
+      return <div className="rounded-sm" style={{ width: 32 * scale, height: 32 * scale, background: "#c9b99a" }} />;
   }
 }
 
