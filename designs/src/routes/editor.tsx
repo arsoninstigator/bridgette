@@ -517,28 +517,127 @@ function PanelHeader({ title, onClose, right }: { title: string; onClose: () => 
   );
 }
 
-function SelectPanel({ board, onPick }: { board: Board; onPick: (k: BoardKind) => void }) {
-  const surfaces: { kind: BoardKind; label: string; className: string }[] = [
-    { kind: "cork", label: "cork", className: "bg-board-cork" },
-    { kind: "mat", label: "cutting mat", className: "bg-board-mat" },
-    { kind: "wall", label: "wall", className: "bg-board-wall" },
-    { kind: "metal", label: "metal", className: "bg-board-metal" },
+function SurfacePanel({ board, onPick }: { board: Board; onPick: (k: BoardKind) => void }) {
+  // sets of surfaces. only a handful are wired (cork/mat/wall/metal). others are stubs.
+  type Surf = { id: string; label: string; kind?: BoardKind; className?: string };
+  const SURFACE_SETS: { id: string; label: string; items: Surf[] }[] = [
+    {
+      id: "boards",
+      label: "boards",
+      items: [
+        { id: "cork-default", label: "corkboard", kind: "cork", className: "bg-board-cork" },
+        { id: "cork-bordered", label: "cork (bordered)", kind: "cork", className: "bg-board-cork" },
+        { id: "pinboard", label: "pinboard" },
+        { id: "pegboard", label: "pegboard (ikea)" },
+        { id: "blackboard", label: "blackboard" },
+        { id: "whiteboard", label: "whiteboard" },
+        { id: "metal", label: "metallic", kind: "metal", className: "bg-board-metal" },
+      ],
+    },
+    {
+      id: "wood",
+      label: "wooden",
+      items: [
+        { id: "oak", label: "oak" },
+        { id: "walnut", label: "walnut" },
+        { id: "pine", label: "pine" },
+        { id: "birch", label: "birch" },
+      ],
+    },
+    {
+      id: "paper",
+      label: "paper",
+      items: [
+        { id: "grid", label: "grid" },
+        { id: "dotted", label: "dotted" },
+        { id: "plain", label: "plain" },
+        { id: "lined", label: "lined" },
+      ],
+    },
+    {
+      id: "mats",
+      label: "mats",
+      items: [
+        { id: "mat", label: "cutting mat", kind: "mat", className: "bg-board-mat" },
+      ],
+    },
+    {
+      id: "walls",
+      label: "walls",
+      items: [
+        { id: "wall", label: "wall", kind: "wall", className: "bg-board-wall" },
+        { id: "wallpaper", label: "wallpaper" },
+      ],
+    },
+    {
+      id: "textile",
+      label: "textile",
+      items: [
+        { id: "linen", label: "linen" },
+        { id: "felt", label: "felt" },
+        { id: "denim", label: "denim" },
+        { id: "burlap", label: "burlap" },
+      ],
+    },
+    {
+      id: "tiles",
+      label: "tiles",
+      items: [
+        { id: "ceramic", label: "ceramic" },
+        { id: "subway", label: "subway" },
+        { id: "mosaic", label: "mosaic" },
+      ],
+    },
+    {
+      id: "other",
+      label: "other",
+      items: [
+        { id: "upload", label: "upload image" },
+      ],
+    },
   ];
+  const [openSet, setOpenSet] = useState<string | null>("boards");
   return (
-    <div className="space-y-2">
-      <p className="font-mono text-[10px] lowercase text-muted-foreground mb-2">surface for this frame</p>
-      <div className="grid grid-cols-2 gap-2">
-        {surfaces.map((s) => (
-          <button
-            key={s.kind}
-            onClick={() => onPick(s.kind)}
-            className={`rounded-md overflow-hidden border ${board.kind === s.kind ? "border-stone-900 ring-2 ring-stone-900/30" : "border-border"}`}
-          >
-            <div className={`h-20 ${s.className}`} />
-            <div className="bg-card px-2 py-1 font-mono text-[10px] lowercase text-left">{s.label}</div>
-          </button>
-        ))}
-      </div>
+    <div className="space-y-3">
+      <p className="font-mono text-[10px] lowercase text-muted-foreground">surface for this frame</p>
+      {SURFACE_SETS.map((s) => {
+        const open = openSet === s.id;
+        return (
+          <div key={s.id} className="rounded-md border border-border bg-card/40">
+            <button
+              onClick={() => setOpenSet(open ? null : s.id)}
+              className="w-full flex items-center justify-between px-3 py-2 font-mono text-[11px] lowercase hover:bg-black/5"
+            >
+              <span>{s.label}</span>
+              <ChevronDown size={12} className={`transition-transform ${open ? "" : "-rotate-90"}`} />
+            </button>
+            {open && (
+              <div className="p-2 grid grid-cols-2 gap-2">
+                {s.items.map((it) => {
+                  const wired = !!it.kind;
+                  const isActive = it.kind && board.kind === it.kind;
+                  return (
+                    <button
+                      key={it.id}
+                      disabled={!wired}
+                      onClick={() => it.kind && onPick(it.kind)}
+                      className={`rounded-md overflow-hidden border ${
+                        isActive ? "border-stone-900 ring-2 ring-stone-900/30" : "border-border"
+                      } ${!wired ? "opacity-60 cursor-not-allowed" : ""}`}
+                    >
+                      <div className={`h-14 ${it.className ?? "bg-stone-200/60"}`} />
+                      <div className="bg-card px-2 py-1 font-mono text-[10px] lowercase text-left flex items-center justify-between">
+                        <span>{it.label}</span>
+                        {!wired && <span className="text-[8px] text-muted-foreground">soon</span>}
+                      </div>
+                    </button>
+                  );
+                })}
+              </div>
+            )}
+          </div>
+        );
+      })}
     </div>
   );
 }
