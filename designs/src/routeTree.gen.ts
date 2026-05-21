@@ -10,6 +10,7 @@
 
 import { Route as rootRouteImport } from './routes/__root'
 import { Route as PositioningRouteImport } from './routes/positioning'
+import { Route as FeaturesRouteImport } from './routes/features'
 import { Route as EditorRouteImport } from './routes/editor'
 import { Route as DashboardRouteImport } from './routes/dashboard'
 import { Route as AboutRouteImport } from './routes/about'
@@ -19,6 +20,11 @@ import { Route as SKeyRouteImport } from './routes/s.$key'
 const PositioningRoute = PositioningRouteImport.update({
   id: '/positioning',
   path: '/positioning',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const FeaturesRoute = FeaturesRouteImport.update({
+  id: '/features',
+  path: '/features',
   getParentRoute: () => rootRouteImport,
 } as any)
 const EditorRoute = EditorRouteImport.update({
@@ -52,6 +58,7 @@ export interface FileRoutesByFullPath {
   '/about': typeof AboutRoute
   '/dashboard': typeof DashboardRoute
   '/editor': typeof EditorRoute
+  '/features': typeof FeaturesRoute
   '/positioning': typeof PositioningRoute
   '/s/$key': typeof SKeyRoute
 }
@@ -60,6 +67,7 @@ export interface FileRoutesByTo {
   '/about': typeof AboutRoute
   '/dashboard': typeof DashboardRoute
   '/editor': typeof EditorRoute
+  '/features': typeof FeaturesRoute
   '/positioning': typeof PositioningRoute
   '/s/$key': typeof SKeyRoute
 }
@@ -69,6 +77,7 @@ export interface FileRoutesById {
   '/about': typeof AboutRoute
   '/dashboard': typeof DashboardRoute
   '/editor': typeof EditorRoute
+  '/features': typeof FeaturesRoute
   '/positioning': typeof PositioningRoute
   '/s/$key': typeof SKeyRoute
 }
@@ -79,16 +88,25 @@ export interface FileRouteTypes {
     | '/about'
     | '/dashboard'
     | '/editor'
+    | '/features'
     | '/positioning'
     | '/s/$key'
   fileRoutesByTo: FileRoutesByTo
-  to: '/' | '/about' | '/dashboard' | '/editor' | '/positioning' | '/s/$key'
+  to:
+    | '/'
+    | '/about'
+    | '/dashboard'
+    | '/editor'
+    | '/features'
+    | '/positioning'
+    | '/s/$key'
   id:
     | '__root__'
     | '/'
     | '/about'
     | '/dashboard'
     | '/editor'
+    | '/features'
     | '/positioning'
     | '/s/$key'
   fileRoutesById: FileRoutesById
@@ -98,6 +116,7 @@ export interface RootRouteChildren {
   AboutRoute: typeof AboutRoute
   DashboardRoute: typeof DashboardRoute
   EditorRoute: typeof EditorRoute
+  FeaturesRoute: typeof FeaturesRoute
   PositioningRoute: typeof PositioningRoute
   SKeyRoute: typeof SKeyRoute
 }
@@ -109,6 +128,13 @@ declare module '@tanstack/react-router' {
       path: '/positioning'
       fullPath: '/positioning'
       preLoaderRoute: typeof PositioningRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/features': {
+      id: '/features'
+      path: '/features'
+      fullPath: '/features'
+      preLoaderRoute: typeof FeaturesRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/editor': {
@@ -154,6 +180,7 @@ const rootRouteChildren: RootRouteChildren = {
   AboutRoute: AboutRoute,
   DashboardRoute: DashboardRoute,
   EditorRoute: EditorRoute,
+  FeaturesRoute: FeaturesRoute,
   PositioningRoute: PositioningRoute,
   SKeyRoute: SKeyRoute,
 }
