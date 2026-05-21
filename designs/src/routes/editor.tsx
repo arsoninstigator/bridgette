@@ -850,7 +850,7 @@ function LibraryPanel({
             coming soon
           </div>
         ) : (
-          <div className="grid grid-cols-3 gap-2">
+          <div className="grid grid-cols-2 gap-2">
             {set.items.map((it) => (
               <button
                 key={it.id}
@@ -933,7 +933,7 @@ function SetGrid({
   onView: (s: LibrarySet) => void;
 }) {
   return (
-    <div className="grid grid-cols-3 gap-2">
+    <div className="grid grid-cols-2 gap-2">
       {sets.map((set) => (
         <button
           key={set.id}
