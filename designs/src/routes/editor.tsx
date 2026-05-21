@@ -362,30 +362,53 @@ function Editor({ board, setBoard }: { board: Board; setBoard: (b: Board) => voi
           </aside>
         )}
 
-        {/* Canvas area — full-bleed corkboard always large in background */}
-        <main className="flex-1 relative overflow-hidden">
-          <div className="absolute inset-0">
-            <BoardCanvas
-              kind={board.kind}
-              assets={board.assets}
-              strings={board.strings}
-              interactive={!previewMode}
-              selectedId={selectedId}
-              stringMode={stringMode}
-              stringFromId={stringFromId}
-              onSelect={(id) => {
-                setSelectedId(id);
-                if (id) setShowSettings(true);
-              }}
-              onMove={(id, x, y) => updateAsset(id, { x, y }, false)}
-              onAssetClick={handleAssetClickStringMode}
-              onDropAsset={(kind, x, y, extra) => addAsset(kind, x, y, extra)}
-            />
-          </div>
-          {/* floating frame label */}
-          <div className="absolute top-4 left-5 pointer-events-none">
-            <div className="inline-block bg-pink-50/85 backdrop-blur-sm border border-stone-700/20 rounded px-3 py-1 font-display text-sm lowercase shadow-sm">
-              frame one (index)
+        {/* Canvas area — contains a centered, resizable frame */}
+        <main className="flex-1 relative overflow-auto bg-editor-canvas">
+          <div className="min-w-full min-h-full flex items-center justify-center p-10">
+            <div
+              className="relative flex shadow-2xl ring-1 ring-stone-900/10 rounded-sm overflow-hidden"
+              style={{ width: frameSize.w, height: frameSize.h }}
+            >
+              <BoardCanvas
+                kind={board.kind}
+                assets={board.assets}
+                strings={board.strings}
+                interactive={!previewMode}
+                selectedId={selectedId}
+                stringMode={stringMode}
+                stringFromId={stringFromId}
+                onSelect={(id) => {
+                  setSelectedId(id);
+                  if (id) setShowSettings(true);
+                }}
+                onMove={(id, x, y) => updateAsset(id, { x, y }, false)}
+                onAssetClick={handleAssetClickStringMode}
+                onDropAsset={(kind, x, y, extra) => addAsset(kind, x, y, extra)}
+              />
+              {/* floating frame label */}
+              <div className="absolute top-3 left-3 pointer-events-none">
+                <div className="inline-block bg-pink-50/85 backdrop-blur-sm border border-stone-700/20 rounded px-2.5 py-1 font-display text-xs lowercase shadow-sm">
+                  frame one (index) · {frameSize.w}×{frameSize.h}
+                </div>
+              </div>
+              {!previewMode && (
+                <>
+                  {/* resize handles — canva style */}
+                  <div
+                    onPointerDown={(e) => startFrameResize(e, "r")}
+                    className="absolute top-0 right-0 h-full w-1.5 cursor-ew-resize hover:bg-rose-500/40"
+                  />
+                  <div
+                    onPointerDown={(e) => startFrameResize(e, "b")}
+                    className="absolute bottom-0 left-0 w-full h-1.5 cursor-ns-resize hover:bg-rose-500/40"
+                  />
+                  <div
+                    onPointerDown={(e) => startFrameResize(e, "br")}
+                    className="absolute bottom-0 right-0 size-4 cursor-nwse-resize bg-stone-900/50 hover:bg-rose-600"
+                    title="drag to resize frame"
+                  />
+                </>
+              )}
             </div>
           </div>
           {stringMode && (
@@ -394,8 +417,8 @@ function Editor({ board, setBoard }: { board: Board; setBoard: (b: Board) => voi
             </div>
           )}
           {!previewMode && (
-            <div className="absolute bottom-5 left-1/2 -translate-x-1/2 w-[min(680px,80%)]">
-              <button className="w-full flex items-center justify-center gap-2 rounded-md bg-pink-100/80 hover:bg-pink-100 backdrop-blur-sm border border-stone-700/30 py-2.5 font-mono text-xs lowercase text-stone-700 shadow-sm">
+            <div className="sticky bottom-5 left-0 w-full flex justify-center pointer-events-none">
+              <button className="pointer-events-auto flex items-center justify-center gap-2 rounded-md bg-pink-100/90 hover:bg-pink-100 backdrop-blur-sm border border-stone-700/30 px-5 py-2.5 font-mono text-xs lowercase text-stone-700 shadow-sm">
                 add pages or sections
                 <ChevronDown size={14} />
               </button>
