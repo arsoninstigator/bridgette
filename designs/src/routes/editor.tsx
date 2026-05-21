@@ -1121,19 +1121,61 @@ function StylesPanel() {
   );
 }
 
-function BlocksPanel() {
-  const blocks = ["hero", "two-up", "gallery", "list", "quote", "footer"];
+function SubheadingGroup({
+  title,
+  defaultOpen = true,
+  children,
+}: {
+  title: string;
+  defaultOpen?: boolean;
+  children: React.ReactNode;
+}) {
+  const [open, setOpen] = useState(defaultOpen);
   return (
-    <div className="space-y-2">
-      <p className="font-mono text-[10px] lowercase text-muted-foreground mb-2">prebuilt layout blocks</p>
-      <div className="grid grid-cols-2 gap-2">
-        {blocks.map((b) => (
-          <div key={b} className="rounded-md border border-border bg-card/60 px-2 py-4 flex flex-col items-center gap-2">
-            <div className="h-10 w-full rounded-sm bg-stone-200/60 border border-border" />
-            <span className="font-mono text-[10px] lowercase text-muted-foreground">{b}</span>
-          </div>
+    <div className="rounded-md border border-border bg-card/40">
+      <button
+        onClick={() => setOpen((v) => !v)}
+        className="w-full flex items-center justify-between px-3 py-2 font-mono text-[11px] lowercase hover:bg-black/5"
+      >
+        <span>{title}</span>
+        <ChevronDown size={12} className={`transition-transform ${open ? "" : "-rotate-90"}`} />
+      </button>
+      {open && <div className="p-2 grid grid-cols-2 gap-2">{children}</div>}
+    </div>
+  );
+}
+
+function StubBlockTile({ label }: { label: string }) {
+  return (
+    <div
+      className="rounded-md border border-dashed border-border bg-card/60 px-2 py-3 flex flex-col items-center gap-2 opacity-90"
+      title="coming soon"
+    >
+      <div className="h-8 w-full rounded-sm bg-stone-200/60 border border-border" />
+      <span className="font-mono text-[10px] lowercase text-muted-foreground text-center leading-tight">{label}</span>
+    </div>
+  );
+}
+
+function BlocksPanel() {
+  return (
+    <div className="space-y-3">
+      <p className="font-mono text-[10px] lowercase text-muted-foreground">prebuilt building pieces</p>
+      <SubheadingGroup title="building blocks">
+        {["text", "heading", "image", "button", "button list", "icon", "icon grid", "input field"].map((b) => (
+          <StubBlockTile key={b} label={b} />
         ))}
-      </div>
+      </SubheadingGroup>
+      <SubheadingGroup title="layouts" defaultOpen={false}>
+        {["hero", "two-up", "gallery", "list", "quote", "footer", "bento grid"].map((b) => (
+          <StubBlockTile key={b} label={b} />
+        ))}
+      </SubheadingGroup>
+      <SubheadingGroup title="data & ui" defaultOpen={false}>
+        {["table", "chips", "tags", "accordion", "tabs"].map((b) => (
+          <StubBlockTile key={b} label={b} />
+        ))}
+      </SubheadingGroup>
     </div>
   );
 }
@@ -1150,7 +1192,7 @@ function AssetsPanel() {
 }
 
 function ShapePanel({ onAdd }: { onAdd: (kind: AssetKind) => void }) {
-  const shapes: { variant: NonNullable<AssetBase["shape"]>; preview: React.ReactNode }[] = [
+  const basic: { variant: NonNullable<AssetBase["shape"]>; preview: React.ReactNode }[] = [
     { variant: "rect", preview: <div className="size-10" style={{ background: "#8b7355" }} /> },
     { variant: "circle", preview: <div className="size-10 rounded-full" style={{ background: "#8b7355" }} /> },
     { variant: "triangle", preview: <svg width={40} height={40} viewBox="0 0 100 100"><polygon points="50,5 95,95 5,95" fill="#8b7355" /></svg> },
@@ -1158,10 +1200,10 @@ function ShapePanel({ onAdd }: { onAdd: (kind: AssetKind) => void }) {
     { variant: "star", preview: <svg width={40} height={40} viewBox="0 0 100 100"><polygon points="50,5 61,38 96,38 67,59 78,95 50,73 22,95 33,59 4,38 39,38" fill="#8b7355" /></svg> },
   ];
   return (
-    <div>
-      <p className="font-mono text-[10px] lowercase text-muted-foreground mb-2">drag a shape onto the frame</p>
-      <div className="grid grid-cols-2 gap-2">
-        {shapes.map((s) => (
+    <div className="space-y-3">
+      <p className="font-mono text-[10px] lowercase text-muted-foreground">drag or tap a shape onto the frame</p>
+      <SubheadingGroup title="basic">
+        {basic.map((s) => (
           <DraggableItem
             key={s.variant}
             kind="shape"
@@ -1172,7 +1214,17 @@ function ShapePanel({ onAdd }: { onAdd: (kind: AssetKind) => void }) {
             {s.preview}
           </DraggableItem>
         ))}
-      </div>
+      </SubheadingGroup>
+      <SubheadingGroup title="arrows & lines" defaultOpen={false}>
+        {["arrow", "line", "double arrow", "bracket"].map((l) => (
+          <StubBlockTile key={l} label={l} />
+        ))}
+      </SubheadingGroup>
+      <SubheadingGroup title="callouts" defaultOpen={false}>
+        {["speech bubble", "thought bubble", "ribbon", "burst"].map((l) => (
+          <StubBlockTile key={l} label={l} />
+        ))}
+      </SubheadingGroup>
     </div>
   );
 }
