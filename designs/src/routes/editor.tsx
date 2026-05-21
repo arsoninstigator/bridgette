@@ -302,9 +302,9 @@ function Editor({ board, setBoard }: { board: Board; setBoard: (b: Board) => voi
 
         {/* Slide-out panel */}
         {!previewMode && activePanel && (
-          <aside className="w-[360px] shrink-0 bg-card/95 backdrop-blur-sm border-r border-border/60 overflow-y-auto z-10">
+          <aside className="w-[300px] shrink-0 bg-card/95 backdrop-blur-sm border-r border-border/60 overflow-y-auto z-10">
             <PanelHeader
-              title={activePanel}
+              title={activePanel === "select" ? "surface" : activePanel}
               onClose={() => setActivePanel(null)}
               right={activePanel === "library" ? (
                 <div className="flex items-center gap-1">
@@ -327,7 +327,7 @@ function Editor({ board, setBoard }: { board: Board; setBoard: (b: Board) => voi
             />
             <div className="p-3">
               {activePanel === "select" && (
-                <SelectPanel board={board} onPick={(kind) => update({ kind })} />
+                <SurfacePanel board={board} onPick={(kind) => update({ kind })} />
               )}
               {activePanel === "layers" && (
                 <LayersPanel
