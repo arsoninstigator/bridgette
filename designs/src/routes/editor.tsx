@@ -98,6 +98,30 @@ function Editor({ board, setBoard }: { board: Board; setBoard: (b: Board) => voi
   const [favorites, setFavorites] = useState<string[]>(() => readFavs());
   const [recent, setRecent] = useState<string[]>(() => readRecent());
   const [rightPanel, setRightPanel] = useState<RightPanelKey | null>(null);
+  const [frameSize, setFrameSize] = useState({ w: 1000, h: 640 });
+
+  function startFrameResize(e: React.PointerEvent, dir: "r" | "b" | "br") {
+    e.preventDefault();
+    e.stopPropagation();
+    const startX = e.clientX;
+    const startY = e.clientY;
+    const sw = frameSize.w;
+    const sh = frameSize.h;
+    function onMove(ev: PointerEvent) {
+      const dx = ev.clientX - startX;
+      const dy = ev.clientY - startY;
+      setFrameSize({
+        w: dir === "b" ? sw : Math.max(360, sw + dx),
+        h: dir === "r" ? sh : Math.max(280, sh + dy),
+      });
+    }
+    function onUp() {
+      window.removeEventListener("pointermove", onMove);
+      window.removeEventListener("pointerup", onUp);
+    }
+    window.addEventListener("pointermove", onMove);
+    window.addEventListener("pointerup", onUp);
+  }
 
   function toggleFav(setId: string) {
     setFavorites((prev) => {
