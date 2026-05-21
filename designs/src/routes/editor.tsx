@@ -98,6 +98,30 @@ function Editor({ board, setBoard }: { board: Board; setBoard: (b: Board) => voi
   const [favorites, setFavorites] = useState<string[]>(() => readFavs());
   const [recent, setRecent] = useState<string[]>(() => readRecent());
   const [rightPanel, setRightPanel] = useState<RightPanelKey | null>(null);
+  const [frameSize, setFrameSize] = useState({ w: 1000, h: 640 });
+
+  function startFrameResize(e: React.PointerEvent, dir: "r" | "b" | "br") {
+    e.preventDefault();
+    e.stopPropagation();
+    const startX = e.clientX;
+    const startY = e.clientY;
+    const sw = frameSize.w;
+    const sh = frameSize.h;
+    function onMove(ev: PointerEvent) {
+      const dx = ev.clientX - startX;
+      const dy = ev.clientY - startY;
+      setFrameSize({
+        w: dir === "b" ? sw : Math.max(360, sw + dx),
+        h: dir === "r" ? sh : Math.max(280, sh + dy),
+      });
+    }
+    function onUp() {
+      window.removeEventListener("pointermove", onMove);
+      window.removeEventListener("pointerup", onUp);
+    }
+    window.addEventListener("pointermove", onMove);
+    window.addEventListener("pointerup", onUp);
+  }
 
   function toggleFav(setId: string) {
     setFavorites((prev) => {
@@ -278,9 +302,9 @@ function Editor({ board, setBoard }: { board: Board; setBoard: (b: Board) => voi
 
         {/* Slide-out panel */}
         {!previewMode && activePanel && (
-          <aside className="w-[360px] shrink-0 bg-card/95 backdrop-blur-sm border-r border-border/60 overflow-y-auto z-10">
+          <aside className="w-[300px] shrink-0 bg-card/95 backdrop-blur-sm border-r border-border/60 overflow-y-auto z-10">
             <PanelHeader
-              title={activePanel}
+              title={activePanel === "select" ? "surface" : activePanel}
               onClose={() => setActivePanel(null)}
               right={activePanel === "library" ? (
                 <div className="flex items-center gap-1">
@@ -303,7 +327,7 @@ function Editor({ board, setBoard }: { board: Board; setBoard: (b: Board) => voi
             />
             <div className="p-3">
               {activePanel === "select" && (
-                <SelectPanel board={board} onPick={(kind) => update({ kind })} />
+                <SurfacePanel board={board} onPick={(kind) => update({ kind })} />
               )}
               {activePanel === "layers" && (
                 <LayersPanel
@@ -338,30 +362,53 @@ function Editor({ board, setBoard }: { board: Board; setBoard: (b: Board) => voi
           </aside>
         )}
 
-        {/* Canvas area — full-bleed corkboard always large in background */}
-        <main className="flex-1 relative overflow-hidden">
-          <div className="absolute inset-0">
-            <BoardCanvas
-              kind={board.kind}
-              assets={board.assets}
-              strings={board.strings}
-              interactive={!previewMode}
-              selectedId={selectedId}
-              stringMode={stringMode}
-              stringFromId={stringFromId}
-              onSelect={(id) => {
-                setSelectedId(id);
-                if (id) setShowSettings(true);
-              }}
-              onMove={(id, x, y) => updateAsset(id, { x, y }, false)}
-              onAssetClick={handleAssetClickStringMode}
-              onDropAsset={(kind, x, y, extra) => addAsset(kind, x, y, extra)}
-            />
-          </div>
-          {/* floating frame label */}
-          <div className="absolute top-4 left-5 pointer-events-none">
-            <div className="inline-block bg-pink-50/85 backdrop-blur-sm border border-stone-700/20 rounded px-3 py-1 font-display text-sm lowercase shadow-sm">
-              frame one (index)
+        {/* Canvas area — contains a centered, resizable frame */}
+        <main className="flex-1 relative overflow-auto bg-editor-canvas">
+          <div className="min-w-full min-h-full flex items-center justify-center p-10">
+            <div
+              className="relative flex shadow-2xl ring-1 ring-stone-900/10 rounded-sm overflow-hidden"
+              style={{ width: frameSize.w, height: frameSize.h }}
+            >
+              <BoardCanvas
+                kind={board.kind}
+                assets={board.assets}
+                strings={board.strings}
+                interactive={!previewMode}
+                selectedId={selectedId}
+                stringMode={stringMode}
+                stringFromId={stringFromId}
+                onSelect={(id) => {
+                  setSelectedId(id);
+                  if (id) setShowSettings(true);
+                }}
+                onMove={(id, x, y) => updateAsset(id, { x, y }, false)}
+                onAssetClick={handleAssetClickStringMode}
+                onDropAsset={(kind, x, y, extra) => addAsset(kind, x, y, extra)}
+              />
+              {/* floating frame label */}
+              <div className="absolute top-3 left-3 pointer-events-none">
+                <div className="inline-block bg-pink-50/85 backdrop-blur-sm border border-stone-700/20 rounded px-2.5 py-1 font-display text-xs lowercase shadow-sm">
+                  frame one (index) · {frameSize.w}×{frameSize.h}
+                </div>
+              </div>
+              {!previewMode && (
+                <>
+                  {/* resize handles — canva style */}
+                  <div
+                    onPointerDown={(e) => startFrameResize(e, "r")}
+                    className="absolute top-0 right-0 h-full w-1.5 cursor-ew-resize hover:bg-rose-500/40"
+                  />
+                  <div
+                    onPointerDown={(e) => startFrameResize(e, "b")}
+                    className="absolute bottom-0 left-0 w-full h-1.5 cursor-ns-resize hover:bg-rose-500/40"
+                  />
+                  <div
+                    onPointerDown={(e) => startFrameResize(e, "br")}
+                    className="absolute bottom-0 right-0 size-4 cursor-nwse-resize bg-stone-900/50 hover:bg-rose-600"
+                    title="drag to resize frame"
+                  />
+                </>
+              )}
             </div>
           </div>
           {stringMode && (
@@ -370,8 +417,8 @@ function Editor({ board, setBoard }: { board: Board; setBoard: (b: Board) => voi
             </div>
           )}
           {!previewMode && (
-            <div className="absolute bottom-5 left-1/2 -translate-x-1/2 w-[min(680px,80%)]">
-              <button className="w-full flex items-center justify-center gap-2 rounded-md bg-pink-100/80 hover:bg-pink-100 backdrop-blur-sm border border-stone-700/30 py-2.5 font-mono text-xs lowercase text-stone-700 shadow-sm">
+            <div className="sticky bottom-5 left-0 w-full flex justify-center pointer-events-none">
+              <button className="pointer-events-auto flex items-center justify-center gap-2 rounded-md bg-pink-100/90 hover:bg-pink-100 backdrop-blur-sm border border-stone-700/30 px-5 py-2.5 font-mono text-xs lowercase text-stone-700 shadow-sm">
                 add pages or sections
                 <ChevronDown size={14} />
               </button>
@@ -470,28 +517,127 @@ function PanelHeader({ title, onClose, right }: { title: string; onClose: () => 
   );
 }
 
-function SelectPanel({ board, onPick }: { board: Board; onPick: (k: BoardKind) => void }) {
-  const surfaces: { kind: BoardKind; label: string; className: string }[] = [
-    { kind: "cork", label: "cork", className: "bg-board-cork" },
-    { kind: "mat", label: "cutting mat", className: "bg-board-mat" },
-    { kind: "wall", label: "wall", className: "bg-board-wall" },
-    { kind: "metal", label: "metal", className: "bg-board-metal" },
+function SurfacePanel({ board, onPick }: { board: Board; onPick: (k: BoardKind) => void }) {
+  // sets of surfaces. only a handful are wired (cork/mat/wall/metal). others are stubs.
+  type Surf = { id: string; label: string; kind?: BoardKind; className?: string };
+  const SURFACE_SETS: { id: string; label: string; items: Surf[] }[] = [
+    {
+      id: "boards",
+      label: "boards",
+      items: [
+        { id: "cork-default", label: "corkboard", kind: "cork", className: "bg-board-cork" },
+        { id: "cork-bordered", label: "cork (bordered)", kind: "cork", className: "bg-board-cork" },
+        { id: "pinboard", label: "pinboard" },
+        { id: "pegboard", label: "pegboard (ikea)" },
+        { id: "blackboard", label: "blackboard" },
+        { id: "whiteboard", label: "whiteboard" },
+        { id: "metal", label: "metallic", kind: "metal", className: "bg-board-metal" },
+      ],
+    },
+    {
+      id: "wood",
+      label: "wooden",
+      items: [
+        { id: "oak", label: "oak" },
+        { id: "walnut", label: "walnut" },
+        { id: "pine", label: "pine" },
+        { id: "birch", label: "birch" },
+      ],
+    },
+    {
+      id: "paper",
+      label: "paper",
+      items: [
+        { id: "grid", label: "grid" },
+        { id: "dotted", label: "dotted" },
+        { id: "plain", label: "plain" },
+        { id: "lined", label: "lined" },
+      ],
+    },
+    {
+      id: "mats",
+      label: "mats",
+      items: [
+        { id: "mat", label: "cutting mat", kind: "mat", className: "bg-board-mat" },
+      ],
+    },
+    {
+      id: "walls",
+      label: "walls",
+      items: [
+        { id: "wall", label: "wall", kind: "wall", className: "bg-board-wall" },
+        { id: "wallpaper", label: "wallpaper" },
+      ],
+    },
+    {
+      id: "textile",
+      label: "textile",
+      items: [
+        { id: "linen", label: "linen" },
+        { id: "felt", label: "felt" },
+        { id: "denim", label: "denim" },
+        { id: "burlap", label: "burlap" },
+      ],
+    },
+    {
+      id: "tiles",
+      label: "tiles",
+      items: [
+        { id: "ceramic", label: "ceramic" },
+        { id: "subway", label: "subway" },
+        { id: "mosaic", label: "mosaic" },
+      ],
+    },
+    {
+      id: "other",
+      label: "other",
+      items: [
+        { id: "upload", label: "upload image" },
+      ],
+    },
   ];
+  const [openSet, setOpenSet] = useState<string | null>("boards");
   return (
-    <div className="space-y-2">
-      <p className="font-mono text-[10px] lowercase text-muted-foreground mb-2">surface for this frame</p>
-      <div className="grid grid-cols-2 gap-2">
-        {surfaces.map((s) => (
-          <button
-            key={s.kind}
-            onClick={() => onPick(s.kind)}
-            className={`rounded-md overflow-hidden border ${board.kind === s.kind ? "border-stone-900 ring-2 ring-stone-900/30" : "border-border"}`}
-          >
-            <div className={`h-20 ${s.className}`} />
-            <div className="bg-card px-2 py-1 font-mono text-[10px] lowercase text-left">{s.label}</div>
-          </button>
-        ))}
-      </div>
+    <div className="space-y-3">
+      <p className="font-mono text-[10px] lowercase text-muted-foreground">surface for this frame</p>
+      {SURFACE_SETS.map((s) => {
+        const open = openSet === s.id;
+        return (
+          <div key={s.id} className="rounded-md border border-border bg-card/40">
+            <button
+              onClick={() => setOpenSet(open ? null : s.id)}
+              className="w-full flex items-center justify-between px-3 py-2 font-mono text-[11px] lowercase hover:bg-black/5"
+            >
+              <span>{s.label}</span>
+              <ChevronDown size={12} className={`transition-transform ${open ? "" : "-rotate-90"}`} />
+            </button>
+            {open && (
+              <div className="p-2 grid grid-cols-2 gap-2">
+                {s.items.map((it) => {
+                  const wired = !!it.kind;
+                  const isActive = it.kind && board.kind === it.kind;
+                  return (
+                    <button
+                      key={it.id}
+                      disabled={!wired}
+                      onClick={() => it.kind && onPick(it.kind)}
+                      className={`rounded-md overflow-hidden border ${
+                        isActive ? "border-stone-900 ring-2 ring-stone-900/30" : "border-border"
+                      } ${!wired ? "opacity-60 cursor-not-allowed" : ""}`}
+                    >
+                      <div className={`h-14 ${it.className ?? "bg-stone-200/60"}`} />
+                      <div className="bg-card px-2 py-1 font-mono text-[10px] lowercase text-left flex items-center justify-between">
+                        <span>{it.label}</span>
+                        {!wired && <span className="text-[8px] text-muted-foreground">soon</span>}
+                      </div>
+                    </button>
+                  );
+                })}
+              </div>
+            )}
+          </div>
+        );
+      })}
     </div>
   );
 }
@@ -704,7 +850,7 @@ function LibraryPanel({
             coming soon
           </div>
         ) : (
-          <div className="grid grid-cols-3 gap-2">
+          <div className="grid grid-cols-2 gap-2">
             {set.items.map((it) => (
               <button
                 key={it.id}
@@ -787,7 +933,7 @@ function SetGrid({
   onView: (s: LibrarySet) => void;
 }) {
   return (
-    <div className="grid grid-cols-3 gap-2">
+    <div className="grid grid-cols-2 gap-2">
       {sets.map((set) => (
         <button
           key={set.id}
@@ -975,19 +1121,61 @@ function StylesPanel() {
   );
 }
 
-function BlocksPanel() {
-  const blocks = ["hero", "two-up", "gallery", "list", "quote", "footer"];
+function SubheadingGroup({
+  title,
+  defaultOpen = true,
+  children,
+}: {
+  title: string;
+  defaultOpen?: boolean;
+  children: React.ReactNode;
+}) {
+  const [open, setOpen] = useState(defaultOpen);
   return (
-    <div className="space-y-2">
-      <p className="font-mono text-[10px] lowercase text-muted-foreground mb-2">prebuilt layout blocks</p>
-      <div className="grid grid-cols-2 gap-2">
-        {blocks.map((b) => (
-          <div key={b} className="rounded-md border border-border bg-card/60 px-2 py-4 flex flex-col items-center gap-2">
-            <div className="h-10 w-full rounded-sm bg-stone-200/60 border border-border" />
-            <span className="font-mono text-[10px] lowercase text-muted-foreground">{b}</span>
-          </div>
+    <div className="rounded-md border border-border bg-card/40">
+      <button
+        onClick={() => setOpen((v) => !v)}
+        className="w-full flex items-center justify-between px-3 py-2 font-mono text-[11px] lowercase hover:bg-black/5"
+      >
+        <span>{title}</span>
+        <ChevronDown size={12} className={`transition-transform ${open ? "" : "-rotate-90"}`} />
+      </button>
+      {open && <div className="p-2 grid grid-cols-2 gap-2">{children}</div>}
+    </div>
+  );
+}
+
+function StubBlockTile({ label }: { label: string }) {
+  return (
+    <div
+      className="rounded-md border border-dashed border-border bg-card/60 px-2 py-3 flex flex-col items-center gap-2 opacity-90"
+      title="coming soon"
+    >
+      <div className="h-8 w-full rounded-sm bg-stone-200/60 border border-border" />
+      <span className="font-mono text-[10px] lowercase text-muted-foreground text-center leading-tight">{label}</span>
+    </div>
+  );
+}
+
+function BlocksPanel() {
+  return (
+    <div className="space-y-3">
+      <p className="font-mono text-[10px] lowercase text-muted-foreground">prebuilt building pieces</p>
+      <SubheadingGroup title="building blocks">
+        {["text", "heading", "image", "button", "button list", "icon", "icon grid", "input field"].map((b) => (
+          <StubBlockTile key={b} label={b} />
         ))}
-      </div>
+      </SubheadingGroup>
+      <SubheadingGroup title="layouts" defaultOpen={false}>
+        {["hero", "two-up", "gallery", "list", "quote", "footer", "bento grid"].map((b) => (
+          <StubBlockTile key={b} label={b} />
+        ))}
+      </SubheadingGroup>
+      <SubheadingGroup title="data & ui" defaultOpen={false}>
+        {["table", "chips", "tags", "accordion", "tabs"].map((b) => (
+          <StubBlockTile key={b} label={b} />
+        ))}
+      </SubheadingGroup>
     </div>
   );
 }
@@ -1004,7 +1192,7 @@ function AssetsPanel() {
 }
 
 function ShapePanel({ onAdd }: { onAdd: (kind: AssetKind) => void }) {
-  const shapes: { variant: NonNullable<AssetBase["shape"]>; preview: React.ReactNode }[] = [
+  const basic: { variant: NonNullable<AssetBase["shape"]>; preview: React.ReactNode }[] = [
     { variant: "rect", preview: <div className="size-10" style={{ background: "#8b7355" }} /> },
     { variant: "circle", preview: <div className="size-10 rounded-full" style={{ background: "#8b7355" }} /> },
     { variant: "triangle", preview: <svg width={40} height={40} viewBox="0 0 100 100"><polygon points="50,5 95,95 5,95" fill="#8b7355" /></svg> },
@@ -1012,10 +1200,10 @@ function ShapePanel({ onAdd }: { onAdd: (kind: AssetKind) => void }) {
     { variant: "star", preview: <svg width={40} height={40} viewBox="0 0 100 100"><polygon points="50,5 61,38 96,38 67,59 78,95 50,73 22,95 33,59 4,38 39,38" fill="#8b7355" /></svg> },
   ];
   return (
-    <div>
-      <p className="font-mono text-[10px] lowercase text-muted-foreground mb-2">drag a shape onto the frame</p>
-      <div className="grid grid-cols-2 gap-2">
-        {shapes.map((s) => (
+    <div className="space-y-3">
+      <p className="font-mono text-[10px] lowercase text-muted-foreground">drag or tap a shape onto the frame</p>
+      <SubheadingGroup title="basic">
+        {basic.map((s) => (
           <DraggableItem
             key={s.variant}
             kind="shape"
@@ -1026,7 +1214,17 @@ function ShapePanel({ onAdd }: { onAdd: (kind: AssetKind) => void }) {
             {s.preview}
           </DraggableItem>
         ))}
-      </div>
+      </SubheadingGroup>
+      <SubheadingGroup title="arrows & lines" defaultOpen={false}>
+        {["arrow", "line", "double arrow", "bracket"].map((l) => (
+          <StubBlockTile key={l} label={l} />
+        ))}
+      </SubheadingGroup>
+      <SubheadingGroup title="callouts" defaultOpen={false}>
+        {["speech bubble", "thought bubble", "ribbon", "burst"].map((l) => (
+          <StubBlockTile key={l} label={l} />
+        ))}
+      </SubheadingGroup>
     </div>
   );
 }

@@ -9,16 +9,29 @@
 // Additionally, you should also exclude this file from your linter and/or formatter to prevent it from being checked or modified.
 
 import { Route as rootRouteImport } from './routes/__root'
+import { Route as RoadmapRouteImport } from './routes/roadmap'
 import { Route as PositioningRouteImport } from './routes/positioning'
+import { Route as FeaturesRouteImport } from './routes/features'
 import { Route as EditorRouteImport } from './routes/editor'
 import { Route as DashboardRouteImport } from './routes/dashboard'
+import { Route as CompareRouteImport } from './routes/compare'
 import { Route as AboutRouteImport } from './routes/about'
 import { Route as IndexRouteImport } from './routes/index'
 import { Route as SKeyRouteImport } from './routes/s.$key'
 
+const RoadmapRoute = RoadmapRouteImport.update({
+  id: '/roadmap',
+  path: '/roadmap',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const PositioningRoute = PositioningRouteImport.update({
   id: '/positioning',
   path: '/positioning',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const FeaturesRoute = FeaturesRouteImport.update({
+  id: '/features',
+  path: '/features',
   getParentRoute: () => rootRouteImport,
 } as any)
 const EditorRoute = EditorRouteImport.update({
@@ -29,6 +42,11 @@ const EditorRoute = EditorRouteImport.update({
 const DashboardRoute = DashboardRouteImport.update({
   id: '/dashboard',
   path: '/dashboard',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const CompareRoute = CompareRouteImport.update({
+  id: '/compare',
+  path: '/compare',
   getParentRoute: () => rootRouteImport,
 } as any)
 const AboutRoute = AboutRouteImport.update({
@@ -50,26 +68,35 @@ const SKeyRoute = SKeyRouteImport.update({
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
   '/about': typeof AboutRoute
+  '/compare': typeof CompareRoute
   '/dashboard': typeof DashboardRoute
   '/editor': typeof EditorRoute
+  '/features': typeof FeaturesRoute
   '/positioning': typeof PositioningRoute
+  '/roadmap': typeof RoadmapRoute
   '/s/$key': typeof SKeyRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
   '/about': typeof AboutRoute
+  '/compare': typeof CompareRoute
   '/dashboard': typeof DashboardRoute
   '/editor': typeof EditorRoute
+  '/features': typeof FeaturesRoute
   '/positioning': typeof PositioningRoute
+  '/roadmap': typeof RoadmapRoute
   '/s/$key': typeof SKeyRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
   '/about': typeof AboutRoute
+  '/compare': typeof CompareRoute
   '/dashboard': typeof DashboardRoute
   '/editor': typeof EditorRoute
+  '/features': typeof FeaturesRoute
   '/positioning': typeof PositioningRoute
+  '/roadmap': typeof RoadmapRoute
   '/s/$key': typeof SKeyRoute
 }
 export interface FileRouteTypes {
@@ -77,38 +104,70 @@ export interface FileRouteTypes {
   fullPaths:
     | '/'
     | '/about'
+    | '/compare'
     | '/dashboard'
     | '/editor'
+    | '/features'
     | '/positioning'
+    | '/roadmap'
     | '/s/$key'
   fileRoutesByTo: FileRoutesByTo
-  to: '/' | '/about' | '/dashboard' | '/editor' | '/positioning' | '/s/$key'
+  to:
+    | '/'
+    | '/about'
+    | '/compare'
+    | '/dashboard'
+    | '/editor'
+    | '/features'
+    | '/positioning'
+    | '/roadmap'
+    | '/s/$key'
   id:
     | '__root__'
     | '/'
     | '/about'
+    | '/compare'
     | '/dashboard'
     | '/editor'
+    | '/features'
     | '/positioning'
+    | '/roadmap'
     | '/s/$key'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
   AboutRoute: typeof AboutRoute
+  CompareRoute: typeof CompareRoute
   DashboardRoute: typeof DashboardRoute
   EditorRoute: typeof EditorRoute
+  FeaturesRoute: typeof FeaturesRoute
   PositioningRoute: typeof PositioningRoute
+  RoadmapRoute: typeof RoadmapRoute
   SKeyRoute: typeof SKeyRoute
 }
 
 declare module '@tanstack/react-router' {
   interface FileRoutesByPath {
+    '/roadmap': {
+      id: '/roadmap'
+      path: '/roadmap'
+      fullPath: '/roadmap'
+      preLoaderRoute: typeof RoadmapRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/positioning': {
       id: '/positioning'
       path: '/positioning'
       fullPath: '/positioning'
       preLoaderRoute: typeof PositioningRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/features': {
+      id: '/features'
+      path: '/features'
+      fullPath: '/features'
+      preLoaderRoute: typeof FeaturesRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/editor': {
@@ -123,6 +182,13 @@ declare module '@tanstack/react-router' {
       path: '/dashboard'
       fullPath: '/dashboard'
       preLoaderRoute: typeof DashboardRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/compare': {
+      id: '/compare'
+      path: '/compare'
+      fullPath: '/compare'
+      preLoaderRoute: typeof CompareRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/about': {
@@ -152,9 +218,12 @@ declare module '@tanstack/react-router' {
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
   AboutRoute: AboutRoute,
+  CompareRoute: CompareRoute,
   DashboardRoute: DashboardRoute,
   EditorRoute: EditorRoute,
+  FeaturesRoute: FeaturesRoute,
   PositioningRoute: PositioningRoute,
+  RoadmapRoute: RoadmapRoute,
   SKeyRoute: SKeyRoute,
 }
 export const routeTree = rootRouteImport

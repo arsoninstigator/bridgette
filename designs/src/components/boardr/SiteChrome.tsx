@@ -1,8 +1,10 @@
 import { Link, useLocation } from "@tanstack/react-router";
 
+type NavTo = "/" | "/about" | "/positioning" | "/features" | "/roadmap" | "/compare" | "/dashboard";
+
 export function SiteHeader() {
   const { pathname } = useLocation();
-  const NavLink = ({ to, label }: { to: "/" | "/about" | "/positioning" | "/dashboard"; label: string }) => (
+  const NavLink = ({ to, label }: { to: NavTo; label: string }) => (
     <Link
       to={to}
       className={`font-mono text-[11px] uppercase tracking-[0.18em] hover:text-foreground transition-colors ${
@@ -19,9 +21,11 @@ export function SiteHeader() {
           <span className="inline-block size-3 rounded-full bg-red-700 ring-2 ring-red-900/60" />
           <span className="font-display text-lg lowercase tracking-tight">zinegeist</span>
         </Link>
-        <nav className="flex items-center gap-6">
+        <nav className="flex items-center gap-5">
           <NavLink to="/" label="home" />
-          <NavLink to="/positioning" label="positioning" />
+          <NavLink to="/features" label="features" />
+          <NavLink to="/roadmap" label="roadmap" />
+          <NavLink to="/compare" label="compare" />
           <NavLink to="/about" label="about" />
           <Link
             to="/dashboard"
@@ -42,10 +46,13 @@ export function SiteFooter() {
         <p className="font-mono text-[10px] uppercase tracking-[0.2em] text-muted-foreground">
           zinegeist · saved locally · shared via /s/key
         </p>
-        <div className="flex items-center gap-5">
+        <div className="flex flex-wrap items-center gap-5">
           <Link to="/" className="font-mono text-[10px] uppercase tracking-[0.2em] text-muted-foreground hover:text-foreground">home</Link>
-          <Link to="/positioning" className="font-mono text-[10px] uppercase tracking-[0.2em] text-muted-foreground hover:text-foreground">positioning</Link>
+          <Link to="/features" className="font-mono text-[10px] uppercase tracking-[0.2em] text-muted-foreground hover:text-foreground">features</Link>
+          <Link to="/roadmap" className="font-mono text-[10px] uppercase tracking-[0.2em] text-muted-foreground hover:text-foreground">roadmap</Link>
+          <Link to="/compare" className="font-mono text-[10px] uppercase tracking-[0.2em] text-muted-foreground hover:text-foreground">compare</Link>
           <Link to="/about" className="font-mono text-[10px] uppercase tracking-[0.2em] text-muted-foreground hover:text-foreground">about</Link>
+          <Link to="/positioning" className="font-mono text-[10px] uppercase tracking-[0.2em] text-muted-foreground hover:text-foreground">positioning</Link>
           <Link to="/dashboard" className="font-mono text-[10px] uppercase tracking-[0.2em] text-muted-foreground hover:text-foreground">dashboard</Link>
         </div>
       </div>
