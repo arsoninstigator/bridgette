@@ -87,8 +87,11 @@ function EditorRoute() {
 
 type RightPanelKey = "pages" | "canvas" | "connections" | "settings";
 
+type AssetMenuState = { x: number; y: number; ids: string[] } | null;
+
 function Editor({ board, setBoard }: { board: Board; setBoard: (b: Board) => void }) {
-  const [selectedId, setSelectedId] = useState<string | null>(null);
+  const [selectedIds, setSelectedIds] = useState<string[]>([]);
+  const selectedId = selectedIds[selectedIds.length - 1] ?? null;
   const [stringFromId, setStringFromId] = useState<string | null>(null);
   const [showPublish, setShowPublish] = useState(false);
   const [activePanel, setActivePanel] = useState<PanelKey | null>("library");
@@ -99,6 +102,21 @@ function Editor({ board, setBoard }: { board: Board; setBoard: (b: Board) => voi
   const [recent, setRecent] = useState<string[]>(() => readRecent());
   const [rightPanel, setRightPanel] = useState<RightPanelKey | null>(null);
   const [frameSize, setFrameSize] = useState({ w: 1000, h: 640 });
+  const [assetMenu, setAssetMenu] = useState<AssetMenuState>(null);
+
+  function setSelectedId(id: string | null) {
+    setSelectedIds(id ? [id] : []);
+  }
+  function toggleSelect(id: string | null, additive?: boolean) {
+    if (id === null) {
+      setSelectedIds([]);
+      return;
+    }
+    setSelectedIds((prev) => {
+      if (!additive) return [id];
+      return prev.includes(id) ? prev.filter((x) => x !== id) : [...prev, id];
+    });
+  }
 
   function startFrameResize(e: React.PointerEvent, dir: "r" | "b" | "br") {
     e.preventDefault();
