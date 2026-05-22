@@ -87,8 +87,11 @@ function EditorRoute() {
 
 type RightPanelKey = "pages" | "canvas" | "connections" | "settings";
 
+type AssetMenuState = { x: number; y: number; ids: string[] } | null;
+
 function Editor({ board, setBoard }: { board: Board; setBoard: (b: Board) => void }) {
-  const [selectedId, setSelectedId] = useState<string | null>(null);
+  const [selectedIds, setSelectedIds] = useState<string[]>([]);
+  const selectedId = selectedIds[selectedIds.length - 1] ?? null;
   const [stringFromId, setStringFromId] = useState<string | null>(null);
   const [showPublish, setShowPublish] = useState(false);
   const [activePanel, setActivePanel] = useState<PanelKey | null>("library");
@@ -99,6 +102,21 @@ function Editor({ board, setBoard }: { board: Board; setBoard: (b: Board) => voi
   const [recent, setRecent] = useState<string[]>(() => readRecent());
   const [rightPanel, setRightPanel] = useState<RightPanelKey | null>(null);
   const [frameSize, setFrameSize] = useState({ w: 1000, h: 640 });
+  const [assetMenu, setAssetMenu] = useState<AssetMenuState>(null);
+
+  function setSelectedId(id: string | null) {
+    setSelectedIds(id ? [id] : []);
+  }
+  function toggleSelect(id: string | null, additive?: boolean) {
+    if (id === null) {
+      setSelectedIds([]);
+      return;
+    }
+    setSelectedIds((prev) => {
+      if (!additive) return [id];
+      return prev.includes(id) ? prev.filter((x) => x !== id) : [...prev, id];
+    });
+  }
 
   function startFrameResize(e: React.PointerEvent, dir: "r" | "b" | "br") {
     e.preventDefault();
@@ -213,6 +231,72 @@ function Editor({ board, setBoard }: { board: Board; setBoard: (b: Board) => voi
     }
     const reIndexed = sorted.map((a, i) => ({ ...a, z: 10 + i }));
     update({ assets: reIndexed });
+  }
+
+  function moveMany(moves: { id: string; x: number; y: number }[]) {
+    const byId = new Map(moves.map((m) => [m.id, m]));
+    update(
+      {
+        assets: board.assets.map((a) => {
+          const m = byId.get(a.id);
+          return m ? { ...a, x: m.x, y: m.y } : a;
+        }),
+      },
+      false,
+    );
+  }
+
+  function resizeAsset(id: string, w: number, h: number) {
+    updateAsset(id, { width: Math.round(w), height: Math.round(h) }, false);
+  }
+
+  function duplicateAssets(ids: string[]) {
+    const baseZ = nextZ();
+    const dups = ids
+      .map((id) => board.assets.find((a) => a.id === id))
+      .filter((a): a is AssetBase => !!a)
+      .map((a, i) => ({
+        ...a,
+        id: Math.random().toString(36).slice(2, 9),
+        x: a.x + 24,
+        y: a.y + 24,
+        z: baseZ + i,
+      }));
+    update({ assets: [...board.assets, ...dups] });
+    setSelectedIds(dups.map((d) => d.id));
+  }
+
+  function toggleLock(ids: string[]) {
+    const anyUnlocked = ids.some((id) => !board.assets.find((a) => a.id === id)?.locked);
+    update({
+      assets: board.assets.map((a) =>
+        ids.includes(a.id) ? { ...a, locked: anyUnlocked } : a,
+      ),
+    });
+  }
+
+  function groupAssets(ids: string[]) {
+    if (ids.length < 2) return;
+    const gid = "g_" + Math.random().toString(36).slice(2, 9);
+    update({
+      assets: board.assets.map((a) =>
+        ids.includes(a.id) ? { ...a, groupId: gid } : a,
+      ),
+    });
+  }
+
+  function ungroupAssets(ids: string[]) {
+    const gids = new Set(
+      ids
+        .map((id) => board.assets.find((a) => a.id === id)?.groupId)
+        .filter(Boolean) as string[],
+    );
+    if (gids.size === 0) return;
+    update({
+      assets: board.assets.map((a) =>
+        a.groupId && gids.has(a.groupId) ? { ...a, groupId: undefined } : a,
+      ),
+    });
   }
 
   function handleAssetClickStringMode(id: string) {
@@ -375,16 +459,25 @@ function Editor({ board, setBoard }: { board: Board; setBoard: (b: Board) => voi
                 strings={board.strings}
                 interactive={!previewMode}
                 selectedId={selectedId}
+                selectedIds={selectedIds}
                 stringMode={stringMode}
                 stringFromId={stringFromId}
-                onSelect={(id) => {
-                  setSelectedId(id);
-                  if (id) setShowSettings(true);
+                onSelect={(id, additive) => {
+                  toggleSelect(id, additive);
+                  if (id && !additive) setShowSettings(true);
+                  setAssetMenu(null);
                 }}
                 onMove={(id, x, y) => updateAsset(id, { x, y }, false)}
+                onMoveMany={moveMany}
+                onResize={resizeAsset}
                 onAssetClick={handleAssetClickStringMode}
+                onAssetContextMenu={(id, x, y) => {
+                  const ids = selectedIds.includes(id) && selectedIds.length > 1 ? selectedIds : [id];
+                  setAssetMenu({ x, y, ids });
+                }}
                 onDropAsset={(kind, x, y, extra) => addAsset(kind, x, y, extra)}
               />
+
               {/* floating frame label */}
               <div className="absolute top-3 left-3 pointer-events-none">
                 <div className="inline-block bg-pink-50/85 backdrop-blur-sm border border-stone-700/20 rounded px-2.5 py-1 font-display text-xs lowercase shadow-sm">
@@ -451,6 +544,24 @@ function Editor({ board, setBoard }: { board: Board; setBoard: (b: Board) => voi
       {showPublish && (
         <PublishDialog board={board} onClose={() => setShowPublish(false)} onPublish={publish} />
       )}
+
+      {assetMenu && !previewMode && (
+        <AssetContextMenu
+          state={assetMenu}
+          board={board}
+          onClose={() => setAssetMenu(null)}
+          onReorder={(dir) => assetMenu.ids.forEach((id) => reorder(id, dir))}
+          onDuplicate={() => duplicateAssets(assetMenu.ids)}
+          onLockToggle={() => toggleLock(assetMenu.ids)}
+          onGroup={() => groupAssets(assetMenu.ids)}
+          onUngroup={() => ungroupAssets(assetMenu.ids)}
+          onDelete={() => {
+            assetMenu.ids.forEach((id) => deleteAsset(id));
+            setSelectedIds([]);
+          }}
+        />
+      )}
+
 
       {/* Bottom status bar */}
       <footer className="bg-editor-header border-t border-stone-900/10 px-5 py-2 flex items-center justify-between font-mono text-[11px] lowercase tracking-wide">
@@ -1296,3 +1407,105 @@ function KeyRow({ label, value }: { label: string; value: string }) {
     </div>
   );
 }
+
+function AssetContextMenu({
+  state,
+  board,
+  onClose,
+  onReorder,
+  onDuplicate,
+  onLockToggle,
+  onGroup,
+  onUngroup,
+  onDelete,
+}: {
+  state: { x: number; y: number; ids: string[] };
+  board: Board;
+  onClose: () => void;
+  onReorder: (dir: "up" | "down" | "top" | "bottom") => void;
+  onDuplicate: () => void;
+  onLockToggle: () => void;
+  onGroup: () => void;
+  onUngroup: () => void;
+  onDelete: () => void;
+}) {
+  useEffect(() => {
+    const onDown = () => onClose();
+    const onKey = (e: KeyboardEvent) => e.key === "Escape" && onClose();
+    window.addEventListener("mousedown", onDown);
+    window.addEventListener("keydown", onKey);
+    return () => {
+      window.removeEventListener("mousedown", onDown);
+      window.removeEventListener("keydown", onKey);
+    };
+  }, [onClose]);
+
+  const ids = state.ids;
+  const multi = ids.length > 1;
+  const assets = ids.map((id) => board.assets.find((a) => a.id === id)).filter(Boolean) as AssetBase[];
+  const anyLocked = assets.some((a) => a.locked);
+  const anyGrouped = assets.some((a) => a.groupId);
+  const totalAssets = board.assets.length;
+
+  // clamp to viewport
+  const x = Math.min(state.x, (typeof window !== "undefined" ? window.innerWidth : 1000) - 200);
+  const y = Math.min(state.y, (typeof window !== "undefined" ? window.innerHeight : 1000) - 280);
+
+  return (
+    <div
+      className="fixed z-50 min-w-[180px] rounded-md border border-border bg-card/95 backdrop-blur-sm shadow-xl py-1 font-mono text-[11px] lowercase"
+      style={{ left: x, top: y }}
+      onMouseDown={(e) => e.stopPropagation()}
+      onContextMenu={(e) => e.preventDefault()}
+    >
+      <div className="px-3 py-1.5 text-[10px] text-muted-foreground border-b border-border/60">
+        {multi ? `${ids.length} selected` : "asset"}
+      </div>
+
+      {!multi && totalAssets > 1 && (
+        <>
+          <MenuItem label="move up" onClick={() => { onReorder("up"); onClose(); }} />
+          <MenuItem label="move down" onClick={() => { onReorder("down"); onClose(); }} />
+          <MenuItem label="bring to front" onClick={() => { onReorder("top"); onClose(); }} />
+          <MenuItem label="send to back" onClick={() => { onReorder("bottom"); onClose(); }} />
+          <div className="my-1 border-t border-border/60" />
+        </>
+      )}
+
+      <MenuItem
+        label={multi ? `duplicate ${ids.length}` : "duplicate"}
+        onClick={() => { onDuplicate(); onClose(); }}
+      />
+      <MenuItem
+        label={anyLocked ? "unlock" : "lock"}
+        onClick={() => { onLockToggle(); onClose(); }}
+      />
+
+      {multi && (
+        <MenuItem label="group selection" onClick={() => { onGroup(); onClose(); }} />
+      )}
+      {anyGrouped && (
+        <MenuItem label="ungroup" onClick={() => { onUngroup(); onClose(); }} />
+      )}
+
+      <div className="my-1 border-t border-border/60" />
+      <MenuItem
+        label="delete"
+        danger
+        onClick={() => { onDelete(); onClose(); }}
+      />
+    </div>
+  );
+}
+
+function MenuItem({ label, onClick, danger }: { label: string; onClick: () => void; danger?: boolean }) {
+  return (
+    <button
+      onClick={onClick}
+      className={`block w-full text-left px-3 py-1.5 hover:bg-accent/40 ${danger ? "text-destructive" : ""}`}
+    >
+      {label}
+    </button>
+  );
+}
+

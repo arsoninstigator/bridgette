@@ -20,6 +20,8 @@ export interface AssetBase {
   // Mechanics
   flipEnabled?: boolean;
   pinEnabled?: boolean; // shows a pushpin on top + becomes a string anchor
+  locked?: boolean; // when true, cannot be dragged or resized
+  groupId?: string; // assets sharing groupId move together
   // Content (per kind, loose)
   front?: string;
   back?: string;

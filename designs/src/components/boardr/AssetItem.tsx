@@ -1,4 +1,5 @@
 import { useEffect, useRef, useState } from "react";
+import { Lock } from "lucide-react";
 import type { AssetBase } from "../../lib/boardr/types";
 
 interface Props {
@@ -8,6 +9,8 @@ interface Props {
   previewFlipped?: boolean; // viewer-state when flip toggled
   onPointerDown?: (e: React.PointerEvent) => void;
   onClick?: (e: React.MouseEvent) => void;
+  onContextMenu?: (e: React.MouseEvent) => void;
+  onResize?: (w: number, h: number) => void;
   pinHighlight?: boolean; // string mode highlight
 }
 
@@ -19,6 +22,8 @@ export function AssetItem({
   previewFlipped,
   onPointerDown,
   onClick,
+  onContextMenu,
+  onResize,
   pinHighlight,
 }: Props) {
   const [flipped, setFlipped] = useState(false);
@@ -27,6 +32,7 @@ export function AssetItem({
   }, [previewFlipped, asset.id]);
 
   const showBack = (asset.flipEnabled && flipped) || false;
+  const resizable = interactive && !asset.locked && onResize && asset.kind !== "pin";
 
   const wrapperStyle: React.CSSProperties = {
     position: "absolute",
@@ -34,9 +40,29 @@ export function AssetItem({
     top: asset.y,
     transform: `translate(-50%, -50%) rotate(${asset.rotation}deg)`,
     zIndex: asset.z,
-    cursor: interactive ? "grab" : "default",
+    cursor: interactive ? (asset.locked ? "not-allowed" : "grab") : "default",
     touchAction: "none",
   };
+
+  function startResize(e: React.PointerEvent) {
+    if (!onResize) return;
+    e.stopPropagation();
+    e.preventDefault();
+    const d = defaultSize(asset);
+    const startX = e.clientX;
+    const startY = e.clientY;
+    function onMove(ev: PointerEvent) {
+      const dx = ev.clientX - startX;
+      const dy = ev.clientY - startY;
+      onResize!(Math.max(40, d.w + dx), Math.max(20, d.h + dy));
+    }
+    function onUp() {
+      window.removeEventListener("pointermove", onMove);
+      window.removeEventListener("pointerup", onUp);
+    }
+    window.addEventListener("pointermove", onMove);
+    window.addEventListener("pointerup", onUp);
+  }
 
   return (
     <div
@@ -44,15 +70,25 @@ export function AssetItem({
       style={wrapperStyle}
       onPointerDown={onPointerDown}
       onClick={onClick}
+      onContextMenu={onContextMenu}
       className={[
         "select-none transition-transform duration-150",
-        interactive ? "hover:scale-[1.02]" : "",
+        interactive && !asset.locked ? "hover:scale-[1.02]" : "",
         selected ? "ring-2 ring-offset-2 ring-amber-700/60 rounded-sm" : "",
       ].join(" ")}
     >
       <div className="relative">
         {renderAssetBody(asset, showBack)}
         {asset.pinEnabled && <PushPin highlight={pinHighlight} />}
+        {asset.locked && interactive && (
+          <div
+            className="absolute -top-2 -left-2 size-5 rounded-full bg-stone-900/85 text-stone-50 grid place-items-center"
+            style={{ pointerEvents: "none" }}
+            title="locked"
+          >
+            <Lock size={10} />
+          </div>
+        )}
         {asset.flipEnabled && !interactive && (
           <button
             type="button"
@@ -66,9 +102,41 @@ export function AssetItem({
             ⤺
           </button>
         )}
+        {resizable && selected && (
+          <div
+            onPointerDown={startResize}
+            onClick={(e) => e.stopPropagation()}
+            className="absolute -bottom-1 -right-1 size-3 bg-amber-700 border border-white rounded-sm cursor-nwse-resize"
+            style={{ zIndex: 50 }}
+            title="drag to resize"
+          />
+        )}
       </div>
     </div>
   );
+}
+
+function defaultSize(a: AssetBase): { w: number; h: number } {
+  switch (a.kind) {
+    case "sticky":
+      return { w: a.width ?? 180, h: a.height ?? 180 };
+    case "polaroid": {
+      const w = a.width ?? 200;
+      return { w, h: w + 32 };
+    }
+    case "photostrip":
+      return { w: a.width ?? 110, h: a.height ?? 372 };
+    case "photo":
+      return { w: a.width ?? 220, h: a.height ?? 160 };
+    case "paper":
+      return { w: a.width ?? 220, h: a.height ?? 140 };
+    case "washi":
+      return { w: a.width ?? 200, h: 28 };
+    case "shape":
+      return { w: a.width ?? 140, h: a.height ?? 140 };
+    case "pin":
+      return { w: 18, h: 18 };
+  }
 }
 
 function PushPin({ highlight }: { highlight?: boolean }) {
@@ -214,7 +282,7 @@ function renderAssetBody(a: AssetBase, back: boolean) {
           className="analog-shadow font-mono text-[13px] text-stone-700 whitespace-pre-wrap"
           style={{
             width: a.width ?? 220,
-            minHeight: 120,
+            minHeight: a.height ?? 120,
             background: a.color || "#fbf7ec",
             padding: 18,
             borderRadius: 1,
