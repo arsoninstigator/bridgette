@@ -233,6 +233,72 @@ function Editor({ board, setBoard }: { board: Board; setBoard: (b: Board) => voi
     update({ assets: reIndexed });
   }
 
+  function moveMany(moves: { id: string; x: number; y: number }[]) {
+    const byId = new Map(moves.map((m) => [m.id, m]));
+    update(
+      {
+        assets: board.assets.map((a) => {
+          const m = byId.get(a.id);
+          return m ? { ...a, x: m.x, y: m.y } : a;
+        }),
+      },
+      false,
+    );
+  }
+
+  function resizeAsset(id: string, w: number, h: number) {
+    updateAsset(id, { width: Math.round(w), height: Math.round(h) }, false);
+  }
+
+  function duplicateAssets(ids: string[]) {
+    const baseZ = nextZ();
+    const dups = ids
+      .map((id) => board.assets.find((a) => a.id === id))
+      .filter((a): a is AssetBase => !!a)
+      .map((a, i) => ({
+        ...a,
+        id: Math.random().toString(36).slice(2, 9),
+        x: a.x + 24,
+        y: a.y + 24,
+        z: baseZ + i,
+      }));
+    update({ assets: [...board.assets, ...dups] });
+    setSelectedIds(dups.map((d) => d.id));
+  }
+
+  function toggleLock(ids: string[]) {
+    const anyUnlocked = ids.some((id) => !board.assets.find((a) => a.id === id)?.locked);
+    update({
+      assets: board.assets.map((a) =>
+        ids.includes(a.id) ? { ...a, locked: anyUnlocked } : a,
+      ),
+    });
+  }
+
+  function groupAssets(ids: string[]) {
+    if (ids.length < 2) return;
+    const gid = "g_" + Math.random().toString(36).slice(2, 9);
+    update({
+      assets: board.assets.map((a) =>
+        ids.includes(a.id) ? { ...a, groupId: gid } : a,
+      ),
+    });
+  }
+
+  function ungroupAssets(ids: string[]) {
+    const gids = new Set(
+      ids
+        .map((id) => board.assets.find((a) => a.id === id)?.groupId)
+        .filter(Boolean) as string[],
+    );
+    if (gids.size === 0) return;
+    update({
+      assets: board.assets.map((a) =>
+        a.groupId && gids.has(a.groupId) ? { ...a, groupId: undefined } : a,
+      ),
+    });
+  }
+
   function handleAssetClickStringMode(id: string) {
     const a = board.assets.find((x) => x.id === id);
     if (!a || !a.pinEnabled) return;
