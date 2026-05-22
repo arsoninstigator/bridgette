@@ -15,11 +15,15 @@ interface Props {
   strings: StringConn[];
   interactive?: boolean;
   selectedId?: string | null;
+  selectedIds?: string[];
   stringMode?: boolean;
   stringFromId?: string | null;
-  onSelect?: (id: string | null) => void;
+  onSelect?: (id: string | null, additive?: boolean) => void;
   onMove?: (id: string, x: number, y: number) => void;
+  onMoveMany?: (moves: { id: string; x: number; y: number }[]) => void;
+  onResize?: (id: string, w: number, h: number) => void;
   onAssetClick?: (id: string) => void;
+  onAssetContextMenu?: (id: string, clientX: number, clientY: number) => void;
   onDropAsset?: (kind: AssetKind, x: number, y: number, extra?: Partial<AssetBase>) => void;
 }
 
@@ -29,39 +33,57 @@ export function BoardCanvas({
   strings,
   interactive,
   selectedId,
+  selectedIds,
   stringMode,
   stringFromId,
   onSelect,
   onMove,
+  onMoveMany,
+  onResize,
   onAssetClick,
+  onAssetContextMenu,
   onDropAsset,
 }: Props) {
   const ref = useRef<HTMLDivElement | null>(null);
+  const selSet = new Set(selectedIds ?? (selectedId ? [selectedId] : []));
 
   function startDrag(e: React.PointerEvent, id: string) {
     if (!interactive || stringMode) return;
+    const asset = assets.find((a) => a.id === id);
+    if (!asset || asset.locked) return;
     e.stopPropagation();
     const target = e.currentTarget as HTMLElement;
     const board = ref.current!;
     target.setPointerCapture(e.pointerId);
     const rect = board.getBoundingClientRect();
-    const asset = assets.find((a) => a.id === id)!;
     const startX = e.clientX;
     const startY = e.clientY;
-    const originX = asset.x;
-    const originY = asset.y;
+    const additive = e.shiftKey;
+
+    // gather group members (move together) — locked siblings stay put
+    const groupMembers = asset.groupId
+      ? assets.filter((a) => a.groupId === asset.groupId && !a.locked)
+      : [asset];
+    const origins = groupMembers.map((a) => ({ id: a.id, x: a.x, y: a.y }));
+
     let moved = false;
     function onMoveEv(ev: PointerEvent) {
       const dx = ev.clientX - startX;
       const dy = ev.clientY - startY;
       if (Math.abs(dx) + Math.abs(dy) > 3) moved = true;
-      onMove?.(id, clamp(originX + dx, 20, rect.width - 20), clamp(originY + dy, 20, rect.height - 20));
+      const moves = origins.map((o) => ({
+        id: o.id,
+        x: clamp(o.x + dx, 20, rect.width - 20),
+        y: clamp(o.y + dy, 20, rect.height - 20),
+      }));
+      if (moves.length > 1 && onMoveMany) onMoveMany(moves);
+      else moves.forEach((m) => onMove?.(m.id, m.x, m.y));
     }
     function onUp() {
       target.releasePointerCapture(e.pointerId);
       window.removeEventListener("pointermove", onMoveEv);
       window.removeEventListener("pointerup", onUp);
-      if (!moved) onSelect?.(id);
+      if (!moved) onSelect?.(id, additive);
     }
     window.addEventListener("pointermove", onMoveEv);
     window.addEventListener("pointerup", onUp);
@@ -119,13 +141,22 @@ export function BoardCanvas({
           key={a.id}
           asset={a}
           interactive={interactive}
-          selected={selectedId === a.id}
+          selected={selSet.has(a.id)}
           pinHighlight={stringMode && !!a.pinEnabled && (stringFromId === a.id || !stringFromId)}
           onPointerDown={(e) => startDrag(e, a.id)}
           onClick={(e) => {
             e.stopPropagation();
             if (stringMode) onAssetClick?.(a.id);
           }}
+          onContextMenu={(e) => {
+            if (!interactive) return;
+            e.preventDefault();
+            e.stopPropagation();
+            // if right-clicking an asset not in current selection, select it first
+            if (!selSet.has(a.id)) onSelect?.(a.id, false);
+            onAssetContextMenu?.(a.id, e.clientX, e.clientY);
+          }}
+          onResize={onResize ? (w, h) => onResize(a.id, w, h) : undefined}
         />
       ))}
     </div>
