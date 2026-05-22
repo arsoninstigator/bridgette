@@ -545,6 +545,24 @@ function Editor({ board, setBoard }: { board: Board; setBoard: (b: Board) => voi
         <PublishDialog board={board} onClose={() => setShowPublish(false)} onPublish={publish} />
       )}
 
+      {assetMenu && !previewMode && (
+        <AssetContextMenu
+          state={assetMenu}
+          board={board}
+          onClose={() => setAssetMenu(null)}
+          onReorder={(dir) => assetMenu.ids.forEach((id) => reorder(id, dir))}
+          onDuplicate={() => duplicateAssets(assetMenu.ids)}
+          onLockToggle={() => toggleLock(assetMenu.ids)}
+          onGroup={() => groupAssets(assetMenu.ids)}
+          onUngroup={() => ungroupAssets(assetMenu.ids)}
+          onDelete={() => {
+            assetMenu.ids.forEach((id) => deleteAsset(id));
+            setSelectedIds([]);
+          }}
+        />
+      )}
+
+
       {/* Bottom status bar */}
       <footer className="bg-editor-header border-t border-stone-900/10 px-5 py-2 flex items-center justify-between font-mono text-[11px] lowercase tracking-wide">
         <div className="flex items-center gap-2">
