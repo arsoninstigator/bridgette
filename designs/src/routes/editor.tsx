@@ -1407,3 +1407,105 @@ function KeyRow({ label, value }: { label: string; value: string }) {
     </div>
   );
 }
+
+function AssetContextMenu({
+  state,
+  board,
+  onClose,
+  onReorder,
+  onDuplicate,
+  onLockToggle,
+  onGroup,
+  onUngroup,
+  onDelete,
+}: {
+  state: { x: number; y: number; ids: string[] };
+  board: Board;
+  onClose: () => void;
+  onReorder: (dir: "up" | "down" | "top" | "bottom") => void;
+  onDuplicate: () => void;
+  onLockToggle: () => void;
+  onGroup: () => void;
+  onUngroup: () => void;
+  onDelete: () => void;
+}) {
+  useEffect(() => {
+    const onDown = () => onClose();
+    const onKey = (e: KeyboardEvent) => e.key === "Escape" && onClose();
+    window.addEventListener("mousedown", onDown);
+    window.addEventListener("keydown", onKey);
+    return () => {
+      window.removeEventListener("mousedown", onDown);
+      window.removeEventListener("keydown", onKey);
+    };
+  }, [onClose]);
+
+  const ids = state.ids;
+  const multi = ids.length > 1;
+  const assets = ids.map((id) => board.assets.find((a) => a.id === id)).filter(Boolean) as AssetBase[];
+  const anyLocked = assets.some((a) => a.locked);
+  const anyGrouped = assets.some((a) => a.groupId);
+  const totalAssets = board.assets.length;
+
+  // clamp to viewport
+  const x = Math.min(state.x, (typeof window !== "undefined" ? window.innerWidth : 1000) - 200);
+  const y = Math.min(state.y, (typeof window !== "undefined" ? window.innerHeight : 1000) - 280);
+
+  return (
+    <div
+      className="fixed z-50 min-w-[180px] rounded-md border border-border bg-card/95 backdrop-blur-sm shadow-xl py-1 font-mono text-[11px] lowercase"
+      style={{ left: x, top: y }}
+      onMouseDown={(e) => e.stopPropagation()}
+      onContextMenu={(e) => e.preventDefault()}
+    >
+      <div className="px-3 py-1.5 text-[10px] text-muted-foreground border-b border-border/60">
+        {multi ? `${ids.length} selected` : "asset"}
+      </div>
+
+      {!multi && totalAssets > 1 && (
+        <>
+          <MenuItem label="move up" onClick={() => { onReorder("up"); onClose(); }} />
+          <MenuItem label="move down" onClick={() => { onReorder("down"); onClose(); }} />
+          <MenuItem label="bring to front" onClick={() => { onReorder("top"); onClose(); }} />
+          <MenuItem label="send to back" onClick={() => { onReorder("bottom"); onClose(); }} />
+          <div className="my-1 border-t border-border/60" />
+        </>
+      )}
+
+      <MenuItem
+        label={multi ? `duplicate ${ids.length}` : "duplicate"}
+        onClick={() => { onDuplicate(); onClose(); }}
+      />
+      <MenuItem
+        label={anyLocked ? "unlock" : "lock"}
+        onClick={() => { onLockToggle(); onClose(); }}
+      />
+
+      {multi && (
+        <MenuItem label="group selection" onClick={() => { onGroup(); onClose(); }} />
+      )}
+      {anyGrouped && (
+        <MenuItem label="ungroup" onClick={() => { onUngroup(); onClose(); }} />
+      )}
+
+      <div className="my-1 border-t border-border/60" />
+      <MenuItem
+        label="delete"
+        danger
+        onClick={() => { onDelete(); onClose(); }}
+      />
+    </div>
+  );
+}
+
+function MenuItem({ label, onClick, danger }: { label: string; onClick: () => void; danger?: boolean }) {
+  return (
+    <button
+      onClick={onClick}
+      className={`block w-full text-left px-3 py-1.5 hover:bg-accent/40 ${danger ? "text-destructive" : ""}`}
+    >
+      {label}
+    </button>
+  );
+}
+
