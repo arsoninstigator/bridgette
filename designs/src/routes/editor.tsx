@@ -459,16 +459,25 @@ function Editor({ board, setBoard }: { board: Board; setBoard: (b: Board) => voi
                 strings={board.strings}
                 interactive={!previewMode}
                 selectedId={selectedId}
+                selectedIds={selectedIds}
                 stringMode={stringMode}
                 stringFromId={stringFromId}
-                onSelect={(id) => {
-                  setSelectedId(id);
-                  if (id) setShowSettings(true);
+                onSelect={(id, additive) => {
+                  toggleSelect(id, additive);
+                  if (id && !additive) setShowSettings(true);
+                  setAssetMenu(null);
                 }}
                 onMove={(id, x, y) => updateAsset(id, { x, y }, false)}
+                onMoveMany={moveMany}
+                onResize={resizeAsset}
                 onAssetClick={handleAssetClickStringMode}
+                onAssetContextMenu={(id, x, y) => {
+                  const ids = selectedIds.includes(id) && selectedIds.length > 1 ? selectedIds : [id];
+                  setAssetMenu({ x, y, ids });
+                }}
                 onDropAsset={(kind, x, y, extra) => addAsset(kind, x, y, extra)}
               />
+
               {/* floating frame label */}
               <div className="absolute top-3 left-3 pointer-events-none">
                 <div className="inline-block bg-pink-50/85 backdrop-blur-sm border border-stone-700/20 rounded px-2.5 py-1 font-display text-xs lowercase shadow-sm">
