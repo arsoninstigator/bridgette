@@ -637,7 +637,6 @@ function SurfacePanel({ board, onPick }: { board: Board; onPick: (k: BoardKind) 
       label: "boards",
       items: [
         { id: "cork-default", label: "corkboard", kind: "cork", className: "bg-board-cork" },
-        { id: "cork-bordered", label: "cork (bordered)", kind: "cork", className: "bg-board-cork" },
         { id: "pinboard", label: "pinboard" },
         { id: "pegboard", label: "pegboard (ikea)" },
         { id: "blackboard", label: "blackboard" },
