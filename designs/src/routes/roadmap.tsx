@@ -91,6 +91,17 @@ const MILESTONES: { date: string; status: Status; title: string; bullets: string
       "version history per frame",
     ],
   },
+  {
+    date: "later",
+    status: "later",
+    title: "shared library + community catalog",
+    bullets: [
+      "publish your styles, library components, and component groups",
+      "semantic tagging so others can search by feel (gritty, soft, archival…)",
+      "import community palettes, fonts, tape patterns, and stamp packs",
+      "remixable community templates with attribution baked in",
+    ],
+  },
 ];
 
 const STATUS_COLOR: Record<Status, string> = {
