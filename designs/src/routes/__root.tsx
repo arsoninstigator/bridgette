@@ -84,6 +84,7 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
       { name: "twitter:description", content: "zinegeist is a tactile spatial publishing platform for rabbit holes, archives, investigations, nonlinear storytelling, and obsessive curation." },
       { property: "og:image", content: "https://pub-bb2e103a32db4e198524a2e9ed8f35b4.r2.dev/e8500bc7-3401-4206-a9eb-95b5242cfb12/id-preview-b9bb7fd2--5851a950-a50d-4f99-bce4-7f5fcbb9b904.lovable.app-1779273030681.png" },
       { name: "twitter:image", content: "https://pub-bb2e103a32db4e198524a2e9ed8f35b4.r2.dev/e8500bc7-3401-4206-a9eb-95b5242cfb12/id-preview-b9bb7fd2--5851a950-a50d-4f99-bce4-7f5fcbb9b904.lovable.app-1779273030681.png" },
+      { name: "twitter:title", content: "zinegeist — tactile spatial publishing platform" },
     ],
     links: [
       {
