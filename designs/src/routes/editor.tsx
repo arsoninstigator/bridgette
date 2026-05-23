@@ -1138,6 +1138,48 @@ function RightMetaPanel({
                 </button>
               ))}
             </div>
+
+            <div className="pt-3 border-t border-border/60 space-y-3">
+              <p className="text-muted-foreground">edit surface</p>
+              <label className="block space-y-1">
+                <span className="text-[10px] text-muted-foreground">border width · {surfaceStyle.border}px</span>
+                <input
+                  type="range" min={0} max={24} value={surfaceStyle.border}
+                  onChange={(e) => onSurfaceStyleChange({ ...surfaceStyle, border: Number(e.target.value) })}
+                  className="w-full"
+                />
+              </label>
+              <label className="block space-y-1">
+                <span className="text-[10px] text-muted-foreground">border style</span>
+                <div className="flex gap-1">
+                  {(["solid", "dashed", "double"] as const).map((s) => (
+                    <button
+                      key={s}
+                      onClick={() => onSurfaceStyleChange({ ...surfaceStyle, borderStyle: s })}
+                      className={`flex-1 rounded border px-2 py-1 text-[10px] lowercase ${surfaceStyle.borderStyle === s ? "border-stone-900 bg-accent/40" : "border-border hover:bg-black/5"}`}
+                    >
+                      {s}
+                    </button>
+                  ))}
+                </div>
+              </label>
+              <label className="flex items-center justify-between">
+                <span className="text-[10px] text-muted-foreground">border color</span>
+                <input
+                  type="color" value={surfaceStyle.borderColor}
+                  onChange={(e) => onSurfaceStyleChange({ ...surfaceStyle, borderColor: e.target.value })}
+                  className="h-6 w-10 rounded border border-border bg-transparent"
+                />
+              </label>
+              <label className="block space-y-1">
+                <span className="text-[10px] text-muted-foreground">corner radius · {surfaceStyle.radius}px</span>
+                <input
+                  type="range" min={0} max={40} value={surfaceStyle.radius}
+                  onChange={(e) => onSurfaceStyleChange({ ...surfaceStyle, radius: Number(e.target.value) })}
+                  className="w-full"
+                />
+              </label>
+            </div>
           </div>
         )}
         {which === "connections" && (
