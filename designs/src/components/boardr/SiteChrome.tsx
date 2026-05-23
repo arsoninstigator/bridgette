@@ -43,18 +43,13 @@ export function SiteFooter() {
   return (
     <footer className="border-t border-border bg-secondary/40">
       <div className="max-w-6xl mx-auto px-6 py-8 flex flex-wrap items-center justify-between gap-3">
-        <p className="font-mono text-[10px] uppercase tracking-[0.2em] text-muted-foreground">
-          zinegeist · saved locally · shared via /s/key
-        </p>
-        <div className="flex flex-wrap items-center gap-5">
-          <Link to="/" className="font-mono text-[10px] uppercase tracking-[0.2em] text-muted-foreground hover:text-foreground">home</Link>
-          <Link to="/features" className="font-mono text-[10px] uppercase tracking-[0.2em] text-muted-foreground hover:text-foreground">features</Link>
-          <Link to="/roadmap" className="font-mono text-[10px] uppercase tracking-[0.2em] text-muted-foreground hover:text-foreground">roadmap</Link>
-          <Link to="/compare" className="font-mono text-[10px] uppercase tracking-[0.2em] text-muted-foreground hover:text-foreground">compare</Link>
-          <Link to="/about" className="font-mono text-[10px] uppercase tracking-[0.2em] text-muted-foreground hover:text-foreground">about</Link>
-          <Link to="/positioning" className="font-mono text-[10px] uppercase tracking-[0.2em] text-muted-foreground hover:text-foreground">positioning</Link>
-          <Link to="/dashboard" className="font-mono text-[10px] uppercase tracking-[0.2em] text-muted-foreground hover:text-foreground">dashboard</Link>
+        <div className="flex items-center gap-2">
+          <span className="inline-block size-2.5 rounded-full bg-red-700 ring-2 ring-red-900/60" />
+          <span className="font-display text-base lowercase tracking-tight">zinegeist</span>
         </div>
+        <p className="font-mono text-[10px] uppercase tracking-[0.2em] text-muted-foreground">
+          saved locally · shared via /s/key
+        </p>
       </div>
     </footer>
   );

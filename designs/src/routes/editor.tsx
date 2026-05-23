@@ -87,6 +87,8 @@ function EditorRoute() {
 
 type RightPanelKey = "pages" | "canvas" | "connections" | "settings";
 
+type SurfaceStyle = { border: number; borderColor: string; borderStyle: "solid" | "dashed" | "double"; radius: number };
+
 type AssetMenuState = { x: number; y: number; ids: string[] } | null;
 
 function Editor({ board, setBoard }: { board: Board; setBoard: (b: Board) => void }) {
@@ -102,6 +104,7 @@ function Editor({ board, setBoard }: { board: Board; setBoard: (b: Board) => voi
   const [recent, setRecent] = useState<string[]>(() => readRecent());
   const [rightPanel, setRightPanel] = useState<RightPanelKey | null>(null);
   const [frameSize, setFrameSize] = useState({ w: 1000, h: 640 });
+  const [surfaceStyle, setSurfaceStyle] = useState<SurfaceStyle>({ border: 0, borderColor: "#3a2b1f", borderStyle: "solid", radius: 2 });
   const [assetMenu, setAssetMenu] = useState<AssetMenuState>(null);
 
   function setSelectedId(id: string | null) {
@@ -411,7 +414,7 @@ function Editor({ board, setBoard }: { board: Board; setBoard: (b: Board) => voi
             />
             <div className="p-3">
               {activePanel === "select" && (
-                <SurfacePanel board={board} onPick={(kind) => update({ kind })} />
+                <SurfacePanel board={board} onPick={(kind) => update({ kind })} onEdit={() => setRightPanel("canvas")} />
               )}
               {activePanel === "layers" && (
                 <LayersPanel
@@ -450,8 +453,13 @@ function Editor({ board, setBoard }: { board: Board; setBoard: (b: Board) => voi
         <main className="flex-1 relative overflow-auto bg-editor-canvas">
           <div className="min-w-full min-h-full flex items-center justify-center p-10">
             <div
-              className="relative flex shadow-2xl ring-1 ring-stone-900/10 rounded-sm overflow-hidden"
-              style={{ width: frameSize.w, height: frameSize.h }}
+              className="relative flex shadow-2xl ring-1 ring-stone-900/10 overflow-hidden"
+              style={{
+                width: frameSize.w,
+                height: frameSize.h,
+                borderRadius: surfaceStyle.radius,
+                border: surfaceStyle.border > 0 ? `${surfaceStyle.border}px ${surfaceStyle.borderStyle} ${surfaceStyle.borderColor}` : undefined,
+              }}
             >
               <BoardCanvas
                 kind={board.kind}
@@ -537,6 +545,8 @@ function Editor({ board, setBoard }: { board: Board; setBoard: (b: Board) => voi
             onClose={() => setRightPanel(null)}
             onPickSurface={(kind) => update({ kind })}
             onRename={(name) => update({ name }, false)}
+            surfaceStyle={surfaceStyle}
+            onSurfaceStyleChange={setSurfaceStyle}
           />
         )}
       </div>
@@ -628,7 +638,7 @@ function PanelHeader({ title, onClose, right }: { title: string; onClose: () => 
   );
 }
 
-function SurfacePanel({ board, onPick }: { board: Board; onPick: (k: BoardKind) => void }) {
+function SurfacePanel({ board, onPick, onEdit }: { board: Board; onPick: (k: BoardKind) => void; onEdit: () => void }) {
   // sets of surfaces. only a handful are wired (cork/mat/wall/metal). others are stubs.
   type Surf = { id: string; label: string; kind?: BoardKind; className?: string };
   const SURFACE_SETS: { id: string; label: string; items: Surf[] }[] = [
@@ -637,7 +647,6 @@ function SurfacePanel({ board, onPick }: { board: Board; onPick: (k: BoardKind) 
       label: "boards",
       items: [
         { id: "cork-default", label: "corkboard", kind: "cork", className: "bg-board-cork" },
-        { id: "cork-bordered", label: "cork (bordered)", kind: "cork", className: "bg-board-cork" },
         { id: "pinboard", label: "pinboard" },
         { id: "pegboard", label: "pegboard (ikea)" },
         { id: "blackboard", label: "blackboard" },
@@ -728,20 +737,33 @@ function SurfacePanel({ board, onPick }: { board: Board; onPick: (k: BoardKind) 
                   const wired = !!it.kind;
                   const isActive = it.kind && board.kind === it.kind;
                   return (
-                    <button
+                    <div
                       key={it.id}
-                      disabled={!wired}
-                      onClick={() => it.kind && onPick(it.kind)}
-                      className={`rounded-md overflow-hidden border ${
+                      className={`relative rounded-md overflow-hidden border ${
                         isActive ? "border-stone-900 ring-2 ring-stone-900/30" : "border-border"
-                      } ${!wired ? "opacity-60 cursor-not-allowed" : ""}`}
+                      } ${!wired ? "opacity-60" : ""}`}
                     >
-                      <div className={`h-14 ${it.className ?? "bg-stone-200/60"}`} />
-                      <div className="bg-card px-2 py-1 font-mono text-[10px] lowercase text-left flex items-center justify-between">
-                        <span>{it.label}</span>
-                        {!wired && <span className="text-[8px] text-muted-foreground">soon</span>}
-                      </div>
-                    </button>
+                      <button
+                        disabled={!wired}
+                        onClick={() => it.kind && onPick(it.kind)}
+                        className={`block w-full text-left ${!wired ? "cursor-not-allowed" : ""}`}
+                      >
+                        <div className={`h-14 ${it.className ?? "bg-stone-200/60"}`} />
+                        <div className="bg-card px-2 py-1 font-mono text-[10px] lowercase flex items-center justify-between">
+                          <span>{it.label}</span>
+                          {!wired && <span className="text-[8px] text-muted-foreground">soon</span>}
+                        </div>
+                      </button>
+                      {isActive && (
+                        <button
+                          onClick={(e) => { e.stopPropagation(); onEdit(); }}
+                          className="absolute top-1 right-1 rounded bg-stone-900/85 text-stone-50 px-1.5 py-0.5 font-mono text-[9px] lowercase tracking-wide hover:bg-stone-900"
+                          title="edit surface"
+                        >
+                          edit
+                        </button>
+                      )}
+                    </div>
                   );
                 })}
               </div>
@@ -1074,13 +1096,15 @@ function SetGrid({
 // ---------- Right meta panel ----------
 
 function RightMetaPanel({
-  which, board, onClose, onPickSurface, onRename,
+  which, board, onClose, onPickSurface, onRename, surfaceStyle, onSurfaceStyleChange,
 }: {
   which: RightPanelKey;
   board: Board;
   onClose: () => void;
   onPickSurface: (k: BoardKind) => void;
   onRename: (n: string) => void;
+  surfaceStyle: SurfaceStyle;
+  onSurfaceStyleChange: (s: SurfaceStyle) => void;
 }) {
   return (
     <aside className="w-[300px] shrink-0 bg-card/95 backdrop-blur-sm border-l border-border/60 overflow-y-auto z-10">
@@ -1113,6 +1137,48 @@ function RightMetaPanel({
                   <div className="bg-card px-2 py-1 text-[10px] text-left">{k}</div>
                 </button>
               ))}
+            </div>
+
+            <div className="pt-3 border-t border-border/60 space-y-3">
+              <p className="text-muted-foreground">edit surface</p>
+              <label className="block space-y-1">
+                <span className="text-[10px] text-muted-foreground">border width · {surfaceStyle.border}px</span>
+                <input
+                  type="range" min={0} max={24} value={surfaceStyle.border}
+                  onChange={(e) => onSurfaceStyleChange({ ...surfaceStyle, border: Number(e.target.value) })}
+                  className="w-full"
+                />
+              </label>
+              <label className="block space-y-1">
+                <span className="text-[10px] text-muted-foreground">border style</span>
+                <div className="flex gap-1">
+                  {(["solid", "dashed", "double"] as const).map((s) => (
+                    <button
+                      key={s}
+                      onClick={() => onSurfaceStyleChange({ ...surfaceStyle, borderStyle: s })}
+                      className={`flex-1 rounded border px-2 py-1 text-[10px] lowercase ${surfaceStyle.borderStyle === s ? "border-stone-900 bg-accent/40" : "border-border hover:bg-black/5"}`}
+                    >
+                      {s}
+                    </button>
+                  ))}
+                </div>
+              </label>
+              <label className="flex items-center justify-between">
+                <span className="text-[10px] text-muted-foreground">border color</span>
+                <input
+                  type="color" value={surfaceStyle.borderColor}
+                  onChange={(e) => onSurfaceStyleChange({ ...surfaceStyle, borderColor: e.target.value })}
+                  className="h-6 w-10 rounded border border-border bg-transparent"
+                />
+              </label>
+              <label className="block space-y-1">
+                <span className="text-[10px] text-muted-foreground">corner radius · {surfaceStyle.radius}px</span>
+                <input
+                  type="range" min={0} max={40} value={surfaceStyle.radius}
+                  onChange={(e) => onSurfaceStyleChange({ ...surfaceStyle, radius: Number(e.target.value) })}
+                  className="w-full"
+                />
+              </label>
             </div>
           </div>
         )}
