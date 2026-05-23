@@ -730,20 +730,33 @@ function SurfacePanel({ board, onPick, onEdit }: { board: Board; onPick: (k: Boa
                   const wired = !!it.kind;
                   const isActive = it.kind && board.kind === it.kind;
                   return (
-                    <button
+                    <div
                       key={it.id}
-                      disabled={!wired}
-                      onClick={() => it.kind && onPick(it.kind)}
-                      className={`rounded-md overflow-hidden border ${
+                      className={`relative rounded-md overflow-hidden border ${
                         isActive ? "border-stone-900 ring-2 ring-stone-900/30" : "border-border"
-                      } ${!wired ? "opacity-60 cursor-not-allowed" : ""}`}
+                      } ${!wired ? "opacity-60" : ""}`}
                     >
-                      <div className={`h-14 ${it.className ?? "bg-stone-200/60"}`} />
-                      <div className="bg-card px-2 py-1 font-mono text-[10px] lowercase text-left flex items-center justify-between">
-                        <span>{it.label}</span>
-                        {!wired && <span className="text-[8px] text-muted-foreground">soon</span>}
-                      </div>
-                    </button>
+                      <button
+                        disabled={!wired}
+                        onClick={() => it.kind && onPick(it.kind)}
+                        className={`block w-full text-left ${!wired ? "cursor-not-allowed" : ""}`}
+                      >
+                        <div className={`h-14 ${it.className ?? "bg-stone-200/60"}`} />
+                        <div className="bg-card px-2 py-1 font-mono text-[10px] lowercase flex items-center justify-between">
+                          <span>{it.label}</span>
+                          {!wired && <span className="text-[8px] text-muted-foreground">soon</span>}
+                        </div>
+                      </button>
+                      {isActive && (
+                        <button
+                          onClick={(e) => { e.stopPropagation(); onEdit(); }}
+                          className="absolute top-1 right-1 rounded bg-stone-900/85 text-stone-50 px-1.5 py-0.5 font-mono text-[9px] lowercase tracking-wide hover:bg-stone-900"
+                          title="edit surface"
+                        >
+                          edit
+                        </button>
+                      )}
+                    </div>
                   );
                 })}
               </div>
