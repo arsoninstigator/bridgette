@@ -1096,13 +1096,15 @@ function SetGrid({
 // ---------- Right meta panel ----------
 
 function RightMetaPanel({
-  which, board, onClose, onPickSurface, onRename,
+  which, board, onClose, onPickSurface, onRename, surfaceStyle, onSurfaceStyleChange,
 }: {
   which: RightPanelKey;
   board: Board;
   onClose: () => void;
   onPickSurface: (k: BoardKind) => void;
   onRename: (n: string) => void;
+  surfaceStyle: SurfaceStyle;
+  onSurfaceStyleChange: (s: SurfaceStyle) => void;
 }) {
   return (
     <aside className="w-[300px] shrink-0 bg-card/95 backdrop-blur-sm border-l border-border/60 overflow-y-auto z-10">
