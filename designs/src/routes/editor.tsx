@@ -631,7 +631,7 @@ function PanelHeader({ title, onClose, right }: { title: string; onClose: () => 
   );
 }
 
-function SurfacePanel({ board, onPick }: { board: Board; onPick: (k: BoardKind) => void }) {
+function SurfacePanel({ board, onPick, onEdit }: { board: Board; onPick: (k: BoardKind) => void; onEdit: () => void }) {
   // sets of surfaces. only a handful are wired (cork/mat/wall/metal). others are stubs.
   type Surf = { id: string; label: string; kind?: BoardKind; className?: string };
   const SURFACE_SETS: { id: string; label: string; items: Surf[] }[] = [
