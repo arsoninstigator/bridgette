@@ -453,8 +453,13 @@ function Editor({ board, setBoard }: { board: Board; setBoard: (b: Board) => voi
         <main className="flex-1 relative overflow-auto bg-editor-canvas">
           <div className="min-w-full min-h-full flex items-center justify-center p-10">
             <div
-              className="relative flex shadow-2xl ring-1 ring-stone-900/10 rounded-sm overflow-hidden"
-              style={{ width: frameSize.w, height: frameSize.h }}
+              className="relative flex shadow-2xl ring-1 ring-stone-900/10 overflow-hidden"
+              style={{
+                width: frameSize.w,
+                height: frameSize.h,
+                borderRadius: surfaceStyle.radius,
+                border: surfaceStyle.border > 0 ? `${surfaceStyle.border}px ${surfaceStyle.borderStyle} ${surfaceStyle.borderColor}` : undefined,
+              }}
             >
               <BoardCanvas
                 kind={board.kind}
