@@ -87,6 +87,8 @@ function EditorRoute() {
 
 type RightPanelKey = "pages" | "canvas" | "connections" | "settings";
 
+type SurfaceStyle = { border: number; borderColor: string; borderStyle: "solid" | "dashed" | "double"; radius: number };
+
 type AssetMenuState = { x: number; y: number; ids: string[] } | null;
 
 function Editor({ board, setBoard }: { board: Board; setBoard: (b: Board) => void }) {
