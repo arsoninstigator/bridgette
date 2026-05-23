@@ -545,6 +545,8 @@ function Editor({ board, setBoard }: { board: Board; setBoard: (b: Board) => voi
             onClose={() => setRightPanel(null)}
             onPickSurface={(kind) => update({ kind })}
             onRename={(name) => update({ name }, false)}
+            surfaceStyle={surfaceStyle}
+            onSurfaceStyleChange={setSurfaceStyle}
           />
         )}
       </div>
