@@ -617,6 +617,12 @@ function Editor({ board, setBoard }: { board: Board; setBoard: (b: Board) => voi
             onRename={(name) => update({ name }, false)}
             surfaceStyle={surfaceStyle}
             onSurfaceStyleChange={setSurfaceStyle}
+            pages={pages}
+            activeSlug={activeSlug}
+            onSwitchPage={switchPage}
+            onAddPage={addPage}
+            onRenamePage={renamePage}
+            onDeletePage={deletePage}
           />
         )}
       </div>
