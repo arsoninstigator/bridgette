@@ -18,6 +18,7 @@ import { Route as CompareRouteImport } from './routes/compare'
 import { Route as AboutRouteImport } from './routes/about'
 import { Route as IndexRouteImport } from './routes/index'
 import { Route as SKeyRouteImport } from './routes/s.$key'
+import { Route as SKeyPageRouteImport } from './routes/s.$key.$page'
 
 const RoadmapRoute = RoadmapRouteImport.update({
   id: '/roadmap',
@@ -64,6 +65,11 @@ const SKeyRoute = SKeyRouteImport.update({
   path: '/s/$key',
   getParentRoute: () => rootRouteImport,
 } as any)
+const SKeyPageRoute = SKeyPageRouteImport.update({
+  id: '/$page',
+  path: '/$page',
+  getParentRoute: () => SKeyRoute,
+} as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
@@ -74,7 +80,8 @@ export interface FileRoutesByFullPath {
   '/features': typeof FeaturesRoute
   '/positioning': typeof PositioningRoute
   '/roadmap': typeof RoadmapRoute
-  '/s/$key': typeof SKeyRoute
+  '/s/$key': typeof SKeyRouteWithChildren
+  '/s/$key/$page': typeof SKeyPageRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
@@ -85,7 +92,8 @@ export interface FileRoutesByTo {
   '/features': typeof FeaturesRoute
   '/positioning': typeof PositioningRoute
   '/roadmap': typeof RoadmapRoute
-  '/s/$key': typeof SKeyRoute
+  '/s/$key': typeof SKeyRouteWithChildren
+  '/s/$key/$page': typeof SKeyPageRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
@@ -97,7 +105,8 @@ export interface FileRoutesById {
   '/features': typeof FeaturesRoute
   '/positioning': typeof PositioningRoute
   '/roadmap': typeof RoadmapRoute
-  '/s/$key': typeof SKeyRoute
+  '/s/$key': typeof SKeyRouteWithChildren
+  '/s/$key/$page': typeof SKeyPageRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
@@ -111,6 +120,7 @@ export interface FileRouteTypes {
     | '/positioning'
     | '/roadmap'
     | '/s/$key'
+    | '/s/$key/$page'
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/'
@@ -122,6 +132,7 @@ export interface FileRouteTypes {
     | '/positioning'
     | '/roadmap'
     | '/s/$key'
+    | '/s/$key/$page'
   id:
     | '__root__'
     | '/'
@@ -133,6 +144,7 @@ export interface FileRouteTypes {
     | '/positioning'
     | '/roadmap'
     | '/s/$key'
+    | '/s/$key/$page'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
@@ -144,7 +156,7 @@ export interface RootRouteChildren {
   FeaturesRoute: typeof FeaturesRoute
   PositioningRoute: typeof PositioningRoute
   RoadmapRoute: typeof RoadmapRoute
-  SKeyRoute: typeof SKeyRoute
+  SKeyRoute: typeof SKeyRouteWithChildren
 }
 
 declare module '@tanstack/react-router' {
@@ -212,8 +224,25 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof SKeyRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/s/$key/$page': {
+      id: '/s/$key/$page'
+      path: '/$page'
+      fullPath: '/s/$key/$page'
+      preLoaderRoute: typeof SKeyPageRouteImport
+      parentRoute: typeof SKeyRoute
+    }
   }
 }
+
+interface SKeyRouteChildren {
+  SKeyPageRoute: typeof SKeyPageRoute
+}
+
+const SKeyRouteChildren: SKeyRouteChildren = {
+  SKeyPageRoute: SKeyPageRoute,
+}
+
+const SKeyRouteWithChildren = SKeyRoute._addFileChildren(SKeyRouteChildren)
 
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
@@ -224,8 +253,18 @@ const rootRouteChildren: RootRouteChildren = {
   FeaturesRoute: FeaturesRoute,
   PositioningRoute: PositioningRoute,
   RoadmapRoute: RoadmapRoute,
-  SKeyRoute: SKeyRoute,
+  SKeyRoute: SKeyRouteWithChildren,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
   ._addFileTypes<FileRouteTypes>()
+
+import type { getRouter } from './router.tsx'
+import type { startInstance } from './start.ts'
+declare module '@tanstack/react-start' {
+  interface Register {
+    ssr: true
+    router: Awaited<ReturnType<typeof getRouter>>
+    config: Awaited<ReturnType<typeof startInstance.getOptions>>
+  }
+}
