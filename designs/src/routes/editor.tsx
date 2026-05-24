@@ -1173,6 +1173,7 @@ function SetGrid({
 
 function RightMetaPanel({
   which, board, onClose, onPickSurface, onRename, surfaceStyle, onSurfaceStyleChange,
+  pages, activeSlug, onSwitchPage, onAddPage, onRenamePage, onDeletePage,
 }: {
   which: RightPanelKey;
   board: Board;
@@ -1181,7 +1182,14 @@ function RightMetaPanel({
   onRename: (n: string) => void;
   surfaceStyle: SurfaceStyle;
   onSurfaceStyleChange: (s: SurfaceStyle) => void;
+  pages: { slug: string; name: string }[];
+  activeSlug: string;
+  onSwitchPage: (slug: string) => void;
+  onAddPage: () => void;
+  onRenamePage: (slug: string, name: string) => void;
+  onDeletePage: (slug: string) => void;
 }) {
+  const baseUrl = board.publishedKey ? `/s/${board.publishedKey}` : null;
   return (
     <aside className="w-[300px] shrink-0 bg-card/95 backdrop-blur-sm border-l border-border/60 overflow-y-auto z-10">
       <div className="flex items-center justify-between px-4 py-3 border-b border-border/60">
@@ -1192,11 +1200,37 @@ function RightMetaPanel({
         {which === "pages" && (
           <div className="space-y-2">
             <p className="text-muted-foreground">frames in this board.</p>
-            <div className="rounded-md border border-border bg-card/60 px-3 py-2 flex items-center justify-between">
-              <span>frame one (index)</span>
-              <span className="text-[9px] text-muted-foreground">active</span>
-            </div>
-            <button className="w-full rounded-md border border-dashed border-border py-2 text-muted-foreground hover:bg-black/5">+ new frame</button>
+            {pages.map((p) => {
+              const isActive = p.slug === activeSlug;
+              const url = baseUrl ? (p.slug === "index" ? baseUrl : `${baseUrl}/${p.slug}`) : null;
+              return (
+                <div key={p.slug} className={`rounded-md border px-3 py-2 ${isActive ? "border-stone-900 bg-accent/40" : "border-border bg-card/60"}`}>
+                  <div className="flex items-center justify-between gap-2">
+                    <button onClick={() => onSwitchPage(p.slug)} className="text-left flex-1 truncate hover:underline">
+                      {p.name}
+                    </button>
+                    {isActive ? (
+                      <span className="text-[9px] text-muted-foreground">active</span>
+                    ) : (
+                      p.slug !== "index" && (
+                        <button onClick={() => onDeletePage(p.slug)} className="text-[9px] text-rose-600 hover:underline">delete</button>
+                      )
+                    )}
+                  </div>
+                  <div className="mt-1 flex items-center gap-2">
+                    <input
+                      value={p.name}
+                      onChange={(e) => onRenamePage(p.slug, e.target.value)}
+                      className="flex-1 bg-transparent text-[10px] text-muted-foreground border-b border-dashed border-transparent focus:border-stone-700/30 focus:outline-none"
+                    />
+                  </div>
+                  <div className="mt-1 text-[9px] text-muted-foreground/80 truncate">
+                    {url ? <a href={url} target="_blank" rel="noreferrer" className="hover:underline">{url}</a> : <span>/s/&lt;key&gt;{p.slug === "index" ? "" : `/${p.slug}`}</span>}
+                  </div>
+                </div>
+              );
+            })}
+            <button onClick={onAddPage} className="w-full rounded-md border border-dashed border-border py-2 text-muted-foreground hover:bg-black/5">+ new frame</button>
           </div>
         )}
         {which === "canvas" && (
