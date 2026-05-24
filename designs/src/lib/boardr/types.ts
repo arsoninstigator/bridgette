@@ -45,12 +45,25 @@ export interface StringConn {
   color?: string;
 }
 
+export interface PageMeta {
+  slug: string;
+  name: string;
+}
+
+export interface PageContent {
+  assets: AssetBase[];
+  strings: StringConn[];
+}
+
 export interface Board {
   id: string;
   name: string;
   kind: BoardKind;
-  assets: AssetBase[];
-  strings: StringConn[];
+  assets: AssetBase[]; // active page assets
+  strings: StringConn[]; // active page strings
+  pages?: PageMeta[]; // list including index; default [{slug:'index', name:'frame one (index)'}]
+  pageAssets?: Record<string, PageContent>; // content for non-active pages
+  activeSlug?: string; // currently edited page slug
   editKey: string; // plaintext key shown to user
   editKeyHash: string; // sha256 of key — index lookup
   publishedKey?: string; // 5-digit
@@ -64,5 +77,7 @@ export interface PublishedSnapshot {
   name: string;
   assets: AssetBase[];
   strings: StringConn[];
+  pages?: PageMeta[];
+  pageAssets?: Record<string, PageContent>;
   publishedAt: number;
 }

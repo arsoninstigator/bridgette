@@ -81,12 +81,19 @@ export function publishBoard(board: Board): string {
   if (!board.publishedKey) {
     while (published[key]) key = randomFiveDigit();
   }
+  // include all pages — active page's live assets folded into pageAssets
+  const activeSlug = board.activeSlug || "index";
+  const pages = board.pages && board.pages.length > 0 ? board.pages : [{ slug: "index", name: "frame one (index)" }];
+  const pageAssets: Record<string, { assets: typeof board.assets; strings: typeof board.strings }> = { ...(board.pageAssets || {}) };
+  pageAssets[activeSlug] = { assets: board.assets, strings: board.strings };
   const snap: PublishedSnapshot = {
     boardId: board.id,
     kind: board.kind,
     name: board.name,
     assets: board.assets,
     strings: board.strings,
+    pages,
+    pageAssets,
     publishedAt: Date.now(),
   };
   published[key] = snap;

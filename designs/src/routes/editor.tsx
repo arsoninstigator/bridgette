@@ -105,12 +105,58 @@ function Editor({ board, setBoard }: { board: Board; setBoard: (b: Board) => voi
   const [rightPanel, setRightPanel] = useState<RightPanelKey | null>(null);
   const [frameSize, setFrameSize] = useState({ w: 1000, h: 640 });
   const [addMenu, setAddMenu] = useState<null | "root" | "section">(null);
-  const [pages, setPages] = useState<string[]>(["frame one (index)"]);
+  const [activeSlug, setActiveSlug] = useState<string>(board.activeSlug || "index");
+  const pages = board.pages && board.pages.length > 0 ? board.pages : [{ slug: "index", name: "frame one (index)" }];
   const [sections, setSections] = useState<{ id: string; kind: "header" | "navbar" | "footer" | "blank" }[]>([]);
 
+  function slugify(s: string) {
+    return s.toLowerCase().trim().replace(/[^a-z0-9]+/g, "-").replace(/(^-|-$)/g, "") || "page";
+  }
+  function uniqueSlug(base: string) {
+    const taken = new Set(pages.map((p) => p.slug));
+    if (!taken.has(base)) return base;
+    let i = 2;
+    while (taken.has(`${base}-${i}`)) i++;
+    return `${base}-${i}`;
+  }
+
   function addPage() {
-    setPages((p) => [...p, `frame ${p.length + 1}`]);
+    const n = pages.length + 1;
+    const name = `frame ${n}`;
+    const slug = uniqueSlug(slugify(`frame-${n}`));
+    const newPages = [...pages, { slug, name }];
+    const pageAssets = { ...(board.pageAssets || {}) };
+    pageAssets[activeSlug] = { assets: board.assets, strings: board.strings };
+    pageAssets[slug] = { assets: [], strings: [] };
+    update({ pages: newPages, pageAssets, assets: [], strings: [], activeSlug: slug });
+    setActiveSlug(slug);
     setAddMenu(null);
+  }
+  function switchPage(slug: string) {
+    if (slug === activeSlug) return;
+    const pageAssets = { ...(board.pageAssets || {}) };
+    pageAssets[activeSlug] = { assets: board.assets, strings: board.strings };
+    const target = pageAssets[slug] || { assets: [], strings: [] };
+    update({ pages, pageAssets, assets: target.assets, strings: target.strings, activeSlug: slug }, false);
+    setActiveSlug(slug);
+    setSelectedIds([]);
+  }
+  function renamePage(slug: string, name: string) {
+    const newPages = pages.map((p) => (p.slug === slug ? { ...p, name } : p));
+    update({ pages: newPages }, false);
+  }
+  function deletePage(slug: string) {
+    if (slug === "index" || pages.length <= 1) return;
+    const newPages = pages.filter((p) => p.slug !== slug);
+    const pageAssets = { ...(board.pageAssets || {}) };
+    delete pageAssets[slug];
+    if (slug === activeSlug) {
+      const target = pageAssets["index"] || { assets: [], strings: [] };
+      update({ pages: newPages, pageAssets, assets: target.assets, strings: target.strings, activeSlug: "index" });
+      setActiveSlug("index");
+    } else {
+      update({ pages: newPages, pageAssets });
+    }
   }
   function addSection(kind: "header" | "navbar" | "footer" | "blank") {
     setSections((s) => [...s, { id: crypto.randomUUID(), kind }]);
@@ -571,6 +617,12 @@ function Editor({ board, setBoard }: { board: Board; setBoard: (b: Board) => voi
             onRename={(name) => update({ name }, false)}
             surfaceStyle={surfaceStyle}
             onSurfaceStyleChange={setSurfaceStyle}
+            pages={pages}
+            activeSlug={activeSlug}
+            onSwitchPage={switchPage}
+            onAddPage={addPage}
+            onRenamePage={renamePage}
+            onDeletePage={deletePage}
           />
         )}
       </div>
@@ -1121,6 +1173,7 @@ function SetGrid({
 
 function RightMetaPanel({
   which, board, onClose, onPickSurface, onRename, surfaceStyle, onSurfaceStyleChange,
+  pages, activeSlug, onSwitchPage, onAddPage, onRenamePage, onDeletePage,
 }: {
   which: RightPanelKey;
   board: Board;
@@ -1129,7 +1182,14 @@ function RightMetaPanel({
   onRename: (n: string) => void;
   surfaceStyle: SurfaceStyle;
   onSurfaceStyleChange: (s: SurfaceStyle) => void;
+  pages: { slug: string; name: string }[];
+  activeSlug: string;
+  onSwitchPage: (slug: string) => void;
+  onAddPage: () => void;
+  onRenamePage: (slug: string, name: string) => void;
+  onDeletePage: (slug: string) => void;
 }) {
+  const baseUrl = board.publishedKey ? `/s/${board.publishedKey}` : null;
   return (
     <aside className="w-[300px] shrink-0 bg-card/95 backdrop-blur-sm border-l border-border/60 overflow-y-auto z-10">
       <div className="flex items-center justify-between px-4 py-3 border-b border-border/60">
@@ -1140,11 +1200,37 @@ function RightMetaPanel({
         {which === "pages" && (
           <div className="space-y-2">
             <p className="text-muted-foreground">frames in this board.</p>
-            <div className="rounded-md border border-border bg-card/60 px-3 py-2 flex items-center justify-between">
-              <span>frame one (index)</span>
-              <span className="text-[9px] text-muted-foreground">active</span>
-            </div>
-            <button className="w-full rounded-md border border-dashed border-border py-2 text-muted-foreground hover:bg-black/5">+ new frame</button>
+            {pages.map((p) => {
+              const isActive = p.slug === activeSlug;
+              const url = baseUrl ? (p.slug === "index" ? baseUrl : `${baseUrl}/${p.slug}`) : null;
+              return (
+                <div key={p.slug} className={`rounded-md border px-3 py-2 ${isActive ? "border-stone-900 bg-accent/40" : "border-border bg-card/60"}`}>
+                  <div className="flex items-center justify-between gap-2">
+                    <button onClick={() => onSwitchPage(p.slug)} className="text-left flex-1 truncate hover:underline">
+                      {p.name}
+                    </button>
+                    {isActive ? (
+                      <span className="text-[9px] text-muted-foreground">active</span>
+                    ) : (
+                      p.slug !== "index" && (
+                        <button onClick={() => onDeletePage(p.slug)} className="text-[9px] text-rose-600 hover:underline">delete</button>
+                      )
+                    )}
+                  </div>
+                  <div className="mt-1 flex items-center gap-2">
+                    <input
+                      value={p.name}
+                      onChange={(e) => onRenamePage(p.slug, e.target.value)}
+                      className="flex-1 bg-transparent text-[10px] text-muted-foreground border-b border-dashed border-transparent focus:border-stone-700/30 focus:outline-none"
+                    />
+                  </div>
+                  <div className="mt-1 text-[9px] text-muted-foreground/80 truncate">
+                    {url ? <a href={url} target="_blank" rel="noreferrer" className="hover:underline">{url}</a> : <span>/s/&lt;key&gt;{p.slug === "index" ? "" : `/${p.slug}`}</span>}
+                  </div>
+                </div>
+              );
+            })}
+            <button onClick={onAddPage} className="w-full rounded-md border border-dashed border-border py-2 text-muted-foreground hover:bg-black/5">+ new frame</button>
           </div>
         )}
         {which === "canvas" && (
