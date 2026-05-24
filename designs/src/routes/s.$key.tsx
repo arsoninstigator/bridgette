@@ -44,15 +44,24 @@ function Viewer() {
           <span className="text-muted-foreground">/</span>
           <span className="font-mono text-sm">{snap.name}</span>
         </div>
-        <span className="font-mono text-[10px] uppercase tracking-wider text-muted-foreground">
-          /s/{key}
-        </span>
+        <nav className="flex items-center gap-2 font-mono text-[10px] lowercase tracking-wider text-muted-foreground">
+          {(snap.pages && snap.pages.length > 1) ? snap.pages.map((p) => (
+            <Link
+              key={p.slug}
+              to={p.slug === "index" ? "/s/$key" : "/s/$key/$page"}
+              params={p.slug === "index" ? { key } : { key, page: p.slug }}
+              className={`hover:text-foreground ${p.slug === "index" ? "text-foreground underline underline-offset-4" : ""}`}
+            >
+              {p.name}
+            </Link>
+          )) : <span>/s/{key}</span>}
+        </nav>
       </header>
       <div className="flex-1 flex">
         <BoardCanvas
           kind={snap.kind}
-          assets={snap.assets}
-          strings={snap.strings}
+          assets={(snap.pageAssets && snap.pageAssets["index"]?.assets) || snap.assets}
+          strings={(snap.pageAssets && snap.pageAssets["index"]?.strings) || snap.strings}
         />
       </div>
     </div>
