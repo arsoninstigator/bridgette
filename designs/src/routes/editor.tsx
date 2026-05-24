@@ -1599,3 +1599,85 @@ function MenuItem({ label, onClick, danger }: { label: string; onClick: () => vo
   );
 }
 
+function AddPageOrSectionDialog({
+  mode,
+  setMode,
+  onAddPage,
+  onAddSection,
+  onClose,
+}: {
+  mode: "root" | "section";
+  setMode: (m: "root" | "section") => void;
+  onAddPage: () => void;
+  onAddSection: (k: "header" | "navbar" | "footer" | "blank") => void;
+  onClose: () => void;
+}) {
+  return (
+    <div
+      className="fixed inset-0 z-50 grid place-items-center bg-stone-900/40 backdrop-blur-sm"
+      onClick={onClose}
+    >
+      <div
+        onClick={(e) => e.stopPropagation()}
+        className="w-[420px] rounded-lg border border-stone-700/30 bg-pink-50 shadow-xl p-5 font-mono lowercase text-stone-800"
+      >
+        <div className="flex items-center justify-between mb-4">
+          <div className="text-xs tracking-wider text-stone-600">
+            {mode === "root" ? "add to board" : "pick a section"}
+          </div>
+          <button onClick={onClose} className="text-stone-500 hover:text-stone-900">
+            <X size={14} />
+          </button>
+        </div>
+
+        {mode === "root" ? (
+          <div className="grid grid-cols-2 gap-3">
+            <button
+              onClick={onAddPage}
+              className="rounded-md border border-stone-700/30 bg-white hover:bg-pink-100 p-4 text-left"
+            >
+              <div className="text-sm font-display normal-case">page</div>
+              <div className="text-[10px] text-stone-500 mt-1">a new frame to compose on</div>
+            </button>
+            <button
+              onClick={() => setMode("section")}
+              className="rounded-md border border-stone-700/30 bg-white hover:bg-pink-100 p-4 text-left"
+            >
+              <div className="text-sm font-display normal-case">section</div>
+              <div className="text-[10px] text-stone-500 mt-1">header, navbar, footer or blank</div>
+            </button>
+          </div>
+        ) : (
+          <div className="grid grid-cols-2 gap-3">
+            {(["header", "navbar", "footer", "blank"] as const).map((k) => (
+              <button
+                key={k}
+                onClick={() => onAddSection(k)}
+                className="rounded-md border border-stone-700/30 bg-white hover:bg-pink-100 p-4 text-left"
+              >
+                <div className="text-sm font-display normal-case">{k}</div>
+                <div className="text-[10px] text-stone-500 mt-1">
+                  {k === "header" && "title + intro block"}
+                  {k === "navbar" && "links across the top"}
+                  {k === "footer" && "credits + small print"}
+                  {k === "blank" && "empty section to fill"}
+                </div>
+              </button>
+            ))}
+          </div>
+        )}
+
+        {mode === "section" && (
+          <button
+            onClick={() => setMode("root")}
+            className="mt-4 text-[10px] text-stone-500 hover:text-stone-900"
+          >
+            ← back
+          </button>
+        )}
+      </div>
+    </div>
+  );
+}
+
+
