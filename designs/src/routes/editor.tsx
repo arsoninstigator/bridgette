@@ -531,11 +531,23 @@ function Editor({ board, setBoard }: { board: Board; setBoard: (b: Board) => voi
           )}
           {!previewMode && (
             <div className="sticky bottom-5 left-0 w-full flex justify-center pointer-events-none">
-              <button className="pointer-events-auto flex items-center justify-center gap-2 rounded-md bg-pink-100/90 hover:bg-pink-100 backdrop-blur-sm border border-stone-700/30 px-5 py-2.5 font-mono text-xs lowercase text-stone-700 shadow-sm">
+              <button
+                onClick={() => setAddMenu("root")}
+                className="pointer-events-auto flex items-center justify-center gap-2 rounded-md bg-pink-100/90 hover:bg-pink-100 backdrop-blur-sm border border-stone-700/30 px-5 py-2.5 font-mono text-xs lowercase text-stone-700 shadow-sm"
+              >
                 add pages or sections
                 <ChevronDown size={14} />
               </button>
             </div>
+          )}
+          {addMenu && !previewMode && (
+            <AddPageOrSectionDialog
+              mode={addMenu}
+              setMode={setAddMenu}
+              onAddPage={addPage}
+              onAddSection={addSection}
+              onClose={() => setAddMenu(null)}
+            />
           )}
         </main>
 
