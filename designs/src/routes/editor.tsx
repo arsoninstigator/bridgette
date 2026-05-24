@@ -104,6 +104,18 @@ function Editor({ board, setBoard }: { board: Board; setBoard: (b: Board) => voi
   const [recent, setRecent] = useState<string[]>(() => readRecent());
   const [rightPanel, setRightPanel] = useState<RightPanelKey | null>(null);
   const [frameSize, setFrameSize] = useState({ w: 1000, h: 640 });
+  const [addMenu, setAddMenu] = useState<null | "root" | "section">(null);
+  const [pages, setPages] = useState<string[]>(["frame one (index)"]);
+  const [sections, setSections] = useState<{ id: string; kind: "header" | "navbar" | "footer" | "blank" }[]>([]);
+
+  function addPage() {
+    setPages((p) => [...p, `frame ${p.length + 1}`]);
+    setAddMenu(null);
+  }
+  function addSection(kind: "header" | "navbar" | "footer" | "blank") {
+    setSections((s) => [...s, { id: crypto.randomUUID(), kind }]);
+    setAddMenu(null);
+  }
   const [surfaceStyle, setSurfaceStyle] = useState<SurfaceStyle>({ border: 0, borderColor: "#3a2b1f", borderStyle: "solid", radius: 2 });
   const [assetMenu, setAssetMenu] = useState<AssetMenuState>(null);
 
