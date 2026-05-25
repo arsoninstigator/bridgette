@@ -1,0 +1,105 @@
+export interface SeedPack {
+  id: string;
+  name: string;
+  description: string;
+  category: string;
+  tags: string[];
+  pack_type: "assets" | "template" | "list";
+  item_count: number;
+  curator: string;
+  swatch: string[]; // hex colors representing the pack
+}
+
+export const SEED_PACKS: SeedPack[] = [
+  {
+    id: "seed-detective",
+    name: "detective wall starter",
+    description: "polaroids, red string, pushpins, and torn notepaper for your investigation board.",
+    category: "investigation",
+    tags: ["red-string", "polaroids", "pins", "noir", "true-crime"],
+    pack_type: "assets",
+    item_count: 24,
+    curator: "zinegeist",
+    swatch: ["#b91c1c", "#fbf7ec", "#1a1a1a", "#c9a84c"],
+  },
+  {
+    id: "seed-90s-zine",
+    name: "90s zine cuts",
+    description: "ransom-note type, photocopy halftones, washi tape, and grunge collage bits.",
+    category: "zine",
+    tags: ["grunge", "collage", "halftone", "ransom", "diy"],
+    pack_type: "assets",
+    item_count: 41,
+    curator: "zinegeist",
+    swatch: ["#0d0d0d", "#f5f3ee", "#e85d3a", "#fde047"],
+  },
+  {
+    id: "seed-academia",
+    name: "dark academia archive",
+    description: "leather journal scraps, brass pins, sepia photos, library card stock.",
+    category: "archive",
+    tags: ["sepia", "leather", "ephemera", "library", "academia"],
+    pack_type: "assets",
+    item_count: 33,
+    curator: "zinegeist",
+    swatch: ["#3b2a1a", "#6b4f2a", "#c9a84c", "#e8d9b8"],
+  },
+  {
+    id: "seed-cozy-cottage",
+    name: "cottagecore mood",
+    description: "pressed flowers, kraft paper, gingham washi, polaroid frames in warm tones.",
+    category: "mood",
+    tags: ["floral", "kraft", "warm", "polaroid", "cottage"],
+    pack_type: "assets",
+    item_count: 28,
+    curator: "zinegeist",
+    swatch: ["#dce5d4", "#e8c5d0", "#c9a574", "#f5f0e8"],
+  },
+  {
+    id: "seed-conspiracy",
+    name: "conspiracy corkboard",
+    description: "marker scribbles, sticky notes, evidence tape, red yarn loops.",
+    category: "investigation",
+    tags: ["red-string", "sticky", "marker", "evidence"],
+    pack_type: "template",
+    item_count: 1,
+    curator: "zinegeist",
+    swatch: ["#7a3a2a", "#e7c79a", "#b91c1c", "#1a1a1a"],
+  },
+  {
+    id: "seed-tour-diary",
+    name: "tour diary template",
+    description: "a pre-built page layout for documenting a trip — multi-page, dated frames.",
+    category: "template",
+    tags: ["travel", "diary", "polaroid", "multi-page"],
+    pack_type: "template",
+    item_count: 1,
+    curator: "zinegeist",
+    swatch: ["#0c2340", "#5cbdb9", "#e8c07a", "#f5f0e8"],
+  },
+  {
+    id: "seed-fanwiki",
+    name: "fan wiki relations",
+    description: "character cards, ship lines, faction badges, lore notes — for fandom worldbuilding.",
+    category: "worldbuilding",
+    tags: ["fandom", "characters", "relationships", "lore"],
+    pack_type: "assets",
+    item_count: 36,
+    curator: "zinegeist",
+    swatch: ["#4f46e5", "#e85d3a", "#fde047", "#0d0d0d"],
+  },
+  {
+    id: "seed-reading-list",
+    name: "books i devoured this year",
+    description: "a curator's list — annotated book covers and quote cards.",
+    category: "list",
+    tags: ["books", "reading", "quotes", "annotated"],
+    pack_type: "list",
+    item_count: 12,
+    curator: "zinegeist",
+    swatch: ["#5c2018", "#d4842a", "#e8b84a", "#f5f3ee"],
+  },
+];
+
+export const SEED_CATEGORIES = ["all", "investigation", "zine", "archive", "mood", "template", "worldbuilding", "list"] as const;
+export const SEED_TYPES = ["all", "assets", "template", "list"] as const;

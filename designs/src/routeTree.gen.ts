@@ -9,17 +9,25 @@
 // Additionally, you should also exclude this file from your linter and/or formatter to prevent it from being checked or modified.
 
 import { Route as rootRouteImport } from './routes/__root'
+import { Route as TemplatesRouteImport } from './routes/templates'
 import { Route as RoadmapRouteImport } from './routes/roadmap'
 import { Route as PositioningRouteImport } from './routes/positioning'
 import { Route as FeaturesRouteImport } from './routes/features'
 import { Route as EditorRouteImport } from './routes/editor'
 import { Route as DashboardRouteImport } from './routes/dashboard'
 import { Route as CompareRouteImport } from './routes/compare'
+import { Route as AuthRouteImport } from './routes/auth'
+import { Route as AssetsRouteImport } from './routes/assets'
 import { Route as AboutRouteImport } from './routes/about'
 import { Route as IndexRouteImport } from './routes/index'
 import { Route as SKeyRouteImport } from './routes/s.$key'
 import { Route as SKeyPageRouteImport } from './routes/s.$key.$page'
 
+const TemplatesRoute = TemplatesRouteImport.update({
+  id: '/templates',
+  path: '/templates',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const RoadmapRoute = RoadmapRouteImport.update({
   id: '/roadmap',
   path: '/roadmap',
@@ -50,6 +58,16 @@ const CompareRoute = CompareRouteImport.update({
   path: '/compare',
   getParentRoute: () => rootRouteImport,
 } as any)
+const AuthRoute = AuthRouteImport.update({
+  id: '/auth',
+  path: '/auth',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const AssetsRoute = AssetsRouteImport.update({
+  id: '/assets',
+  path: '/assets',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const AboutRoute = AboutRouteImport.update({
   id: '/about',
   path: '/about',
@@ -74,24 +92,30 @@ const SKeyPageRoute = SKeyPageRouteImport.update({
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
   '/about': typeof AboutRoute
+  '/assets': typeof AssetsRoute
+  '/auth': typeof AuthRoute
   '/compare': typeof CompareRoute
   '/dashboard': typeof DashboardRoute
   '/editor': typeof EditorRoute
   '/features': typeof FeaturesRoute
   '/positioning': typeof PositioningRoute
   '/roadmap': typeof RoadmapRoute
+  '/templates': typeof TemplatesRoute
   '/s/$key': typeof SKeyRouteWithChildren
   '/s/$key/$page': typeof SKeyPageRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
   '/about': typeof AboutRoute
+  '/assets': typeof AssetsRoute
+  '/auth': typeof AuthRoute
   '/compare': typeof CompareRoute
   '/dashboard': typeof DashboardRoute
   '/editor': typeof EditorRoute
   '/features': typeof FeaturesRoute
   '/positioning': typeof PositioningRoute
   '/roadmap': typeof RoadmapRoute
+  '/templates': typeof TemplatesRoute
   '/s/$key': typeof SKeyRouteWithChildren
   '/s/$key/$page': typeof SKeyPageRoute
 }
@@ -99,12 +123,15 @@ export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
   '/about': typeof AboutRoute
+  '/assets': typeof AssetsRoute
+  '/auth': typeof AuthRoute
   '/compare': typeof CompareRoute
   '/dashboard': typeof DashboardRoute
   '/editor': typeof EditorRoute
   '/features': typeof FeaturesRoute
   '/positioning': typeof PositioningRoute
   '/roadmap': typeof RoadmapRoute
+  '/templates': typeof TemplatesRoute
   '/s/$key': typeof SKeyRouteWithChildren
   '/s/$key/$page': typeof SKeyPageRoute
 }
@@ -113,36 +140,45 @@ export interface FileRouteTypes {
   fullPaths:
     | '/'
     | '/about'
+    | '/assets'
+    | '/auth'
     | '/compare'
     | '/dashboard'
     | '/editor'
     | '/features'
     | '/positioning'
     | '/roadmap'
+    | '/templates'
     | '/s/$key'
     | '/s/$key/$page'
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/'
     | '/about'
+    | '/assets'
+    | '/auth'
     | '/compare'
     | '/dashboard'
     | '/editor'
     | '/features'
     | '/positioning'
     | '/roadmap'
+    | '/templates'
     | '/s/$key'
     | '/s/$key/$page'
   id:
     | '__root__'
     | '/'
     | '/about'
+    | '/assets'
+    | '/auth'
     | '/compare'
     | '/dashboard'
     | '/editor'
     | '/features'
     | '/positioning'
     | '/roadmap'
+    | '/templates'
     | '/s/$key'
     | '/s/$key/$page'
   fileRoutesById: FileRoutesById
@@ -150,17 +186,27 @@ export interface FileRouteTypes {
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
   AboutRoute: typeof AboutRoute
+  AssetsRoute: typeof AssetsRoute
+  AuthRoute: typeof AuthRoute
   CompareRoute: typeof CompareRoute
   DashboardRoute: typeof DashboardRoute
   EditorRoute: typeof EditorRoute
   FeaturesRoute: typeof FeaturesRoute
   PositioningRoute: typeof PositioningRoute
   RoadmapRoute: typeof RoadmapRoute
+  TemplatesRoute: typeof TemplatesRoute
   SKeyRoute: typeof SKeyRouteWithChildren
 }
 
 declare module '@tanstack/react-router' {
   interface FileRoutesByPath {
+    '/templates': {
+      id: '/templates'
+      path: '/templates'
+      fullPath: '/templates'
+      preLoaderRoute: typeof TemplatesRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/roadmap': {
       id: '/roadmap'
       path: '/roadmap'
@@ -201,6 +247,20 @@ declare module '@tanstack/react-router' {
       path: '/compare'
       fullPath: '/compare'
       preLoaderRoute: typeof CompareRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/auth': {
+      id: '/auth'
+      path: '/auth'
+      fullPath: '/auth'
+      preLoaderRoute: typeof AuthRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/assets': {
+      id: '/assets'
+      path: '/assets'
+      fullPath: '/assets'
+      preLoaderRoute: typeof AssetsRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/about': {
@@ -247,24 +307,17 @@ const SKeyRouteWithChildren = SKeyRoute._addFileChildren(SKeyRouteChildren)
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
   AboutRoute: AboutRoute,
+  AssetsRoute: AssetsRoute,
+  AuthRoute: AuthRoute,
   CompareRoute: CompareRoute,
   DashboardRoute: DashboardRoute,
   EditorRoute: EditorRoute,
   FeaturesRoute: FeaturesRoute,
   PositioningRoute: PositioningRoute,
   RoadmapRoute: RoadmapRoute,
+  TemplatesRoute: TemplatesRoute,
   SKeyRoute: SKeyRouteWithChildren,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
   ._addFileTypes<FileRouteTypes>()
-
-import type { getRouter } from './router.tsx'
-import type { startInstance } from './start.ts'
-declare module '@tanstack/react-start' {
-  interface Register {
-    ssr: true
-    router: Awaited<ReturnType<typeof getRouter>>
-    config: Awaited<ReturnType<typeof startInstance.getOptions>>
-  }
-}
