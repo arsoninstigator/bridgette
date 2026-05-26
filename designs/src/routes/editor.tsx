@@ -1397,12 +1397,177 @@ function LibraryPreview({ kind, extra, large }: { kind: AssetKind; extra?: Parti
   }
 }
 
-function StylesPanel() {
+type SavedPalette = { id: string; name: string; colors: string[] };
+type SavedFont = { id: string; family: string; tags: string[] };
+
+const PALETTE_PRESETS: SavedPalette[] = [
+  { id: "p-noir", name: "noir & gold", colors: ["#0d0d0d", "#1a1a1a", "#c9a84c", "#f0d78c"] },
+  { id: "p-cork", name: "cork warmth", colors: ["#f5f0e8", "#c9a576", "#8b6f47", "#3d2817"] },
+  { id: "p-mint", name: "neon mint", colors: ["#0d1b2a", "#1b4332", "#2dd4a8", "#73ffb8"] },
+];
+const FONT_PRESETS: SavedFont[] = [
+  { id: "f-space", family: "Space Grotesk", tags: ["display", "modern"] },
+  { id: "f-inst", family: "Instrument Serif", tags: ["serif", "editorial"] },
+  { id: "f-jet", family: "JetBrains Mono", tags: ["mono", "code"] },
+];
+
+function StylesPanel({ boardId }: { boardId: string }) {
+  const pKey = `boardr:styles:palettes:${boardId}`;
+  const fKey = `boardr:styles:fonts:${boardId}`;
+  const [palettes, setPalettes] = useState<SavedPalette[]>([]);
+  const [fonts, setFonts] = useState<SavedFont[]>([]);
+  const [view, setView] = useState<"home" | "palettes" | "fonts">("home");
+  const [tagFilter, setTagFilter] = useState("");
+
+  useEffect(() => {
+    try {
+      const p = localStorage.getItem(pKey);
+      const f = localStorage.getItem(fKey);
+      setPalettes(p ? JSON.parse(p) : PALETTE_PRESETS);
+      setFonts(f ? JSON.parse(f) : FONT_PRESETS);
+    } catch {
+      setPalettes(PALETTE_PRESETS);
+      setFonts(FONT_PRESETS);
+    }
+  }, [pKey, fKey]);
+
+  const persistPalettes = (next: SavedPalette[]) => {
+    setPalettes(next);
+    try { localStorage.setItem(pKey, JSON.stringify(next)); } catch {}
+  };
+  const persistFonts = (next: SavedFont[]) => {
+    setFonts(next);
+    try { localStorage.setItem(fKey, JSON.stringify(next)); } catch {}
+  };
+
+  const addPalette = () => {
+    const name = prompt("palette name");
+    if (!name) return;
+    const colorsRaw = prompt("colors (comma-separated hex)", "#000000, #ffffff");
+    if (!colorsRaw) return;
+    const colors = colorsRaw.split(",").map((s) => s.trim()).filter(Boolean);
+    persistPalettes([...palettes, { id: `p-${Date.now()}`, name, colors }]);
+  };
+  const addFont = () => {
+    const family = prompt("font family name (e.g. 'Inter')");
+    if (!family) return;
+    persistFonts([...fonts, { id: `f-${Date.now()}`, family, tags: [] }]);
+  };
+  const tagFont = (id: string) => {
+    const f = fonts.find((x) => x.id === id);
+    if (!f) return;
+    const t = prompt("tags (comma-separated)", f.tags.join(", "));
+    if (t === null) return;
+    const tags = t.split(",").map((s) => s.trim().toLowerCase()).filter(Boolean);
+    persistFonts(fonts.map((x) => (x.id === id ? { ...x, tags } : x)));
+  };
+  const removeFont = (id: string) => persistFonts(fonts.filter((x) => x.id !== id));
+  const removePalette = (id: string) => persistPalettes(palettes.filter((x) => x.id !== id));
+
+  if (view === "palettes") {
+    return (
+      <div className="space-y-3">
+        <div className="flex items-center justify-between">
+          <button onClick={() => setView("home")} className="font-mono text-[10px] lowercase text-muted-foreground hover:text-foreground">← back</button>
+          <button onClick={addPalette} className="font-mono text-[10px] lowercase rounded border border-border px-2 py-1 hover:bg-black/5">+ new palette</button>
+        </div>
+        <p className="font-mono text-[10px] lowercase text-muted-foreground">private to you — not shown to viewers</p>
+        <div className="space-y-2">
+          {palettes.map((p) => (
+            <div key={p.id} className="rounded-md border border-border bg-card/40 p-2">
+              <div className="flex items-center justify-between mb-1">
+                <span className="font-mono text-[11px] lowercase">{p.name}</span>
+                <button onClick={() => removePalette(p.id)} className="font-mono text-[10px] text-muted-foreground hover:text-destructive">remove</button>
+              </div>
+              <div className="flex gap-1">
+                {p.colors.map((c, i) => (
+                  <div key={i} className="h-8 flex-1 rounded-sm border border-border" style={{ background: c }} title={c} />
+                ))}
+              </div>
+            </div>
+          ))}
+        </div>
+      </div>
+    );
+  }
+
+  if (view === "fonts") {
+    const q = tagFilter.toLowerCase();
+    const filtered = q
+      ? fonts.filter((f) => f.tags.some((t) => t.includes(q)) || f.family.toLowerCase().includes(q))
+      : fonts;
+    return (
+      <div className="space-y-3">
+        <div className="flex items-center justify-between">
+          <button onClick={() => setView("home")} className="font-mono text-[10px] lowercase text-muted-foreground hover:text-foreground">← back</button>
+          <button onClick={addFont} className="font-mono text-[10px] lowercase rounded border border-border px-2 py-1 hover:bg-black/5">+ add font</button>
+        </div>
+        <input
+          value={tagFilter}
+          onChange={(e) => setTagFilter(e.target.value)}
+          placeholder="filter by tag or name"
+          className="w-full rounded border border-border bg-background px-2 py-1 font-mono text-[11px] lowercase"
+        />
+        <p className="font-mono text-[10px] lowercase text-muted-foreground">right-click a font to tag it</p>
+        <div className="space-y-2">
+          {filtered.map((f) => (
+            <ContextMenu key={f.id}>
+              <ContextMenuTrigger asChild>
+                <div className="rounded-md border border-border bg-card/40 p-2 cursor-default">
+                  <div style={{ fontFamily: f.family }} className="text-lg">{f.family}</div>
+                  <div className="flex flex-wrap gap-1 mt-1">
+                    {f.tags.length === 0 ? (
+                      <span className="font-mono text-[9px] lowercase text-muted-foreground">no tags</span>
+                    ) : f.tags.map((t) => (
+                      <span key={t} className="font-mono text-[9px] lowercase rounded-sm bg-muted px-1.5 py-0.5">{t}</span>
+                    ))}
+                  </div>
+                </div>
+              </ContextMenuTrigger>
+              <ContextMenuContent>
+                <ContextMenuItem onClick={() => tagFont(f.id)}>edit tags</ContextMenuItem>
+                <ContextMenuItem onClick={() => removeFont(f.id)} className="text-destructive">remove</ContextMenuItem>
+              </ContextMenuContent>
+            </ContextMenu>
+          ))}
+        </div>
+      </div>
+    );
+  }
+
   return (
     <div className="space-y-3">
-      <p className="font-mono text-[10px] lowercase text-muted-foreground">save your fonts, colors, and style presets here.</p>
-      <div className="rounded-md border border-dashed border-border p-4 text-center font-mono text-[11px] lowercase text-muted-foreground">
-        coming soon
+      <p className="font-mono text-[10px] lowercase text-muted-foreground">private style library — only you see this.</p>
+
+      <div className="rounded-md border border-border bg-card/40">
+        <button onClick={() => setView("palettes")} className="w-full flex items-center justify-between px-3 py-2 font-mono text-[11px] lowercase hover:bg-black/5">
+          <span>palettes ({palettes.length})</span>
+          <span className="text-muted-foreground">view all →</span>
+        </button>
+        <div className="p-2 space-y-1.5">
+          {palettes.slice(0, 3).map((p) => (
+            <div key={p.id} className="flex items-center gap-2">
+              <div className="flex gap-0.5 flex-1">
+                {p.colors.map((c, i) => (
+                  <div key={i} className="h-5 flex-1 rounded-sm" style={{ background: c }} />
+                ))}
+              </div>
+              <span className="font-mono text-[9px] lowercase text-muted-foreground w-16 truncate">{p.name}</span>
+            </div>
+          ))}
+        </div>
+      </div>
+
+      <div className="rounded-md border border-border bg-card/40">
+        <button onClick={() => setView("fonts")} className="w-full flex items-center justify-between px-3 py-2 font-mono text-[11px] lowercase hover:bg-black/5">
+          <span>fonts ({fonts.length})</span>
+          <span className="text-muted-foreground">view all →</span>
+        </button>
+        <div className="p-2 space-y-1">
+          {fonts.slice(0, 3).map((f) => (
+            <div key={f.id} style={{ fontFamily: f.family }} className="text-sm truncate">{f.family}</div>
+          ))}
+        </div>
       </div>
     </div>
   );
