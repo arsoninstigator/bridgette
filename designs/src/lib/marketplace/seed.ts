@@ -99,7 +99,18 @@ export const SEED_PACKS: SeedPack[] = [
     curator: "zinegeist",
     swatch: ["#5c2018", "#d4842a", "#e8b84a", "#f5f3ee"],
   },
+  {
+    id: "seed-motion-graphics",
+    name: "motion graphics kit",
+    description: "marquees, news tickers, looping gifs, kinetic type, blinking neon signage, scrolling banners, and animated stickers to bring your board to life.",
+    category: "motion",
+    tags: ["animation", "marquee", "ticker", "kinetic-type", "loop", "gif", "blinking", "neon", "scroll", "lottie"],
+    pack_type: "assets",
+    item_count: 32,
+    curator: "zinegeist",
+    swatch: ["#ff3366", "#fde047", "#0d0d0d", "#22d3ee"],
+  },
 ];
 
-export const SEED_CATEGORIES = ["all", "investigation", "zine", "archive", "mood", "template", "worldbuilding", "list"] as const;
+export const SEED_CATEGORIES = ["all", "investigation", "zine", "archive", "mood", "motion", "template", "worldbuilding", "list"] as const;
 export const SEED_TYPES = ["all", "assets", "template", "list"] as const;
