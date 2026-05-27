@@ -32,7 +32,7 @@ function Dashboard() {
   return (
     <div className="min-h-screen bg-background">
       <header className="bg-editor-header px-6 py-4 flex items-center justify-between">
-        <Link to="/" className="font-display text-2xl lowercase">boardr</Link>
+        <Link to="/" className="font-display text-2xl lowercase">zinegeist</Link>
         <button
           onClick={() => setPicking(true)}
           className="rounded-md bg-stone-900/80 px-4 py-2 font-mono text-[11px] lowercase tracking-wider text-stone-50 hover:bg-stone-900"
