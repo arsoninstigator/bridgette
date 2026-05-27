@@ -12,6 +12,7 @@ import { Route as rootRouteImport } from './routes/__root'
 import { Route as TemplatesRouteImport } from './routes/templates'
 import { Route as RoadmapRouteImport } from './routes/roadmap'
 import { Route as PositioningRouteImport } from './routes/positioning'
+import { Route as MarketplaceRouteImport } from './routes/marketplace'
 import { Route as FeaturesRouteImport } from './routes/features'
 import { Route as EditorRouteImport } from './routes/editor'
 import { Route as DashboardRouteImport } from './routes/dashboard'
@@ -36,6 +37,11 @@ const RoadmapRoute = RoadmapRouteImport.update({
 const PositioningRoute = PositioningRouteImport.update({
   id: '/positioning',
   path: '/positioning',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const MarketplaceRoute = MarketplaceRouteImport.update({
+  id: '/marketplace',
+  path: '/marketplace',
   getParentRoute: () => rootRouteImport,
 } as any)
 const FeaturesRoute = FeaturesRouteImport.update({
@@ -98,6 +104,7 @@ export interface FileRoutesByFullPath {
   '/dashboard': typeof DashboardRoute
   '/editor': typeof EditorRoute
   '/features': typeof FeaturesRoute
+  '/marketplace': typeof MarketplaceRoute
   '/positioning': typeof PositioningRoute
   '/roadmap': typeof RoadmapRoute
   '/templates': typeof TemplatesRoute
@@ -113,6 +120,7 @@ export interface FileRoutesByTo {
   '/dashboard': typeof DashboardRoute
   '/editor': typeof EditorRoute
   '/features': typeof FeaturesRoute
+  '/marketplace': typeof MarketplaceRoute
   '/positioning': typeof PositioningRoute
   '/roadmap': typeof RoadmapRoute
   '/templates': typeof TemplatesRoute
@@ -129,6 +137,7 @@ export interface FileRoutesById {
   '/dashboard': typeof DashboardRoute
   '/editor': typeof EditorRoute
   '/features': typeof FeaturesRoute
+  '/marketplace': typeof MarketplaceRoute
   '/positioning': typeof PositioningRoute
   '/roadmap': typeof RoadmapRoute
   '/templates': typeof TemplatesRoute
@@ -146,6 +155,7 @@ export interface FileRouteTypes {
     | '/dashboard'
     | '/editor'
     | '/features'
+    | '/marketplace'
     | '/positioning'
     | '/roadmap'
     | '/templates'
@@ -161,6 +171,7 @@ export interface FileRouteTypes {
     | '/dashboard'
     | '/editor'
     | '/features'
+    | '/marketplace'
     | '/positioning'
     | '/roadmap'
     | '/templates'
@@ -176,6 +187,7 @@ export interface FileRouteTypes {
     | '/dashboard'
     | '/editor'
     | '/features'
+    | '/marketplace'
     | '/positioning'
     | '/roadmap'
     | '/templates'
@@ -192,6 +204,7 @@ export interface RootRouteChildren {
   DashboardRoute: typeof DashboardRoute
   EditorRoute: typeof EditorRoute
   FeaturesRoute: typeof FeaturesRoute
+  MarketplaceRoute: typeof MarketplaceRoute
   PositioningRoute: typeof PositioningRoute
   RoadmapRoute: typeof RoadmapRoute
   TemplatesRoute: typeof TemplatesRoute
@@ -219,6 +232,13 @@ declare module '@tanstack/react-router' {
       path: '/positioning'
       fullPath: '/positioning'
       preLoaderRoute: typeof PositioningRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/marketplace': {
+      id: '/marketplace'
+      path: '/marketplace'
+      fullPath: '/marketplace'
+      preLoaderRoute: typeof MarketplaceRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/features': {
@@ -313,6 +333,7 @@ const rootRouteChildren: RootRouteChildren = {
   DashboardRoute: DashboardRoute,
   EditorRoute: EditorRoute,
   FeaturesRoute: FeaturesRoute,
+  MarketplaceRoute: MarketplaceRoute,
   PositioningRoute: PositioningRoute,
   RoadmapRoute: RoadmapRoute,
   TemplatesRoute: TemplatesRoute,
