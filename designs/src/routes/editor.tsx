@@ -972,7 +972,21 @@ const LIBRARY_SETS: LibrarySet[] = [
   { id: "decoration", label: "decoration", available: false, blurb: "stickers, doodles, marginalia.", items: [] },
   { id: "lettering", label: "lettering", available: false, blurb: "stamps, headlines, hand-lettered titles.", items: [] },
   { id: "flags", label: "flags, maps", available: false, blurb: "pennants, cartography, location markers.", items: [] },
-  { id: "anchoring", label: "anchoring", available: false, blurb: "paperclips, binder clips, brass fasteners.", items: [] },
+  {
+    id: "anchoring", label: "anchoring", available: true,
+    blurb: "pinboards, magnets, clips, paperclips, fasteners — every way to hold a thing down.",
+    items: [
+      { id: "anchor-thumbtack-red", label: "thumbtack", kind: "pin", extra: { color: "#b91c1c" } },
+      { id: "anchor-thumbtack-brass", label: "brass tack", kind: "pin", extra: { color: "#c9a84c" } },
+      { id: "anchor-magnet-red", label: "magnet (red)", kind: "shape", extra: { shape: "circle", width: 28, height: 28, fill: "#b91c1c" } },
+      { id: "anchor-magnet-black", label: "magnet (black)", kind: "shape", extra: { shape: "circle", width: 28, height: 28, fill: "#1a1a1a" } },
+      { id: "anchor-paperclip", label: "paperclip", kind: "shape", extra: { shape: "rect", width: 48, height: 18, fill: "#9ca3af" } },
+      { id: "anchor-bulldog", label: "bulldog clip", kind: "shape", extra: { shape: "rect", width: 56, height: 28, fill: "#2d2d2d" } },
+      { id: "anchor-binder", label: "binder clip", kind: "shape", extra: { shape: "triangle", width: 44, height: 36, fill: "#1a1a1a" } },
+      { id: "anchor-brad", label: "brass fastener", kind: "shape", extra: { shape: "circle", width: 22, height: 22, fill: "#c9a84c" } },
+      { id: "anchor-pinboard", label: "pinboard tile", kind: "paper", extra: { width: 180, color: "#c9a07a" } },
+    ],
+  },
   { id: "scrapbook", label: "scrapbooking", available: false, blurb: "pressed flowers, ticket stubs, ephemera.", items: [] },
   { id: "charms", label: "charms", available: false, blurb: "small enamel bits, beads, talismans.", items: [] },
 ];
