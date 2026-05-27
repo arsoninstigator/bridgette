@@ -22,6 +22,7 @@ import { Route as AssetsRouteImport } from './routes/assets'
 import { Route as AboutRouteImport } from './routes/about'
 import { Route as IndexRouteImport } from './routes/index'
 import { Route as SKeyRouteImport } from './routes/s.$key'
+import { Route as MarketplaceUiRouteImport } from './routes/marketplace.ui'
 import { Route as SKeyPageRouteImport } from './routes/s.$key.$page'
 
 const TemplatesRoute = TemplatesRouteImport.update({
@@ -89,6 +90,11 @@ const SKeyRoute = SKeyRouteImport.update({
   path: '/s/$key',
   getParentRoute: () => rootRouteImport,
 } as any)
+const MarketplaceUiRoute = MarketplaceUiRouteImport.update({
+  id: '/ui',
+  path: '/ui',
+  getParentRoute: () => MarketplaceRoute,
+} as any)
 const SKeyPageRoute = SKeyPageRouteImport.update({
   id: '/$page',
   path: '/$page',
@@ -104,10 +110,11 @@ export interface FileRoutesByFullPath {
   '/dashboard': typeof DashboardRoute
   '/editor': typeof EditorRoute
   '/features': typeof FeaturesRoute
-  '/marketplace': typeof MarketplaceRoute
+  '/marketplace': typeof MarketplaceRouteWithChildren
   '/positioning': typeof PositioningRoute
   '/roadmap': typeof RoadmapRoute
   '/templates': typeof TemplatesRoute
+  '/marketplace/ui': typeof MarketplaceUiRoute
   '/s/$key': typeof SKeyRouteWithChildren
   '/s/$key/$page': typeof SKeyPageRoute
 }
@@ -120,10 +127,11 @@ export interface FileRoutesByTo {
   '/dashboard': typeof DashboardRoute
   '/editor': typeof EditorRoute
   '/features': typeof FeaturesRoute
-  '/marketplace': typeof MarketplaceRoute
+  '/marketplace': typeof MarketplaceRouteWithChildren
   '/positioning': typeof PositioningRoute
   '/roadmap': typeof RoadmapRoute
   '/templates': typeof TemplatesRoute
+  '/marketplace/ui': typeof MarketplaceUiRoute
   '/s/$key': typeof SKeyRouteWithChildren
   '/s/$key/$page': typeof SKeyPageRoute
 }
@@ -137,10 +145,11 @@ export interface FileRoutesById {
   '/dashboard': typeof DashboardRoute
   '/editor': typeof EditorRoute
   '/features': typeof FeaturesRoute
-  '/marketplace': typeof MarketplaceRoute
+  '/marketplace': typeof MarketplaceRouteWithChildren
   '/positioning': typeof PositioningRoute
   '/roadmap': typeof RoadmapRoute
   '/templates': typeof TemplatesRoute
+  '/marketplace/ui': typeof MarketplaceUiRoute
   '/s/$key': typeof SKeyRouteWithChildren
   '/s/$key/$page': typeof SKeyPageRoute
 }
@@ -159,6 +168,7 @@ export interface FileRouteTypes {
     | '/positioning'
     | '/roadmap'
     | '/templates'
+    | '/marketplace/ui'
     | '/s/$key'
     | '/s/$key/$page'
   fileRoutesByTo: FileRoutesByTo
@@ -175,6 +185,7 @@ export interface FileRouteTypes {
     | '/positioning'
     | '/roadmap'
     | '/templates'
+    | '/marketplace/ui'
     | '/s/$key'
     | '/s/$key/$page'
   id:
@@ -191,6 +202,7 @@ export interface FileRouteTypes {
     | '/positioning'
     | '/roadmap'
     | '/templates'
+    | '/marketplace/ui'
     | '/s/$key'
     | '/s/$key/$page'
   fileRoutesById: FileRoutesById
@@ -204,7 +216,7 @@ export interface RootRouteChildren {
   DashboardRoute: typeof DashboardRoute
   EditorRoute: typeof EditorRoute
   FeaturesRoute: typeof FeaturesRoute
-  MarketplaceRoute: typeof MarketplaceRoute
+  MarketplaceRoute: typeof MarketplaceRouteWithChildren
   PositioningRoute: typeof PositioningRoute
   RoadmapRoute: typeof RoadmapRoute
   TemplatesRoute: typeof TemplatesRoute
@@ -304,6 +316,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof SKeyRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/marketplace/ui': {
+      id: '/marketplace/ui'
+      path: '/ui'
+      fullPath: '/marketplace/ui'
+      preLoaderRoute: typeof MarketplaceUiRouteImport
+      parentRoute: typeof MarketplaceRoute
+    }
     '/s/$key/$page': {
       id: '/s/$key/$page'
       path: '/$page'
@@ -313,6 +332,18 @@ declare module '@tanstack/react-router' {
     }
   }
 }
+
+interface MarketplaceRouteChildren {
+  MarketplaceUiRoute: typeof MarketplaceUiRoute
+}
+
+const MarketplaceRouteChildren: MarketplaceRouteChildren = {
+  MarketplaceUiRoute: MarketplaceUiRoute,
+}
+
+const MarketplaceRouteWithChildren = MarketplaceRoute._addFileChildren(
+  MarketplaceRouteChildren,
+)
 
 interface SKeyRouteChildren {
   SKeyPageRoute: typeof SKeyPageRoute
@@ -333,7 +364,7 @@ const rootRouteChildren: RootRouteChildren = {
   DashboardRoute: DashboardRoute,
   EditorRoute: EditorRoute,
   FeaturesRoute: FeaturesRoute,
-  MarketplaceRoute: MarketplaceRoute,
+  MarketplaceRoute: MarketplaceRouteWithChildren,
   PositioningRoute: PositioningRoute,
   RoadmapRoute: RoadmapRoute,
   TemplatesRoute: TemplatesRoute,
@@ -342,3 +373,13 @@ const rootRouteChildren: RootRouteChildren = {
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
   ._addFileTypes<FileRouteTypes>()
+
+import type { getRouter } from './router.tsx'
+import type { startInstance } from './start.ts'
+declare module '@tanstack/react-start' {
+  interface Register {
+    ssr: true
+    router: Awaited<ReturnType<typeof getRouter>>
+    config: Awaited<ReturnType<typeof startInstance.getOptions>>
+  }
+}
