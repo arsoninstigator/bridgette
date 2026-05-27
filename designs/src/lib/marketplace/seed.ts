@@ -110,7 +110,30 @@ export const SEED_PACKS: SeedPack[] = [
     curator: "zinegeist",
     swatch: ["#ff3366", "#fde047", "#0d0d0d", "#22d3ee"],
   },
+  {
+    id: "seed-anchoring",
+    name: "anchoring & fasteners",
+    description: "pinboards, magnets, bulldog clips, paperclips, brass fasteners, binder clips, thumbtacks, and brads — every way to hold a thing down.",
+    category: "anchoring",
+    tags: ["pinboard", "magnet", "clip", "paperclip", "bulldog", "binder-clip", "thumbtack", "brad", "fastener", "brass"],
+    pack_type: "assets",
+    item_count: 28,
+    curator: "zinegeist",
+    swatch: ["#8b7355", "#c9a84c", "#1a1a1a", "#b91c1c"],
+  },
+  {
+    id: "seed-csi",
+    name: "crime scene / csi kit",
+    description: "sister pack to the detective wall — unlimited tear-and-stretch crime scene tape, evidence markers and numbered tents, mugshot frames, fingerprint cards, chalk outlines, and newspaper clipping themes.",
+    category: "investigation",
+    tags: ["crime-scene-tape", "evidence", "numbers", "mugshot", "newspaper", "fingerprint", "chalk-outline", "forensics", "csi", "noir"],
+    pack_type: "assets",
+    item_count: 38,
+    curator: "zinegeist",
+    swatch: ["#fde047", "#0d0d0d", "#b91c1c", "#f5f3ee"],
+  },
 ];
 
-export const SEED_CATEGORIES = ["all", "investigation", "zine", "archive", "mood", "motion", "template", "worldbuilding", "list"] as const;
+export const SEED_CATEGORIES = ["all", "investigation", "anchoring", "zine", "archive", "mood", "motion", "template", "worldbuilding", "list"] as const;
 export const SEED_TYPES = ["all", "assets", "template", "list"] as const;
+
