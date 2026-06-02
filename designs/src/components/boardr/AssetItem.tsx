@@ -79,6 +79,7 @@ export function AssetItem({
     >
       <div className="relative">
         {renderAssetBody(asset, showBack)}
+        {asset.tapeAttached && <AttachedTape color={asset.tapeAttachColor} />}
         {asset.pinEnabled && <PushPin highlight={pinHighlight} />}
         {asset.locked && interactive && (
           <div
