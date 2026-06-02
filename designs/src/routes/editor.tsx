@@ -497,7 +497,11 @@ function Editor({ board, setBoard }: { board: Board; setBoard: (b: Board) => voi
                   recent={recent}
                   onToggleFav={toggleFav}
                   onAdd={(kind, extra, setId) => {
-                    addAsset(kind, undefined, undefined, extra);
+                    if (kind === "washi") {
+                      setDrawWashi({ tapeColor: (extra as { tapeColor?: string } | undefined)?.tapeColor });
+                    } else {
+                      addAsset(kind, undefined, undefined, extra);
+                    }
                     if (setId) bumpRecent(setId);
                   }}
                 />
