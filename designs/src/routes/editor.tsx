@@ -664,6 +664,27 @@ function Editor({ board, setBoard }: { board: Board; setBoard: (b: Board) => voi
           onLockToggle={() => toggleLock(assetMenu.ids)}
           onGroup={() => groupAssets(assetMenu.ids)}
           onUngroup={() => ungroupAssets(assetMenu.ids)}
+          onToggleTape={() => {
+            const anyOff = assetMenu.ids.some((id) => !board.assets.find((a) => a.id === id)?.tapeAttached);
+            update({
+              assets: board.assets.map((a) =>
+                assetMenu.ids.includes(a.id) ? { ...a, tapeAttached: anyOff } : a,
+              ),
+            });
+          }}
+          onTogglePin={() => {
+            const anyOff = assetMenu.ids.some((id) => !board.assets.find((a) => a.id === id)?.pinEnabled);
+            update({
+              assets: board.assets.map((a) =>
+                assetMenu.ids.includes(a.id) ? { ...a, pinEnabled: anyOff } : a,
+              ),
+            });
+          }}
+          onEditStyle={() => {
+            const id = assetMenu.ids[0];
+            setSelectedId(id);
+            setShowSettings(true);
+          }}
           onDelete={() => {
             assetMenu.ids.forEach((id) => deleteAsset(id));
             setSelectedIds([]);
