@@ -165,6 +165,7 @@ function Editor({ board, setBoard }: { board: Board; setBoard: (b: Board) => voi
   }
   const [surfaceStyle, setSurfaceStyle] = useState<SurfaceStyle>({ border: 0, borderColor: "#3a2b1f", borderStyle: "solid", radius: 2 });
   const [assetMenu, setAssetMenu] = useState<AssetMenuState>(null);
+  const [drawWashi, setDrawWashi] = useState<{ tapeColor?: string } | null>(null);
 
   function setSelectedId(id: string | null) {
     setSelectedIds(id ? [id] : []);
@@ -363,7 +364,7 @@ function Editor({ board, setBoard }: { board: Board; setBoard: (b: Board) => voi
 
   function handleAssetClickStringMode(id: string) {
     const a = board.assets.find((x) => x.id === id);
-    if (!a || !a.pinEnabled) return;
+    if (!a) return;
     if (!stringFromId) return setStringFromId(id);
     if (stringFromId === id) return setStringFromId(null);
     const conn: StringConn = {
@@ -376,6 +377,10 @@ function Editor({ board, setBoard }: { board: Board; setBoard: (b: Board) => voi
     );
     if (!exists) update({ strings: [...board.strings, conn] });
     setStringFromId(null);
+  }
+
+  function deleteString(sid: string) {
+    update({ strings: board.strings.filter((s) => s.id !== sid) });
   }
 
   function publish() {
@@ -492,7 +497,11 @@ function Editor({ board, setBoard }: { board: Board; setBoard: (b: Board) => voi
                   recent={recent}
                   onToggleFav={toggleFav}
                   onAdd={(kind, extra, setId) => {
-                    addAsset(kind, undefined, undefined, extra);
+                    if (kind === "washi") {
+                      setDrawWashi({ tapeColor: (extra as { tapeColor?: string } | undefined)?.tapeColor });
+                    } else {
+                      addAsset(kind, undefined, undefined, extra);
+                    }
                     if (setId) bumpRecent(setId);
                   }}
                 />
@@ -543,6 +552,8 @@ function Editor({ board, setBoard }: { board: Board; setBoard: (b: Board) => voi
                   setAssetMenu({ x, y, ids });
                 }}
                 onDropAsset={(kind, x, y, extra) => addAsset(kind, x, y, extra)}
+                onStringClick={stringMode ? deleteString : undefined}
+                drawWashi={drawWashi}
               />
 
               {/* floating frame label */}
@@ -573,7 +584,18 @@ function Editor({ board, setBoard }: { board: Board; setBoard: (b: Board) => voi
           </div>
           {stringMode && (
             <div className="absolute top-4 left-1/2 -translate-x-1/2 rounded-md bg-stone-900/85 text-stone-50 px-3 py-2 font-mono text-[10px] lowercase tracking-wider">
-              string mode — click a pinned asset, then click another to connect
+              string mode — click an asset, then click another to connect · click a string to remove it
+            </div>
+          )}
+          {drawWashi && (
+            <div className="absolute top-4 left-1/2 -translate-x-1/2 rounded-md bg-stone-900/85 text-stone-50 px-3 py-2 font-mono text-[10px] lowercase tracking-wider flex items-center gap-3">
+              draw washi — drag across the canvas to lay tape, release to set length
+              <button
+                onClick={() => setDrawWashi(null)}
+                className="ml-2 rounded bg-stone-50/15 hover:bg-stone-50/25 px-2 py-0.5"
+              >
+                done
+              </button>
             </div>
           )}
           {!previewMode && (
@@ -642,6 +664,27 @@ function Editor({ board, setBoard }: { board: Board; setBoard: (b: Board) => voi
           onLockToggle={() => toggleLock(assetMenu.ids)}
           onGroup={() => groupAssets(assetMenu.ids)}
           onUngroup={() => ungroupAssets(assetMenu.ids)}
+          onToggleTape={() => {
+            const anyOff = assetMenu.ids.some((id) => !board.assets.find((a) => a.id === id)?.tapeAttached);
+            update({
+              assets: board.assets.map((a) =>
+                assetMenu.ids.includes(a.id) ? { ...a, tapeAttached: anyOff } : a,
+              ),
+            });
+          }}
+          onTogglePin={() => {
+            const anyOff = assetMenu.ids.some((id) => !board.assets.find((a) => a.id === id)?.pinEnabled);
+            update({
+              assets: board.assets.map((a) =>
+                assetMenu.ids.includes(a.id) ? { ...a, pinEnabled: anyOff } : a,
+              ),
+            });
+          }}
+          onEditStyle={() => {
+            const id = assetMenu.ids[0];
+            setSelectedId(id);
+            setShowSettings(true);
+          }}
           onDelete={() => {
             assetMenu.ids.forEach((id) => deleteAsset(id));
             setSelectedIds([]);
@@ -1773,6 +1816,9 @@ function AssetContextMenu({
   onLockToggle,
   onGroup,
   onUngroup,
+  onToggleTape,
+  onTogglePin,
+  onEditStyle,
   onDelete,
 }: {
   state: { x: number; y: number; ids: string[] };
@@ -1783,8 +1829,12 @@ function AssetContextMenu({
   onLockToggle: () => void;
   onGroup: () => void;
   onUngroup: () => void;
+  onToggleTape: () => void;
+  onTogglePin: () => void;
+  onEditStyle: () => void;
   onDelete: () => void;
 }) {
+  const [submenu, setSubmenu] = useState<null | "layer" | "style">(null);
   useEffect(() => {
     const onDown = () => onClose();
     const onKey = (e: KeyboardEvent) => e.key === "Escape" && onClose();
@@ -1801,51 +1851,69 @@ function AssetContextMenu({
   const assets = ids.map((id) => board.assets.find((a) => a.id === id)).filter(Boolean) as AssetBase[];
   const anyLocked = assets.some((a) => a.locked);
   const anyGrouped = assets.some((a) => a.groupId);
-  const totalAssets = board.assets.length;
+  const allTaped = assets.length > 0 && assets.every((a) => a.tapeAttached);
+  const allPinned = assets.length > 0 && assets.every((a) => a.pinEnabled);
 
   // clamp to viewport
-  const x = Math.min(state.x, (typeof window !== "undefined" ? window.innerWidth : 1000) - 200);
-  const y = Math.min(state.y, (typeof window !== "undefined" ? window.innerHeight : 1000) - 280);
+  const x = Math.min(state.x, (typeof window !== "undefined" ? window.innerWidth : 1000) - 240);
+  const y = Math.min(state.y, (typeof window !== "undefined" ? window.innerHeight : 1000) - 320);
 
   return (
     <div
-      className="fixed z-50 min-w-[180px] rounded-md border border-border bg-card/95 backdrop-blur-sm shadow-xl py-1 font-mono text-[11px] lowercase"
+      className="fixed z-50 min-w-[220px] rounded-lg border border-stone-700/30 bg-pink-50/95 backdrop-blur-sm shadow-xl py-1 font-mono text-[12px] lowercase text-stone-800"
       style={{ left: x, top: y }}
       onMouseDown={(e) => e.stopPropagation()}
       onContextMenu={(e) => e.preventDefault()}
     >
-      <div className="px-3 py-1.5 text-[10px] text-muted-foreground border-b border-border/60">
-        {multi ? `${ids.length} selected` : "asset"}
-      </div>
-
-      {!multi && totalAssets > 1 && (
-        <>
-          <MenuItem label="move up" onClick={() => { onReorder("up"); onClose(); }} />
-          <MenuItem label="move down" onClick={() => { onReorder("down"); onClose(); }} />
-          <MenuItem label="bring to front" onClick={() => { onReorder("top"); onClose(); }} />
-          <MenuItem label="send to back" onClick={() => { onReorder("bottom"); onClose(); }} />
-          <div className="my-1 border-t border-border/60" />
-        </>
-      )}
-
-      <MenuItem
+      <MenuRow
+        check={allTaped}
+        label="tape this up (washi tape)"
+        onClick={() => { onToggleTape(); onClose(); }}
+      />
+      <MenuRow
+        check={allPinned}
+        label="pin this up"
+        onClick={() => { onTogglePin(); onClose(); }}
+      />
+      <MenuRow
+        label="change layer"
+        chevron
+        active={submenu === "layer"}
+        onMouseEnter={() => setSubmenu("layer")}
+        onClick={() => setSubmenu(submenu === "layer" ? null : "layer")}
+      >
+        {submenu === "layer" && (
+          <Submenu>
+            <MenuRow label="bring to front" onClick={() => { onReorder("top"); onClose(); }} />
+            <MenuRow label="move up" onClick={() => { onReorder("up"); onClose(); }} />
+            <MenuRow label="move down" onClick={() => { onReorder("down"); onClose(); }} />
+            <MenuRow label="send to back" onClick={() => { onReorder("bottom"); onClose(); }} />
+          </Submenu>
+        )}
+      </MenuRow>
+      <MenuRow
         label={multi ? `duplicate ${ids.length}` : "duplicate"}
         onClick={() => { onDuplicate(); onClose(); }}
       />
-      <MenuItem
+      <MenuRow
         label={anyLocked ? "unlock" : "lock"}
         onClick={() => { onLockToggle(); onClose(); }}
       />
-
       {multi && (
-        <MenuItem label="group selection" onClick={() => { onGroup(); onClose(); }} />
+        <MenuRow label="group selection" onClick={() => { onGroup(); onClose(); }} />
       )}
       {anyGrouped && (
-        <MenuItem label="ungroup" onClick={() => { onUngroup(); onClose(); }} />
+        <MenuRow label="ungroup" onClick={() => { onUngroup(); onClose(); }} />
       )}
-
-      <div className="my-1 border-t border-border/60" />
-      <MenuItem
+      <MenuRow
+        label="edit style"
+        chevron
+        active={submenu === "style"}
+        onMouseEnter={() => setSubmenu("style")}
+        onClick={() => { onEditStyle(); onClose(); }}
+      />
+      <div className="my-1 border-t border-stone-700/15" />
+      <MenuRow
         label="delete"
         danger
         onClick={() => { onDelete(); onClose(); }}
@@ -1854,14 +1922,50 @@ function AssetContextMenu({
   );
 }
 
-function MenuItem({ label, onClick, danger }: { label: string; onClick: () => void; danger?: boolean }) {
+function MenuRow({
+  label,
+  onClick,
+  onMouseEnter,
+  danger,
+  check,
+  chevron,
+  active,
+  children,
+}: {
+  label: string;
+  onClick?: () => void;
+  onMouseEnter?: () => void;
+  danger?: boolean;
+  check?: boolean;
+  chevron?: boolean;
+  active?: boolean;
+  children?: React.ReactNode;
+}) {
   return (
-    <button
-      onClick={onClick}
-      className={`block w-full text-left px-3 py-1.5 hover:bg-accent/40 ${danger ? "text-destructive" : ""}`}
+    <div className="relative" onMouseEnter={onMouseEnter}>
+      <button
+        onClick={onClick}
+        className={`flex w-full items-center gap-2 px-3 py-1.5 text-left hover:bg-stone-900/5 ${
+          danger ? "text-rose-700" : ""
+        } ${active ? "bg-stone-900/5" : ""}`}
+      >
+        <span className="w-3 text-stone-700">{check ? "✓" : ""}</span>
+        <span className="flex-1">{label}</span>
+        {chevron && <span className="text-stone-500">›</span>}
+      </button>
+      {children}
+    </div>
+  );
+}
+
+function Submenu({ children }: { children: React.ReactNode }) {
+  return (
+    <div
+      className="absolute left-full top-0 ml-1 min-w-[160px] rounded-lg border border-stone-700/30 bg-pink-50/95 backdrop-blur-sm shadow-xl py-1"
+      onMouseDown={(e) => e.stopPropagation()}
     >
-      {label}
-    </button>
+      {children}
+    </div>
   );
 }
 
