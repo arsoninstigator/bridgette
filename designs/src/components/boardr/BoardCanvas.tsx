@@ -1,4 +1,4 @@
-import { useRef } from "react";
+import { useRef, useState } from "react";
 import type { AssetBase, AssetKind, BoardKind, StringConn } from "../../lib/boardr/types";
 import { AssetItem } from "./AssetItem";
 
