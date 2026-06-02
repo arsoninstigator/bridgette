@@ -552,6 +552,8 @@ function Editor({ board, setBoard }: { board: Board; setBoard: (b: Board) => voi
                   setAssetMenu({ x, y, ids });
                 }}
                 onDropAsset={(kind, x, y, extra) => addAsset(kind, x, y, extra)}
+                onStringClick={stringMode ? deleteString : undefined}
+                drawWashi={drawWashi}
               />
 
               {/* floating frame label */}
