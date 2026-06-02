@@ -25,6 +25,8 @@ interface Props {
   onAssetClick?: (id: string) => void;
   onAssetContextMenu?: (id: string, clientX: number, clientY: number) => void;
   onDropAsset?: (kind: AssetKind, x: number, y: number, extra?: Partial<AssetBase>) => void;
+  onStringClick?: (stringId: string) => void;
+  drawWashi?: { tapeColor?: string } | null;
 }
 
 export function BoardCanvas({
