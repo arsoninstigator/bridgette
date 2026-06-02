@@ -363,7 +363,7 @@ function Editor({ board, setBoard }: { board: Board; setBoard: (b: Board) => voi
 
   function handleAssetClickStringMode(id: string) {
     const a = board.assets.find((x) => x.id === id);
-    if (!a || !a.pinEnabled) return;
+    if (!a) return;
     if (!stringFromId) return setStringFromId(id);
     if (stringFromId === id) return setStringFromId(null);
     const conn: StringConn = {
@@ -376,6 +376,10 @@ function Editor({ board, setBoard }: { board: Board; setBoard: (b: Board) => voi
     );
     if (!exists) update({ strings: [...board.strings, conn] });
     setStringFromId(null);
+  }
+
+  function deleteString(sid: string) {
+    update({ strings: board.strings.filter((s) => s.id !== sid) });
   }
 
   function publish() {
