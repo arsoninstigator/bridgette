@@ -160,6 +160,28 @@ function PushPin({ highlight }: { highlight?: boolean }) {
   );
 }
 
+function AttachedTape({ color }: { color?: string }) {
+  const c = color || "rgba(86,142,160,0.85)";
+  return (
+    <div
+      className="absolute left-1/2 -translate-x-1/2"
+      style={{
+        top: -12,
+        width: 90,
+        height: 24,
+        background: c,
+        backgroundImage:
+          "repeating-linear-gradient(45deg, rgba(255,255,255,0.22) 0 5px, transparent 5px 10px)",
+        boxShadow:
+          "0 2px 6px rgba(0,0,0,0.22), inset 0 0 0 1px rgba(255,255,255,0.25)",
+        opacity: 0.92,
+        transform: "translate(-50%, 0) rotate(-3deg)",
+        pointerEvents: "none",
+      }}
+    />
+  );
+}
+
 function renderAssetBody(a: AssetBase, back: boolean) {
   switch (a.kind) {
     case "sticky": {
