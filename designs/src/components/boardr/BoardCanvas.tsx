@@ -45,9 +45,12 @@ export function BoardCanvas({
   onAssetClick,
   onAssetContextMenu,
   onDropAsset,
+  onStringClick,
+  drawWashi,
 }: Props) {
   const ref = useRef<HTMLDivElement | null>(null);
   const selSet = new Set(selectedIds ?? (selectedId ? [selectedId] : []));
+  const [drawPreview, setDrawPreview] = useState<{ x1: number; y1: number; x2: number; y2: number } | null>(null);
 
   function startDrag(e: React.PointerEvent, id: string) {
     if (!interactive || stringMode) return;
