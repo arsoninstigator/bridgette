@@ -165,6 +165,7 @@ function Editor({ board, setBoard }: { board: Board; setBoard: (b: Board) => voi
   }
   const [surfaceStyle, setSurfaceStyle] = useState<SurfaceStyle>({ border: 0, borderColor: "#3a2b1f", borderStyle: "solid", radius: 2 });
   const [assetMenu, setAssetMenu] = useState<AssetMenuState>(null);
+  const [drawWashi, setDrawWashi] = useState<{ tapeColor?: string } | null>(null);
 
   function setSelectedId(id: string | null) {
     setSelectedIds(id ? [id] : []);
