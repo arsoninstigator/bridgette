@@ -94,10 +94,42 @@ export function BoardCanvas({
     window.addEventListener("pointerup", onUp);
   }
 
+  function startWashiDraw(e: React.PointerEvent) {
+    if (!drawWashi || !onDropAsset) return;
+    e.stopPropagation();
+    const board = ref.current!;
+    const rect = board.getBoundingClientRect();
+    const x1 = e.clientX - rect.left;
+    const y1 = e.clientY - rect.top;
+    setDrawPreview({ x1, y1, x2: x1, y2: y1 });
+    function onMove(ev: PointerEvent) {
+      setDrawPreview({ x1, y1, x2: ev.clientX - rect.left, y2: ev.clientY - rect.top });
+    }
+    function onUp(ev: PointerEvent) {
+      window.removeEventListener("pointermove", onMove);
+      window.removeEventListener("pointerup", onUp);
+      const x2 = ev.clientX - rect.left;
+      const y2 = ev.clientY - rect.top;
+      const dx = x2 - x1;
+      const dy = y2 - y1;
+      const len = Math.max(40, Math.hypot(dx, dy));
+      const rot = (Math.atan2(dy, dx) * 180) / Math.PI;
+      const mx = (x1 + x2) / 2;
+      const my = (y1 + y2) / 2;
+      setDrawPreview(null);
+      onDropAsset!("washi", mx, my, { width: Math.round(len), rotation: rot, tapeColor: drawWashi?.tapeColor });
+    }
+    window.addEventListener("pointermove", onMove);
+    window.addEventListener("pointerup", onUp);
+  }
+
   return (
     <div
       ref={ref}
-      onPointerDown={() => onSelect?.(null)}
+      onPointerDown={(e) => {
+        if (drawWashi) return startWashiDraw(e);
+        onSelect?.(null);
+      }}
       onDragOver={(e) => {
         if (!onDropAsset) return;
         e.preventDefault();
@@ -115,12 +147,12 @@ export function BoardCanvas({
         const rect = (e.currentTarget as HTMLElement).getBoundingClientRect();
         onDropAsset(kind, e.clientX - rect.left, e.clientY - rect.top, extra);
       }}
-      className={`relative flex-1 overflow-hidden ${BG[kind]}`}
+      className={`relative flex-1 overflow-hidden ${BG[kind]} ${drawWashi ? "cursor-crosshair" : ""}`}
     >
       {/* string layer */}
       <svg
-        className="absolute inset-0 pointer-events-none"
-        style={{ width: "100%", height: "100%" }}
+        className="absolute inset-0"
+        style={{ width: "100%", height: "100%", pointerEvents: "none" }}
       >
         {strings.map((s) => {
           const a = assets.find((x) => x.id === s.from);
@@ -128,18 +160,47 @@ export function BoardCanvas({
           if (!a || !b) return null;
           const mx = (a.x + b.x) / 2;
           const my = (a.y + b.y) / 2 + 16;
+          const d = `M ${a.x} ${a.y} Q ${mx} ${my} ${b.x} ${b.y}`;
           return (
-            <path
-              key={s.id}
-              d={`M ${a.x} ${a.y} Q ${mx} ${my} ${b.x} ${b.y}`}
-              stroke={s.color || "#a8231a"}
-              strokeWidth={2}
-              fill="none"
-              opacity={0.85}
-              style={{ filter: "drop-shadow(0 1px 1px rgba(0,0,0,0.3))" }}
-            />
+            <g key={s.id} style={{ pointerEvents: onStringClick ? "auto" : "none" }}>
+              {/* invisible thick hit target */}
+              {onStringClick && (
+                <path
+                  d={d}
+                  stroke="transparent"
+                  strokeWidth={14}
+                  fill="none"
+                  style={{ cursor: "pointer" }}
+                  onPointerDown={(e) => e.stopPropagation()}
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    onStringClick(s.id);
+                  }}
+                />
+              )}
+              <path
+                d={d}
+                stroke={s.color || "#a8231a"}
+                strokeWidth={2}
+                fill="none"
+                opacity={0.85}
+                style={{ filter: "drop-shadow(0 1px 1px rgba(0,0,0,0.3))", pointerEvents: "none" }}
+              />
+            </g>
           );
         })}
+        {drawPreview && (() => {
+          const { x1, y1, x2, y2 } = drawPreview;
+          return (
+            <line
+              x1={x1} y1={y1} x2={x2} y2={y2}
+              stroke={drawWashi?.tapeColor || "rgba(180,160,210,0.85)"}
+              strokeWidth={24}
+              strokeLinecap="butt"
+              opacity={0.7}
+            />
+          );
+        })()}
       </svg>
       {assets.map((a) => (
         <AssetItem
@@ -147,7 +208,7 @@ export function BoardCanvas({
           asset={a}
           interactive={interactive}
           selected={selSet.has(a.id)}
-          pinHighlight={stringMode && !!a.pinEnabled && (stringFromId === a.id || !stringFromId)}
+          pinHighlight={stringMode && (stringFromId === a.id || !stringFromId)}
           onPointerDown={(e) => startDrag(e, a.id)}
           onClick={(e) => {
             e.stopPropagation();
