@@ -584,7 +584,18 @@ function Editor({ board, setBoard }: { board: Board; setBoard: (b: Board) => voi
           </div>
           {stringMode && (
             <div className="absolute top-4 left-1/2 -translate-x-1/2 rounded-md bg-stone-900/85 text-stone-50 px-3 py-2 font-mono text-[10px] lowercase tracking-wider">
-              string mode — click a pinned asset, then click another to connect
+              string mode — click an asset, then click another to connect · click a string to remove it
+            </div>
+          )}
+          {drawWashi && (
+            <div className="absolute top-4 left-1/2 -translate-x-1/2 rounded-md bg-stone-900/85 text-stone-50 px-3 py-2 font-mono text-[10px] lowercase tracking-wider flex items-center gap-3">
+              draw washi — drag across the canvas to lay tape, release to set length
+              <button
+                onClick={() => setDrawWashi(null)}
+                className="ml-2 rounded bg-stone-50/15 hover:bg-stone-50/25 px-2 py-0.5"
+              >
+                done
+              </button>
             </div>
           )}
           {!previewMode && (
