@@ -65,6 +65,13 @@ export interface PageContent {
   strings: StringConn[];
 }
 
+export interface SurfaceOverlay {
+  textureId?: string; // matches a .bg-texture-* css class
+  baseColor?: string; // hex / rgba — fills under the texture
+  imageUrl?: string; // uploaded / pasted image used as the surface
+  opacity?: number; // 0..1 — strength of the texture overlay
+}
+
 export interface Board {
   id: string;
   name: string;
@@ -79,6 +86,7 @@ export interface Board {
   publishedKey?: string; // 5-digit
   updatedAt: number;
   createdAt: number;
+  surface?: SurfaceOverlay;
 }
 
 export interface PublishedSnapshot {
@@ -90,4 +98,5 @@ export interface PublishedSnapshot {
   pages?: PageMeta[];
   pageAssets?: Record<string, PageContent>;
   publishedAt: number;
+  surface?: SurfaceOverlay;
 }

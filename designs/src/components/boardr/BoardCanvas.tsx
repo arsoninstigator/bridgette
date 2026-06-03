@@ -1,5 +1,5 @@
 import { useRef, useState } from "react";
-import type { AssetBase, AssetKind, BoardKind, StringConn } from "../../lib/boardr/types";
+import type { AssetBase, AssetKind, BoardKind, StringConn, SurfaceOverlay } from "../../lib/boardr/types";
 import { AssetItem, PinImage } from "./AssetItem";
 
 const BG: Record<BoardKind, string> = {
@@ -13,6 +13,7 @@ interface Props {
   kind: BoardKind;
   assets: AssetBase[];
   strings: StringConn[];
+  surface?: SurfaceOverlay;
   interactive?: boolean;
   selectedId?: string | null;
   selectedIds?: string[];
@@ -33,6 +34,7 @@ export function BoardCanvas({
   kind,
   assets,
   strings,
+  surface,
   interactive,
   selectedId,
   selectedIds,
@@ -151,8 +153,26 @@ export function BoardCanvas({
         const rect = (e.currentTarget as HTMLElement).getBoundingClientRect();
         onDropAsset(kind, e.clientX - rect.left, e.clientY - rect.top, extra);
       }}
-      className={`relative flex-1 overflow-hidden ${BG[kind]} ${drawWashi ? "cursor-crosshair" : ""}`}
+      className={`relative flex-1 overflow-hidden ${surface?.baseColor || surface?.imageUrl ? "" : BG[kind]} ${drawWashi ? "cursor-crosshair" : ""}`}
+      style={
+        surface?.baseColor || surface?.imageUrl
+          ? {
+              backgroundColor: surface.baseColor || undefined,
+              backgroundImage: surface.imageUrl ? `url(${surface.imageUrl})` : undefined,
+              backgroundSize: surface.imageUrl ? "cover" : undefined,
+              backgroundPosition: surface.imageUrl ? "center" : undefined,
+            }
+          : undefined
+      }
     >
+      {/* Texture overlay layer — sits above the base but below all assets. */}
+      {surface?.textureId && (
+        <div
+          aria-hidden
+          className={`absolute inset-0 pointer-events-none bg-texture-${surface.textureId}`}
+          style={{ opacity: surface.opacity ?? 1 }}
+        />
+      )}
       {/* asset bodies (pins are hidden here and rendered above the string layer) */}
       {assets.map((a) => (
         <AssetItem

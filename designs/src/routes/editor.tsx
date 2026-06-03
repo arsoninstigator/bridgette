@@ -479,7 +479,13 @@ function Editor({ board, setBoard }: { board: Board; setBoard: (b: Board) => voi
             />
             <div className="p-3">
               {activePanel === "select" && (
-                <SurfacePanel board={board} onPick={(kind) => update({ kind })} onEdit={() => setRightPanel("canvas")} />
+                <SurfacePanel
+                  board={board}
+                  onPick={(kind) => update({ kind })}
+                  onSurfaceChange={(surface) => update({ surface })}
+                  onEdit={() => setRightPanel("canvas")}
+                />
+
               )}
               {activePanel === "layers" && (
                 <LayersPanel
@@ -532,6 +538,7 @@ function Editor({ board, setBoard }: { board: Board; setBoard: (b: Board) => voi
             >
               <BoardCanvas
                 kind={board.kind}
+                surface={board.surface}
                 assets={board.assets}
                 strings={board.strings}
                 interactive={!previewMode}
@@ -761,7 +768,17 @@ function PanelHeader({ title, onClose, right }: { title: string; onClose: () => 
   );
 }
 
-function SurfacePanel({ board, onPick, onEdit }: { board: Board; onPick: (k: BoardKind) => void; onEdit: () => void }) {
+function SurfacePanel({
+  board,
+  onPick,
+  onSurfaceChange,
+  onEdit,
+}: {
+  board: Board;
+  onPick: (k: BoardKind) => void;
+  onSurfaceChange: (s: NonNullable<Board["surface"]>) => void;
+  onEdit: () => void;
+}) {
   // sets of surfaces. only a handful are wired (cork/mat/wall/metal). others are stubs.
   type Surf = { id: string; label: string; kind?: BoardKind; className?: string };
   const SURFACE_SETS: { id: string; label: string; items: Surf[] }[] = [
@@ -770,79 +787,59 @@ function SurfacePanel({ board, onPick, onEdit }: { board: Board; onPick: (k: Boa
       label: "boards",
       items: [
         { id: "cork-default", label: "corkboard", kind: "cork", className: "bg-board-cork" },
-        { id: "pinboard", label: "pinboard" },
-        { id: "pegboard", label: "pegboard (ikea)" },
-        { id: "blackboard", label: "blackboard" },
-        { id: "whiteboard", label: "whiteboard" },
         { id: "metal", label: "metallic", kind: "metal", className: "bg-board-metal" },
-      ],
-    },
-    {
-      id: "wood",
-      label: "wooden",
-      items: [
-        { id: "oak", label: "oak" },
-        { id: "walnut", label: "walnut" },
-        { id: "pine", label: "pine" },
-        { id: "birch", label: "birch" },
-      ],
-    },
-    {
-      id: "paper",
-      label: "paper",
-      items: [
-        { id: "grid", label: "grid" },
-        { id: "dotted", label: "dotted" },
-        { id: "plain", label: "plain" },
-        { id: "lined", label: "lined" },
       ],
     },
     {
       id: "mats",
       label: "mats",
-      items: [
-        { id: "mat", label: "cutting mat", kind: "mat", className: "bg-board-mat" },
-      ],
+      items: [{ id: "mat", label: "cutting mat", kind: "mat", className: "bg-board-mat" }],
     },
     {
       id: "walls",
       label: "walls",
-      items: [
-        { id: "wall", label: "wall", kind: "wall", className: "bg-board-wall" },
-        { id: "wallpaper", label: "wallpaper" },
-      ],
-    },
-    {
-      id: "textile",
-      label: "textile",
-      items: [
-        { id: "linen", label: "linen" },
-        { id: "felt", label: "felt" },
-        { id: "denim", label: "denim" },
-        { id: "burlap", label: "burlap" },
-      ],
-    },
-    {
-      id: "tiles",
-      label: "tiles",
-      items: [
-        { id: "ceramic", label: "ceramic" },
-        { id: "subway", label: "subway" },
-        { id: "mosaic", label: "mosaic" },
-      ],
-    },
-    {
-      id: "other",
-      label: "other",
-      items: [
-        { id: "upload", label: "upload image" },
-      ],
+      items: [{ id: "wall", label: "wall", kind: "wall", className: "bg-board-wall" }],
     },
   ];
+
+  // Texture library (procedural; recolorable via base color underneath).
+  // Categories mirror common texturelabs.org families.
+  const TEXTURES: { id: string; label: string; group: string; base: string }[] = [
+    { id: "paper", label: "paper", group: "paper", base: "#f4ecdc" },
+    { id: "kraft", label: "kraft", group: "paper", base: "#c69a6b" },
+    { id: "noise", label: "noise", group: "paper", base: "#e8e2d2" },
+    { id: "denim", label: "denim", group: "textile", base: "#3b5a7a" },
+    { id: "linen", label: "linen", group: "textile", base: "#eee5d2" },
+    { id: "burlap", label: "burlap", group: "textile", base: "#b38b5d" },
+    { id: "felt", label: "felt", group: "textile", base: "#7a8a6b" },
+    { id: "leather", label: "leather", group: "leather", base: "#6b3a23" },
+    { id: "concrete", label: "concrete", group: "concrete", base: "#bdbdb5" },
+    { id: "brick", label: "brick", group: "brick", base: "#b3573a" },
+    { id: "marble", label: "marble", group: "stone", base: "#ece8df" },
+    { id: "woodgrain", label: "woodgrain", group: "wood", base: "#c89766" },
+    { id: "pixelated", label: "pixelated", group: "pixelated", base: "#ffe9a8" },
+    { id: "grid", label: "grid", group: "graph", base: "#fbf7ec" },
+    { id: "dots", label: "dots", group: "graph", base: "#fbf7ec" },
+  ];
+  const textureGroups = Array.from(new Set(TEXTURES.map((t) => t.group)));
+
   const [openSet, setOpenSet] = useState<string | null>("boards");
+  const [openTexGroup, setOpenTexGroup] = useState<string | null>("paper");
+  const uploadRef = useRef<HTMLInputElement | null>(null);
+  const [customHex, setCustomHex] = useState(board.surface?.baseColor ?? "#f4ecdc");
+  const surface = board.surface ?? {};
+
+  function setSurface(patch: Partial<NonNullable<Board["surface"]>>) {
+    onSurfaceChange({ ...surface, ...patch });
+  }
+  function clearSurface() {
+    onSurfaceChange({});
+  }
+
   return (
     <div className="space-y-3">
       <p className="font-mono text-[10px] lowercase text-muted-foreground">surface for this frame</p>
+
       {SURFACE_SETS.map((s) => {
         const open = openSet === s.id;
         return (
@@ -857,25 +854,20 @@ function SurfacePanel({ board, onPick, onEdit }: { board: Board; onPick: (k: Boa
             {open && (
               <div className="p-2 grid grid-cols-2 gap-2">
                 {s.items.map((it) => {
-                  const wired = !!it.kind;
-                  const isActive = it.kind && board.kind === it.kind;
+                  const isActive = it.kind && board.kind === it.kind && !surface.textureId && !surface.imageUrl && !surface.baseColor;
                   return (
                     <div
                       key={it.id}
                       className={`relative rounded-md overflow-hidden border ${
                         isActive ? "border-stone-900 ring-2 ring-stone-900/30" : "border-border"
-                      } ${!wired ? "opacity-60" : ""}`}
+                      }`}
                     >
                       <button
-                        disabled={!wired}
-                        onClick={() => it.kind && onPick(it.kind)}
-                        className={`block w-full text-left ${!wired ? "cursor-not-allowed" : ""}`}
+                        onClick={() => { if (it.kind) { onPick(it.kind); clearSurface(); } }}
+                        className="block w-full text-left"
                       >
                         <div className={`h-14 ${it.className ?? "bg-stone-200/60"}`} />
-                        <div className="bg-card px-2 py-1 font-mono text-[10px] lowercase flex items-center justify-between">
-                          <span>{it.label}</span>
-                          {!wired && <span className="text-[8px] text-muted-foreground">soon</span>}
-                        </div>
+                        <div className="bg-card px-2 py-1 font-mono text-[10px] lowercase">{it.label}</div>
                       </button>
                       {isActive && (
                         <button
@@ -894,6 +886,125 @@ function SurfacePanel({ board, onPick, onEdit }: { board: Board; onPick: (k: Boa
           </div>
         );
       })}
+
+      {/* Textures — recolorable procedural overlays */}
+      <div className="rounded-md border border-border bg-card/40">
+        <div className="w-full flex items-center justify-between px-3 py-2 font-mono text-[11px] lowercase">
+          <span>textures</span>
+          {surface.textureId && (
+            <button onClick={() => setSurface({ textureId: undefined })} className="text-muted-foreground hover:text-destructive">clear</button>
+          )}
+        </div>
+        <div className="px-2 pb-2 space-y-2">
+          {textureGroups.map((g) => {
+            const open = openTexGroup === g;
+            const items = TEXTURES.filter((t) => t.group === g);
+            return (
+              <div key={g} className="rounded border border-border/70">
+                <button
+                  onClick={() => setOpenTexGroup(open ? null : g)}
+                  className="w-full flex items-center justify-between px-2 py-1.5 font-mono text-[10px] lowercase hover:bg-black/5"
+                >
+                  <span>{g}</span>
+                  <ChevronDown size={10} className={`transition-transform ${open ? "" : "-rotate-90"}`} />
+                </button>
+                {open && (
+                  <div className="p-2 grid grid-cols-3 gap-1.5">
+                    {items.map((t) => {
+                      const active = surface.textureId === t.id;
+                      return (
+                        <button
+                          key={t.id}
+                          onClick={() => setSurface({ textureId: t.id, baseColor: surface.baseColor || t.base })}
+                          className={`relative h-12 rounded overflow-hidden border ${active ? "border-stone-900 ring-2 ring-stone-900/30" : "border-border"}`}
+                          title={t.label}
+                        >
+                          <div className="absolute inset-0" style={{ background: t.base }} />
+                          <div className={`absolute inset-0 bg-texture-${t.id}`} />
+                          <div className="absolute bottom-0 inset-x-0 bg-card/85 px-1 font-mono text-[9px] lowercase truncate">{t.label}</div>
+                        </button>
+                      );
+                    })}
+                  </div>
+                )}
+              </div>
+            );
+          })}
+
+          {/* base color + opacity controls — always visible so users can recolor */}
+          <div className="mt-1 rounded border border-border/70 p-2 space-y-2">
+            <div className="font-mono text-[10px] lowercase text-muted-foreground">base color (under texture)</div>
+            <div className="flex items-center gap-2">
+              <input
+                type="color"
+                value={/^#[0-9a-f]{6}$/i.test(customHex) ? customHex : "#888888"}
+                onChange={(e) => { setCustomHex(e.target.value); setSurface({ baseColor: e.target.value }); }}
+                className="h-7 w-9 rounded border border-border bg-transparent"
+              />
+              <input
+                value={customHex}
+                onChange={(e) => setCustomHex(e.target.value)}
+                onBlur={() => setSurface({ baseColor: customHex })}
+                onKeyDown={(e) => e.key === "Enter" && setSurface({ baseColor: customHex })}
+                placeholder="#hex"
+                className="flex-1 rounded border border-border bg-background px-2 py-1 font-mono text-[10px]"
+              />
+            </div>
+            {surface.textureId && (
+              <div>
+                <div className="font-mono text-[10px] lowercase text-muted-foreground mb-1">overlay strength ({Math.round((surface.opacity ?? 1) * 100)}%)</div>
+                <input
+                  type="range" min={0} max={100}
+                  value={Math.round((surface.opacity ?? 1) * 100)}
+                  onChange={(e) => setSurface({ opacity: Number(e.target.value) / 100 })}
+                  className="w-full"
+                />
+              </div>
+            )}
+          </div>
+        </div>
+      </div>
+
+      {/* Other — upload an image to use as the surface */}
+      <div className="rounded-md border border-border bg-card/40">
+        <div className="px-3 py-2 font-mono text-[11px] lowercase flex items-center justify-between">
+          <span>other</span>
+          {surface.imageUrl && (
+            <button onClick={() => setSurface({ imageUrl: undefined })} className="text-muted-foreground hover:text-destructive">clear image</button>
+          )}
+        </div>
+        <div className="p-2 space-y-2">
+          <button
+            onClick={() => uploadRef.current?.click()}
+            className="w-full rounded border border-dashed border-border px-3 py-3 font-mono text-[11px] lowercase text-muted-foreground hover:bg-black/5"
+          >
+            upload image as surface
+          </button>
+          <input
+            ref={uploadRef}
+            type="file"
+            accept="image/*"
+            className="hidden"
+            onChange={(e) => {
+              const f = e.target.files?.[0];
+              if (!f) return;
+              const reader = new FileReader();
+              reader.onload = () => setSurface({ imageUrl: String(reader.result || "") });
+              reader.readAsDataURL(f);
+              e.target.value = "";
+            }}
+          />
+          <input
+            value={surface.imageUrl?.startsWith("data:") ? "" : (surface.imageUrl ?? "")}
+            onChange={(e) => setSurface({ imageUrl: e.target.value })}
+            placeholder="…or paste image url"
+            className="w-full rounded border border-border bg-background px-2 py-1 font-mono text-[10px]"
+          />
+          {surface.imageUrl && (
+            <div className="h-20 rounded border border-border" style={{ background: `center/cover no-repeat url(${surface.imageUrl})` }} />
+          )}
+        </div>
+      </div>
     </div>
   );
 }

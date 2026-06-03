@@ -71,7 +71,7 @@ function PageViewer() {
         </nav>
       </header>
       <div className="flex-1 flex">
-        <BoardCanvas kind={snap.kind} assets={content.assets} strings={content.strings} />
+        <BoardCanvas kind={snap.kind} surface={snap.surface} assets={content.assets} strings={content.strings} />
       </div>
     </div>
   );
