@@ -124,6 +124,36 @@ export type Database = {
         }
         Relationships: []
       }
+      published_boards: {
+        Row: {
+          board_id: string
+          key: string
+          kind: string
+          name: string
+          published_at: string
+          snapshot: Json
+          updated_at: string
+        }
+        Insert: {
+          board_id: string
+          key: string
+          kind: string
+          name: string
+          published_at?: string
+          snapshot: Json
+          updated_at?: string
+        }
+        Update: {
+          board_id?: string
+          key?: string
+          kind?: string
+          name?: string
+          published_at?: string
+          snapshot?: Json
+          updated_at?: string
+        }
+        Relationships: []
+      }
       user_roles: {
         Row: {
           created_at: string
