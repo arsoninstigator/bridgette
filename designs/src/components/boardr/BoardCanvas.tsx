@@ -54,6 +54,9 @@ export function BoardCanvas({
 
   function startDrag(e: React.PointerEvent, id: string) {
     if (!interactive || stringMode) return;
+    // Only initiate drag on primary mouse button — never on right-click,
+    // otherwise pointer capture interferes with the contextmenu event.
+    if (e.button !== 0) return;
     const asset = assets.find((a) => a.id === id);
     if (!asset || asset.locked) return;
     e.stopPropagation();
