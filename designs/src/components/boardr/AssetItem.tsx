@@ -106,7 +106,7 @@ export function AssetItem({
       <div className="relative">
         {renderAssetBody(asset, showBack)}
         {asset.tapeAttached && <AttachedTape color={asset.tapeAttachColor} />}
-        {asset.pinEnabled && <PushPin color={asset.pinColor || asset.color} highlight={pinHighlight} />}
+        {asset.pinEnabled && !hidePin && <PushPin color={asset.pinColor || asset.color} highlight={pinHighlight} />}
         {asset.locked && interactive && (
           <div
             className="absolute -top-2 -left-2 size-5 rounded-full bg-stone-900/85 text-stone-50 grid place-items-center"
