@@ -1,6 +1,30 @@
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useState } from "react";
 import { Lock } from "lucide-react";
 import type { AssetBase } from "../../lib/boardr/types";
+import pushpinAsset from "@/assets/pushpin.svg.asset.json";
+
+// Hue-rotate mapping for recoloring the (raster-inside-svg) pushpin which is
+// natively red. Values are approximate so the pin still reads as a tack.
+const PIN_HUE: Record<string, number> = {
+  "#c0212a": 0,        // red (default)
+  "#1e6bbf": 210,      // blue
+  "#c9a84c": 35,       // brass/gold (also lower saturation via filter)
+  "#1d8a4f": 120,      // green
+  "#3a2a1a": 0,        // dark brown (use saturate 0)
+  "#e8e4dd": 0,        // ivory (use saturate 0 + brightness)
+};
+function pinFilter(color?: string, highlight?: boolean): string {
+  const c = color || "#c0212a";
+  let f = "";
+  if (c === "#3a2a1a") f = "saturate(0) brightness(0.55)";
+  else if (c === "#e8e4dd") f = "saturate(0) brightness(1.6)";
+  else if (c === "#c9a84c") f = `hue-rotate(${PIN_HUE[c]}deg) saturate(0.7) brightness(1.1)`;
+  else f = `hue-rotate(${PIN_HUE[c] ?? 0}deg)`;
+  f += highlight
+    ? " drop-shadow(0 0 5px rgba(250,204,21,0.95))"
+    : " drop-shadow(0 2px 2px rgba(0,0,0,0.45))";
+  return f;
+}
 
 interface Props {
   asset: AssetBase;
@@ -12,6 +36,7 @@ interface Props {
   onContextMenu?: (e: React.MouseEvent) => void;
   onResize?: (w: number, h: number) => void;
   pinHighlight?: boolean; // string mode highlight
+  hidePin?: boolean; // when true, AssetItem skips drawing the pin overlay (canvas draws it on top)
 }
 
 /** Shared analog-feel asset renderer. */
@@ -25,6 +50,7 @@ export function AssetItem({
   onContextMenu,
   onResize,
   pinHighlight,
+  hidePin,
 }: Props) {
   const [flipped, setFlipped] = useState(false);
   useEffect(() => {
@@ -80,7 +106,7 @@ export function AssetItem({
       <div className="relative">
         {renderAssetBody(asset, showBack)}
         {asset.tapeAttached && <AttachedTape color={asset.tapeAttachColor} />}
-        {asset.pinEnabled && <PushPin color={asset.pinColor || asset.color} highlight={pinHighlight} />}
+        {asset.pinEnabled && !hidePin && <PushPin color={asset.pinColor || asset.color} highlight={pinHighlight} />}
         {asset.locked && interactive && (
           <div
             className="absolute -top-2 -left-2 size-5 rounded-full bg-stone-900/85 text-stone-50 grid place-items-center"
@@ -141,32 +167,41 @@ function defaultSize(a: AssetBase): { w: number; h: number } {
 }
 
 function PushPin({ highlight, color }: { highlight?: boolean; color?: string }) {
-  const head = color || "#c0212a";
   return (
     <div
-      className="absolute left-1/2 -top-3 -translate-x-1/2"
-      style={{ pointerEvents: "none", filter: highlight ? "drop-shadow(0 0 4px rgba(250,204,21,0.95))" : "drop-shadow(0 2px 2px rgba(0,0,0,0.45))" }}
+      className="absolute left-1/2 -translate-x-1/2"
+      style={{ top: -20, pointerEvents: "none" }}
     >
-      <svg width={22} height={26} viewBox="0 0 22 26" fill="none">
-        {/* needle */}
-        <path d="M11 14 L11 25" stroke="#3a2a1a" strokeWidth={1.4} strokeLinecap="round" />
-        {/* shoulder ring */}
-        <ellipse cx="11" cy="13" rx="6" ry="2" fill="#6e0a10" opacity="0.55" />
-        {/* dome */}
-        <circle cx="11" cy="9" r="7" fill={head} />
-        {/* shading */}
-        <circle cx="11" cy="9" r="7" fill="url(#pinShade)" />
-        {/* highlight */}
-        <ellipse cx="8.5" cy="6.5" rx="2.2" ry="1.4" fill="rgba(255,255,255,0.7)" />
-        <defs>
-          <radialGradient id="pinShade" cx="0.35" cy="0.3" r="0.8">
-            <stop offset="0%" stopColor="rgba(255,255,255,0.35)" />
-            <stop offset="60%" stopColor="rgba(0,0,0,0)" />
-            <stop offset="100%" stopColor="rgba(0,0,0,0.45)" />
-          </radialGradient>
-        </defs>
-      </svg>
+      <PinImage color={color} highlight={highlight} size={28} />
     </div>
+  );
+}
+
+/** Standalone pin image — also used in the canvas's top "pins" layer that
+ * sits above the string layer so strings appear to wrap under the pin. */
+export function PinImage({
+  color,
+  highlight,
+  size = 28,
+}: {
+  color?: string;
+  highlight?: boolean;
+  size?: number;
+}) {
+  return (
+    <img
+      src={pushpinAsset.url}
+      alt=""
+      width={size}
+      height={size}
+      draggable={false}
+      style={{
+        display: "block",
+        filter: pinFilter(color, highlight),
+        pointerEvents: "none",
+        userSelect: "none",
+      }}
+    />
   );
 }
 

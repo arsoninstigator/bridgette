@@ -1,6 +1,6 @@
 import { useRef, useState } from "react";
 import type { AssetBase, AssetKind, BoardKind, StringConn } from "../../lib/boardr/types";
-import { AssetItem } from "./AssetItem";
+import { AssetItem, PinImage } from "./AssetItem";
 
 const BG: Record<BoardKind, string> = {
   cork: "bg-board-cork",
@@ -149,67 +149,14 @@ export function BoardCanvas({
       }}
       className={`relative flex-1 overflow-hidden ${BG[kind]} ${drawWashi ? "cursor-crosshair" : ""}`}
     >
-      {/* string layer */}
-      <svg
-        className="absolute inset-0"
-        style={{ width: "100%", height: "100%", pointerEvents: "none" }}
-      >
-        {strings.map((s) => {
-          const a = assets.find((x) => x.id === s.from);
-          const b = assets.find((x) => x.id === s.to);
-          if (!a || !b) return null;
-          const pa = pinPoint(a);
-          const pb = pinPoint(b);
-          const mx = (pa.x + pb.x) / 2;
-          const my = (pa.y + pb.y) / 2 + 16;
-          const d = `M ${pa.x} ${pa.y} Q ${mx} ${my} ${pb.x} ${pb.y}`;
-          return (
-            <g key={s.id} style={{ pointerEvents: onStringClick ? "auto" : "none" }}>
-              {/* invisible thick hit target */}
-              {onStringClick && (
-                <path
-                  d={d}
-                  stroke="transparent"
-                  strokeWidth={14}
-                  fill="none"
-                  style={{ cursor: "pointer" }}
-                  onPointerDown={(e) => e.stopPropagation()}
-                  onClick={(e) => {
-                    e.stopPropagation();
-                    onStringClick(s.id);
-                  }}
-                />
-              )}
-              <path
-                d={d}
-                stroke={s.color || "#a8231a"}
-                strokeWidth={2}
-                fill="none"
-                opacity={0.85}
-                style={{ filter: "drop-shadow(0 1px 1px rgba(0,0,0,0.3))", pointerEvents: "none" }}
-              />
-            </g>
-          );
-        })}
-        {drawPreview && (() => {
-          const { x1, y1, x2, y2 } = drawPreview;
-          return (
-            <line
-              x1={x1} y1={y1} x2={x2} y2={y2}
-              stroke={drawWashi?.tapeColor || "rgba(180,160,210,0.85)"}
-              strokeWidth={24}
-              strokeLinecap="butt"
-              opacity={0.7}
-            />
-          );
-        })()}
-      </svg>
+      {/* asset bodies (pins are hidden here and rendered above the string layer) */}
       {assets.map((a) => (
         <AssetItem
           key={a.id}
           asset={a}
           interactive={interactive}
           selected={selSet.has(a.id)}
+          hidePin
           pinHighlight={!!stringMode && !!a.pinEnabled && (stringFromId === a.id || !stringFromId)}
           onPointerDown={(e) => startDrag(e, a.id)}
           onClick={(e) => {
@@ -230,6 +177,84 @@ export function BoardCanvas({
           onResize={onResize ? (w, h) => onResize(a.id, w, h) : undefined}
         />
       ))}
+
+      {/* string layer — above asset bodies, below pin overlay */}
+      <svg
+        className="absolute inset-0"
+        style={{ width: "100%", height: "100%", pointerEvents: "none", zIndex: 9000 }}
+      >
+        {strings.map((s) => {
+          const a = assets.find((x) => x.id === s.from);
+          const b = assets.find((x) => x.id === s.to);
+          if (!a || !b) return null;
+          const pa = pinPoint(a);
+          const pb = pinPoint(b);
+          const mx = (pa.x + pb.x) / 2;
+          const my = (pa.y + pb.y) / 2 + 16;
+          const d = `M ${pa.x} ${pa.y} Q ${mx} ${my} ${pb.x} ${pb.y}`;
+          return (
+            <g key={s.id} style={{ pointerEvents: onStringClick ? "auto" : "none" }}>
+              {onStringClick && (
+                <path
+                  d={d}
+                  stroke="transparent"
+                  strokeWidth={14}
+                  fill="none"
+                  style={{ cursor: "pointer" }}
+                  onPointerDown={(e) => e.stopPropagation()}
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    onStringClick(s.id);
+                  }}
+                />
+              )}
+              <path
+                d={d}
+                stroke={s.color || "#a8231a"}
+                strokeWidth={2.4}
+                fill="none"
+                opacity={0.9}
+                style={{ filter: "drop-shadow(0 1px 1px rgba(0,0,0,0.35))", pointerEvents: "none" }}
+              />
+            </g>
+          );
+        })}
+        {drawPreview && (() => {
+          const { x1, y1, x2, y2 } = drawPreview;
+          return (
+            <line
+              x1={x1} y1={y1} x2={x2} y2={y2}
+              stroke={drawWashi?.tapeColor || "rgba(180,160,210,0.85)"}
+              strokeWidth={24}
+              strokeLinecap="butt"
+              opacity={0.7}
+            />
+          );
+        })()}
+      </svg>
+
+      {/* pin overlay layer — drawn on top of the string layer so strings appear
+          to wrap around / pass under the pin head */}
+      <div className="absolute inset-0" style={{ pointerEvents: "none", zIndex: 9100 }}>
+        {assets.filter((a) => a.pinEnabled).map((a) => {
+          const p = pinPoint(a);
+          const highlight = !!stringMode && (stringFromId === a.id || !stringFromId);
+          return (
+            <div
+              key={a.id}
+              style={{
+                position: "absolute",
+                left: p.x,
+                top: p.y,
+                transform: "translate(-50%, -50%)",
+              }}
+            >
+              <PinImage color={a.pinColor || a.color} highlight={highlight} size={28} />
+            </div>
+          );
+        })}
+      </div>
+
     </div>
   );
 }
