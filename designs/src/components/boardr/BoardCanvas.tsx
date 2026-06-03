@@ -210,11 +210,14 @@ export function BoardCanvas({
           asset={a}
           interactive={interactive}
           selected={selSet.has(a.id)}
-          pinHighlight={stringMode && (stringFromId === a.id || !stringFromId)}
+          pinHighlight={!!stringMode && !!a.pinEnabled && (stringFromId === a.id || !stringFromId)}
           onPointerDown={(e) => startDrag(e, a.id)}
           onClick={(e) => {
             e.stopPropagation();
-            if (stringMode) onAssetClick?.(a.id);
+            if (stringMode) {
+              if (!a.pinEnabled) return; // strings only attach pin-to-pin
+              onAssetClick?.(a.id);
+            }
           }}
           onContextMenu={(e) => {
             if (!interactive) return;
