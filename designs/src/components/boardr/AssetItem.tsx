@@ -409,5 +409,55 @@ function renderAssetBody(a: AssetBase, back: boolean) {
         );
       return <div className="analog-shadow-sm" style={{ ...common, background: fill, borderRadius: 4 }} />;
     }
+    case "icon": {
+      const w = a.width ?? 64;
+      const h = a.height ?? 64;
+      const fill = a.fill || "#1a1a1a";
+      if (a.imageUrl) {
+        return (
+          <img
+            src={a.imageUrl}
+            alt=""
+            width={w}
+            height={h}
+            draggable={false}
+            style={{ display: "block", userSelect: "none", filter: fill !== "#1a1a1a" ? undefined : undefined }}
+          />
+        );
+      }
+      return (
+        <div
+          className="grid place-items-center rounded-md border border-dashed border-stone-400 text-stone-500 font-mono text-[10px] lowercase"
+          style={{ width: w, height: h }}
+        >
+          icon
+        </div>
+      );
+    }
+    case "marquee": {
+      const w = a.width ?? 320;
+      const h = a.height ?? 40;
+      const text = a.iconText || "marquee";
+      const speed = a.iconSpeed ?? 18;
+      const bg = a.iconBg || "#fef3c7";
+      const fg = a.iconFg || "#1a1a1a";
+      const repeated = `${text}\u00a0\u00a0`.repeat(6);
+      return (
+        <div
+          className="overflow-hidden analog-shadow-sm flex items-center"
+          style={{ width: w, height: h, background: bg, color: fg, borderRadius: 2 }}
+        >
+          <div
+            className="whitespace-nowrap font-mono text-sm tracking-wider"
+            style={{
+              animation: `boardr-marquee ${speed}s linear infinite`,
+              paddingLeft: "100%",
+            }}
+          >
+            {repeated}
+          </div>
+        </div>
+      );
+    }
   }
 }
