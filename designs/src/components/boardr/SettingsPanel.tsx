@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import type { AssetBase } from "../../lib/boardr/types";
 
 interface Props {
@@ -6,10 +6,21 @@ interface Props {
   onChange: (patch: Partial<AssetBase>) => void;
   onDelete: () => void;
   onClose: () => void;
+  initialFocus?: "content" | "mechanics" | "tape" | "pin";
 }
 
-export function SettingsPanel({ asset, onChange, onDelete, onClose }: Props) {
-  const [tab, setTab] = useState<"content" | "mechanics">("content");
+export function SettingsPanel({ asset, onChange, onDelete, onClose, initialFocus }: Props) {
+  const [tab, setTab] = useState<"content" | "mechanics">(
+    initialFocus === "mechanics" || initialFocus === "tape" || initialFocus === "pin" ? "mechanics" : "content",
+  );
+
+  // when initialFocus changes (user picks "edit tape" or "edit pin"), scroll the section into view
+  const tapeRef = useRef<HTMLDivElement | null>(null);
+  const pinRef = useRef<HTMLDivElement | null>(null);
+  useEffect(() => {
+    if (initialFocus === "tape") tapeRef.current?.scrollIntoView({ block: "nearest", behavior: "smooth" });
+    if (initialFocus === "pin") pinRef.current?.scrollIntoView({ block: "nearest", behavior: "smooth" });
+  }, [initialFocus, asset.id]);
 
   return (
     <aside className="w-[300px] shrink-0 bg-sidebar border-l border-sidebar-border flex flex-col">
@@ -38,7 +49,11 @@ export function SettingsPanel({ asset, onChange, onDelete, onClose }: Props) {
         ))}
       </div>
       <div className="flex-1 overflow-y-auto p-4 space-y-4">
-        {tab === "content" ? <ContentTab asset={asset} onChange={onChange} /> : <MechanicsTab asset={asset} onChange={onChange} />}
+        {tab === "content" ? (
+          <ContentTab asset={asset} onChange={onChange} />
+        ) : (
+          <MechanicsTab asset={asset} onChange={onChange} tapeRef={tapeRef} pinRef={pinRef} highlight={initialFocus} />
+        )}
       </div>
       <div className="p-3 border-t border-sidebar-border">
         <button
@@ -62,6 +77,56 @@ function Label({ children }: { children: React.ReactNode }) {
 
 function Field({ children }: { children: React.ReactNode }) {
   return <div>{children}</div>;
+}
+
+function ImageInput({ value, onChange }: { value?: string; onChange: (v: string) => void }) {
+  const fileRef = useRef<HTMLInputElement | null>(null);
+  function pick() {
+    fileRef.current?.click();
+  }
+  function onFile(e: React.ChangeEvent<HTMLInputElement>) {
+    const f = e.target.files?.[0];
+    if (!f) return;
+    const reader = new FileReader();
+    reader.onload = () => onChange(String(reader.result || ""));
+    reader.readAsDataURL(f);
+    e.target.value = "";
+  }
+  return (
+    <div className="space-y-2">
+      <input
+        value={value ?? ""}
+        onChange={(e) => onChange(e.target.value)}
+        placeholder="paste image url https://…"
+        className="w-full rounded-md border border-input bg-background p-2 text-xs font-mono"
+      />
+      <div className="flex items-center gap-2">
+        <button
+          type="button"
+          onClick={pick}
+          className="rounded-md border border-input bg-background px-2.5 py-1.5 font-mono text-[10px] uppercase tracking-wider hover:bg-accent"
+        >
+          upload image
+        </button>
+        {value && (
+          <button
+            type="button"
+            onClick={() => onChange("")}
+            className="font-mono text-[10px] uppercase tracking-wider text-muted-foreground hover:text-destructive"
+          >
+            clear
+          </button>
+        )}
+        <input ref={fileRef} type="file" accept="image/*" onChange={onFile} className="hidden" />
+      </div>
+      {value && (
+        <div
+          className="h-16 rounded border border-input"
+          style={{ background: `center/cover no-repeat url(${value})` }}
+        />
+      )}
+    </div>
+  );
 }
 
 function ContentTab({ asset, onChange }: { asset: AssetBase; onChange: (p: Partial<AssetBase>) => void }) {
@@ -97,24 +162,18 @@ function ContentTab({ asset, onChange }: { asset: AssetBase; onChange: (p: Parti
       )}
       {hasImage && (
         <Field>
-          <Label>Image URL</Label>
-          <input
-            value={asset.imageUrl ?? ""}
-            onChange={(e) => onChange({ imageUrl: e.target.value })}
-            placeholder="https://…"
-            className="w-full rounded-md border border-input bg-background p-2 text-sm font-mono text-xs"
-          />
+          <Label>Image (url or upload)</Label>
+          <ImageInput value={asset.imageUrl} onChange={(v) => onChange({ imageUrl: v })} />
         </Field>
       )}
       {hasStrip && (
         <>
           {(["imageUrl", "imageUrl2", "imageUrl3", "imageUrl4"] as const).map((k, i) => (
             <Field key={k}>
-              <Label>Photo {i + 1} URL</Label>
-              <input
-                value={(asset[k] as string) ?? ""}
-                onChange={(e) => onChange({ [k]: e.target.value } as Partial<AssetBase>)}
-                className="w-full rounded-md border border-input bg-background p-2 text-xs font-mono"
+              <Label>Photo {i + 1} (url or upload)</Label>
+              <ImageInput
+                value={asset[k] as string | undefined}
+                onChange={(v) => onChange({ [k]: v } as Partial<AssetBase>)}
               />
             </Field>
           ))}
@@ -171,7 +230,29 @@ function ContentTab({ asset, onChange }: { asset: AssetBase; onChange: (p: Parti
   );
 }
 
-function MechanicsTab({ asset, onChange }: { asset: AssetBase; onChange: (p: Partial<AssetBase>) => void }) {
+const PIN_COLORS = ["#c0212a", "#1e6bbf", "#c9a84c", "#1d8a4f", "#3a2a1a", "#e8e4dd"];
+const TAPE_COLORS = [
+  "rgba(86,142,160,0.85)",
+  "rgba(180,160,210,0.85)",
+  "rgba(220,170,140,0.85)",
+  "rgba(210,140,150,0.85)",
+  "rgba(230,220,140,0.85)",
+  "rgba(120,180,160,0.85)",
+];
+
+function MechanicsTab({
+  asset,
+  onChange,
+  tapeRef,
+  pinRef,
+  highlight,
+}: {
+  asset: AssetBase;
+  onChange: (p: Partial<AssetBase>) => void;
+  tapeRef: React.RefObject<HTMLDivElement | null>;
+  pinRef: React.RefObject<HTMLDivElement | null>;
+  highlight?: "content" | "mechanics" | "tape" | "pin";
+}) {
   const canFlip = ["sticky", "polaroid", "photostrip", "photo", "paper"].includes(asset.kind);
   return (
     <>
@@ -187,16 +268,66 @@ function MechanicsTab({ asset, onChange }: { asset: AssetBase; onChange: (p: Par
           </p>
         </Field>
       )}
-      <Field>
+
+      <div
+        ref={pinRef}
+        className={`rounded-md p-2 -mx-2 ${highlight === "pin" ? "ring-2 ring-amber-600 bg-amber-50/40" : ""}`}
+      >
         <Toggle
           label="Pin enabled"
           checked={!!asset.pinEnabled}
           onChange={(v) => onChange({ pinEnabled: v })}
         />
         <p className="mt-1 font-mono text-[10px] text-muted-foreground">
-          Adds a push-pin and lets this asset be connected with string.
+          Adds a push-pin; strings only attach pin-to-pin.
         </p>
-      </Field>
+        {asset.pinEnabled && (
+          <div className="mt-2">
+            <Label>Pin color</Label>
+            <div className="flex gap-2 flex-wrap">
+              {PIN_COLORS.map((c) => (
+                <button
+                  key={c}
+                  onClick={() => onChange({ pinColor: c })}
+                  className={`size-6 rounded-full border border-stone-400 ${(asset.pinColor || asset.color) === c ? "ring-2 ring-amber-700" : ""}`}
+                  style={{ background: c }}
+                  title={c}
+                />
+              ))}
+            </div>
+          </div>
+        )}
+      </div>
+
+      <div
+        ref={tapeRef}
+        className={`rounded-md p-2 -mx-2 ${highlight === "tape" ? "ring-2 ring-amber-600 bg-amber-50/40" : ""}`}
+      >
+        <Toggle
+          label="Tape attached"
+          checked={!!asset.tapeAttached}
+          onChange={(v) => onChange({ tapeAttached: v })}
+        />
+        <p className="mt-1 font-mono text-[10px] text-muted-foreground">
+          Decorative washi strip across the top.
+        </p>
+        {asset.tapeAttached && (
+          <div className="mt-2">
+            <Label>Tape color</Label>
+            <div className="flex gap-2 flex-wrap">
+              {TAPE_COLORS.map((c) => (
+                <button
+                  key={c}
+                  onClick={() => onChange({ tapeAttachColor: c })}
+                  className={`h-5 w-9 ${asset.tapeAttachColor === c ? "ring-2 ring-amber-700" : ""}`}
+                  style={{ background: c }}
+                />
+              ))}
+            </div>
+          </div>
+        )}
+      </div>
+
       <Field>
         <Label>Rotation ({Math.round(asset.rotation)}°)</Label>
         <input
