@@ -41,6 +41,11 @@ export interface AssetBase {
   tapeColor?: string;
   shape?: "rect" | "circle" | "triangle" | "diamond" | "star";
   fill?: string;
+  // icon / marquee
+  iconText?: string; // marquee scrolling text
+  iconSpeed?: number; // marquee speed (s per loop)
+  iconBg?: string; // marquee background
+  iconFg?: string; // marquee text color
 }
 
 export interface StringConn {
