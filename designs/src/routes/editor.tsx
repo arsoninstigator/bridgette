@@ -384,8 +384,8 @@ function Editor({ board, setBoard }: { board: Board; setBoard: (b: Board) => voi
     update({ strings: board.strings.filter((s) => s.id !== sid) });
   }
 
-  function publish() {
-    const key = publishBoard(board);
+  async function publish() {
+    const key = await publishBoard(board);
     update({ publishedKey: key }, false);
     setShowPublish(true);
   }
