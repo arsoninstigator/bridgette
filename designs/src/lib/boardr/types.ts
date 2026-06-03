@@ -86,6 +86,7 @@ export interface Board {
   publishedKey?: string; // 5-digit
   updatedAt: number;
   createdAt: number;
+  surface?: SurfaceOverlay;
 }
 
 export interface PublishedSnapshot {
@@ -97,4 +98,5 @@ export interface PublishedSnapshot {
   pages?: PageMeta[];
   pageAssets?: Record<string, PageContent>;
   publishedAt: number;
+  surface?: SurfaceOverlay;
 }
