@@ -75,14 +75,12 @@ export function getLastBoardId(): string | null {
   return read<string | null>(LAST_BOARD, null);
 }
 
-export function publishBoard(board: Board): string {
+export async function publishBoard(board: Board): Promise<string> {
   let key = board.publishedKey || randomFiveDigit();
   const published = read<Record<string, PublishedSnapshot>>(PUBLISHED_KEY, {});
-  // ensure uniqueness if generating new
   if (!board.publishedKey) {
     while (published[key]) key = randomFiveDigit();
   }
-  // include all pages — active page's live assets folded into pageAssets
   const activeSlug = board.activeSlug || "index";
   const pages = board.pages && board.pages.length > 0 ? board.pages : [{ slug: "index", name: "frame one (index)" }];
   const pageAssets: Record<string, { assets: typeof board.assets; strings: typeof board.strings }> = { ...(board.pageAssets || {}) };
@@ -101,12 +99,42 @@ export function publishBoard(board: Board): string {
   write(PUBLISHED_KEY, published);
   board.publishedKey = key;
   saveBoard(board);
+
+  // Mirror to Lovable Cloud so anyone with the link can view it.
+  try {
+    await supabase.from("published_boards").upsert({
+      key,
+      board_id: board.id,
+      name: board.name,
+      kind: board.kind,
+      snapshot: snap as unknown as Record<string, unknown>,
+      updated_at: new Date().toISOString(),
+    });
+  } catch (e) {
+    console.warn("cloud publish failed, link will only work locally", e);
+  }
   return key;
 }
 
-export function getPublished(key: string): PublishedSnapshot | null {
+export function getPublishedLocal(key: string): PublishedSnapshot | null {
   const published = read<Record<string, PublishedSnapshot>>(PUBLISHED_KEY, {});
   return published[key] ?? null;
+}
+
+export async function getPublished(key: string): Promise<PublishedSnapshot | null> {
+  const local = getPublishedLocal(key);
+  if (local) return local;
+  try {
+    const { data, error } = await supabase
+      .from("published_boards")
+      .select("snapshot")
+      .eq("key", key)
+      .maybeSingle();
+    if (error || !data) return null;
+    return data.snapshot as unknown as PublishedSnapshot;
+  } catch {
+    return null;
+  }
 }
 
 export async function createBoard(name: string, kind: Board["kind"]): Promise<Board> {
