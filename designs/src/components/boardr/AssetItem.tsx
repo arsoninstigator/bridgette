@@ -36,6 +36,7 @@ interface Props {
   onContextMenu?: (e: React.MouseEvent) => void;
   onResize?: (w: number, h: number) => void;
   pinHighlight?: boolean; // string mode highlight
+  hidePin?: boolean; // when true, AssetItem skips drawing the pin overlay (canvas draws it on top)
 }
 
 /** Shared analog-feel asset renderer. */
@@ -49,6 +50,7 @@ export function AssetItem({
   onContextMenu,
   onResize,
   pinHighlight,
+  hidePin,
 }: Props) {
   const [flipped, setFlipped] = useState(false);
   useEffect(() => {
