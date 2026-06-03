@@ -162,6 +162,10 @@ function defaultSize(a: AssetBase): { w: number; h: number } {
       return { w: a.width ?? 140, h: a.height ?? 140 };
     case "pin":
       return { w: 18, h: 18 };
+    case "icon":
+      return { w: a.width ?? 64, h: a.height ?? 64 };
+    case "marquee":
+      return { w: a.width ?? 320, h: a.height ?? 40 };
   }
 }
 
