@@ -682,9 +682,10 @@ function Editor({ board, setBoard }: { board: Board; setBoard: (b: Board) => voi
               ),
             });
           }}
-          onEditStyle={() => {
+          onEditStyle={(focus) => {
             const id = assetMenu.ids[0];
             setSelectedId(id);
+            setSettingsFocus(focus);
             setShowSettings(true);
           }}
           onDelete={() => {
