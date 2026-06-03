@@ -62,6 +62,7 @@ function Viewer() {
       <div className="flex-1 flex">
         <BoardCanvas
           kind={snap.kind}
+          surface={snap.surface}
           assets={(snap.pageAssets && snap.pageAssets["index"]?.assets) || snap.assets}
           strings={(snap.pageAssets && snap.pageAssets["index"]?.strings) || snap.strings}
         />
