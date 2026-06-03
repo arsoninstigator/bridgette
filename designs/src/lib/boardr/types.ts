@@ -8,7 +8,9 @@ export type AssetKind =
   | "paper"
   | "washi"
   | "pin"
-  | "shape";
+  | "shape"
+  | "icon"
+  | "marquee";
 
 export interface AssetBase {
   id: string;
