@@ -1484,6 +1484,15 @@ function StylesPanel({ boardId }: { boardId: string }) {
   const [view, setView] = useState<"home" | "palettes" | "fonts">("home");
   const [tagFilter, setTagFilter] = useState("");
 
+  // inline forms (no browser prompts)
+  const [showNewPalette, setShowNewPalette] = useState(false);
+  const [newPaletteName, setNewPaletteName] = useState("");
+  const [newPaletteColors, setNewPaletteColors] = useState<string[]>(["#000000", "#ffffff"]);
+  const [showNewFont, setShowNewFont] = useState(false);
+  const [newFontFamily, setNewFontFamily] = useState("");
+  const [editingTagsFor, setEditingTagsFor] = useState<string | null>(null);
+  const [tagDraft, setTagDraft] = useState("");
+
   useEffect(() => {
     try {
       const p = localStorage.getItem(pKey);
@@ -1505,26 +1514,34 @@ function StylesPanel({ boardId }: { boardId: string }) {
     try { localStorage.setItem(fKey, JSON.stringify(next)); } catch {}
   };
 
-  const addPalette = () => {
-    const name = prompt("palette name");
-    if (!name) return;
-    const colorsRaw = prompt("colors (comma-separated hex)", "#000000, #ffffff");
-    if (!colorsRaw) return;
-    const colors = colorsRaw.split(",").map((s) => s.trim()).filter(Boolean);
+  const commitPalette = () => {
+    const name = newPaletteName.trim();
+    const colors = newPaletteColors.map((c) => c.trim()).filter(Boolean);
+    if (!name || colors.length === 0) return;
     persistPalettes([...palettes, { id: `p-${Date.now()}`, name, colors }]);
+    setShowNewPalette(false);
+    setNewPaletteName("");
+    setNewPaletteColors(["#000000", "#ffffff"]);
   };
-  const addFont = () => {
-    const family = prompt("font family name (e.g. 'Inter')");
+  const commitFont = () => {
+    const family = newFontFamily.trim();
     if (!family) return;
     persistFonts([...fonts, { id: `f-${Date.now()}`, family, tags: [] }]);
+    setShowNewFont(false);
+    setNewFontFamily("");
   };
-  const tagFont = (id: string) => {
+  const startTagEdit = (id: string) => {
     const f = fonts.find((x) => x.id === id);
     if (!f) return;
-    const t = prompt("tags (comma-separated)", f.tags.join(", "));
-    if (t === null) return;
-    const tags = t.split(",").map((s) => s.trim().toLowerCase()).filter(Boolean);
-    persistFonts(fonts.map((x) => (x.id === id ? { ...x, tags } : x)));
+    setEditingTagsFor(id);
+    setTagDraft(f.tags.join(", "));
+  };
+  const commitTags = () => {
+    if (!editingTagsFor) return;
+    const tags = tagDraft.split(",").map((s) => s.trim().toLowerCase()).filter(Boolean);
+    persistFonts(fonts.map((x) => (x.id === editingTagsFor ? { ...x, tags } : x)));
+    setEditingTagsFor(null);
+    setTagDraft("");
   };
   const removeFont = (id: string) => persistFonts(fonts.filter((x) => x.id !== id));
   const removePalette = (id: string) => persistPalettes(palettes.filter((x) => x.id !== id));
@@ -1534,8 +1551,41 @@ function StylesPanel({ boardId }: { boardId: string }) {
       <div className="space-y-3">
         <div className="flex items-center justify-between">
           <button onClick={() => setView("home")} className="font-mono text-[10px] lowercase text-muted-foreground hover:text-foreground">← back</button>
-          <button onClick={addPalette} className="font-mono text-[10px] lowercase rounded border border-border px-2 py-1 hover:bg-black/5">+ new palette</button>
+          <button onClick={() => setShowNewPalette((v) => !v)} className="font-mono text-[10px] lowercase rounded border border-border px-2 py-1 hover:bg-black/5">
+            {showNewPalette ? "cancel" : "+ new palette"}
+          </button>
         </div>
+        {showNewPalette && (
+          <div className="rounded-md border border-amber-700/40 bg-amber-50/40 p-3 space-y-2">
+            <input
+              autoFocus
+              value={newPaletteName}
+              onChange={(e) => setNewPaletteName(e.target.value)}
+              placeholder="palette name"
+              className="w-full rounded border border-border bg-background px-2 py-1 font-mono text-[11px] lowercase"
+            />
+            <div className="space-y-1">
+              {newPaletteColors.map((c, i) => (
+                <div key={i} className="flex items-center gap-1.5">
+                  <input
+                    type="color"
+                    value={/^#[0-9a-f]{6}$/i.test(c) ? c : "#000000"}
+                    onChange={(e) => setNewPaletteColors(newPaletteColors.map((x, j) => (j === i ? e.target.value : x)))}
+                    className="h-6 w-7 rounded border border-border bg-transparent"
+                  />
+                  <input
+                    value={c}
+                    onChange={(e) => setNewPaletteColors(newPaletteColors.map((x, j) => (j === i ? e.target.value : x)))}
+                    className="flex-1 rounded border border-border bg-background px-2 py-1 font-mono text-[11px]"
+                  />
+                  <button onClick={() => setNewPaletteColors(newPaletteColors.filter((_, j) => j !== i))} className="text-stone-500 hover:text-rose-600 text-xs px-1">×</button>
+                </div>
+              ))}
+              <button onClick={() => setNewPaletteColors([...newPaletteColors, "#888888"])} className="font-mono text-[10px] lowercase rounded border border-dashed border-border px-2 py-1 hover:bg-black/5">+ color</button>
+            </div>
+            <button onClick={commitPalette} className="w-full rounded bg-stone-900 text-stone-50 py-1.5 font-mono text-[11px] lowercase">save palette</button>
+          </div>
+        )}
         <p className="font-mono text-[10px] lowercase text-muted-foreground">private to you — not shown to viewers</p>
         <div className="space-y-2">
           {palettes.map((p) => (
@@ -1565,8 +1615,23 @@ function StylesPanel({ boardId }: { boardId: string }) {
       <div className="space-y-3">
         <div className="flex items-center justify-between">
           <button onClick={() => setView("home")} className="font-mono text-[10px] lowercase text-muted-foreground hover:text-foreground">← back</button>
-          <button onClick={addFont} className="font-mono text-[10px] lowercase rounded border border-border px-2 py-1 hover:bg-black/5">+ add font</button>
+          <button onClick={() => setShowNewFont((v) => !v)} className="font-mono text-[10px] lowercase rounded border border-border px-2 py-1 hover:bg-black/5">
+            {showNewFont ? "cancel" : "+ add font"}
+          </button>
         </div>
+        {showNewFont && (
+          <div className="rounded-md border border-amber-700/40 bg-amber-50/40 p-3 space-y-2">
+            <input
+              autoFocus
+              value={newFontFamily}
+              onChange={(e) => setNewFontFamily(e.target.value)}
+              onKeyDown={(e) => e.key === "Enter" && commitFont()}
+              placeholder="font family (e.g. Inter)"
+              className="w-full rounded border border-border bg-background px-2 py-1 font-mono text-[11px]"
+            />
+            <button onClick={commitFont} className="w-full rounded bg-stone-900 text-stone-50 py-1.5 font-mono text-[11px] lowercase">add</button>
+          </div>
+        )}
         <input
           value={tagFilter}
           onChange={(e) => setTagFilter(e.target.value)}
@@ -1587,10 +1652,24 @@ function StylesPanel({ boardId }: { boardId: string }) {
                       <span key={t} className="font-mono text-[9px] lowercase rounded-sm bg-muted px-1.5 py-0.5">{t}</span>
                     ))}
                   </div>
+                  {editingTagsFor === f.id && (
+                    <div className="mt-2 flex items-center gap-1">
+                      <input
+                        autoFocus
+                        value={tagDraft}
+                        onChange={(e) => setTagDraft(e.target.value)}
+                        onKeyDown={(e) => e.key === "Enter" && commitTags()}
+                        placeholder="comma-separated tags"
+                        className="flex-1 rounded border border-border bg-background px-2 py-1 font-mono text-[10px] lowercase"
+                      />
+                      <button onClick={commitTags} className="font-mono text-[10px] rounded bg-stone-900 text-stone-50 px-2 py-1">save</button>
+                      <button onClick={() => setEditingTagsFor(null)} className="font-mono text-[10px] text-muted-foreground">×</button>
+                    </div>
+                  )}
                 </div>
               </ContextMenuTrigger>
               <ContextMenuContent>
-                <ContextMenuItem onClick={() => tagFont(f.id)}>edit tags</ContextMenuItem>
+                <ContextMenuItem onClick={() => startTagEdit(f.id)}>edit tags</ContextMenuItem>
                 <ContextMenuItem onClick={() => removeFont(f.id)} className="text-destructive">remove</ContextMenuItem>
               </ContextMenuContent>
             </ContextMenu>
