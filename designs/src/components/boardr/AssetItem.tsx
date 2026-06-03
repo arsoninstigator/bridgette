@@ -123,11 +123,10 @@ export function AssetItem({
               e.stopPropagation();
               setFlipped((f) => !f);
             }}
-            className="absolute -bottom-2 -right-2 size-7 rounded-full bg-stone-900/85 text-stone-50 text-[10px] font-mono analog-shadow-sm hover:bg-stone-900"
-            title="Flip"
-          >
-            ⤺
-          </button>
+            aria-label="flip"
+            className="absolute inset-0 bg-transparent border-0 p-0 m-0 cursor-pointer"
+            title="tap to flip"
+          />
         )}
         {resizable && selected && (
           <div
