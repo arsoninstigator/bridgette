@@ -1753,7 +1753,7 @@ function StubBlockTile({ label }: { label: string }) {
   );
 }
 
-function BlocksPanel() {
+function BlocksPanel({ onAdd }: { onAdd: AddFn }) {
   return (
     <div className="space-y-3">
       <p className="font-mono text-[10px] lowercase text-muted-foreground">prebuilt building pieces</p>
@@ -1761,6 +1761,39 @@ function BlocksPanel() {
         {["text", "heading", "image", "button", "button list", "icon", "icon grid", "input field"].map((b) => (
           <StubBlockTile key={b} label={b} />
         ))}
+      </SubheadingGroup>
+      <SubheadingGroup title="motion graphics">
+        <DraggableItem
+          kind="marquee"
+          label="marquee strip"
+          onAdd={onAdd}
+          extra={{}}
+        >
+          <div className="overflow-hidden flex items-center text-[8px] font-mono" style={{ width: 60, height: 16, background: "#fef3c7" }}>
+            <span className="px-1 whitespace-nowrap">marquee · marquee ·</span>
+          </div>
+        </DraggableItem>
+        <DraggableItem
+          kind="marquee"
+          label="news ticker"
+          onAdd={onAdd}
+          extra={{ iconBg: "#1a1a1a", iconFg: "#fef3c7", iconText: "live · breaking · live ·", iconSpeed: 14 }}
+        >
+          <div className="overflow-hidden flex items-center text-[8px] font-mono" style={{ width: 60, height: 16, background: "#1a1a1a", color: "#fef3c7" }}>
+            <span className="px-1 whitespace-nowrap">live · breaking</span>
+          </div>
+        </DraggableItem>
+        <DraggableItem
+          kind="marquee"
+          label="pastel scroll"
+          onAdd={onAdd}
+          extra={{ iconBg: "#fce7f3", iconFg: "#9d174d", iconText: "soft · gentle · slow ·", iconSpeed: 28 }}
+        >
+          <div className="overflow-hidden flex items-center text-[8px] font-mono" style={{ width: 60, height: 16, background: "#fce7f3", color: "#9d174d" }}>
+            <span className="px-1 whitespace-nowrap">soft · gentle ·</span>
+          </div>
+        </DraggableItem>
+        <StubBlockTile label="ribbon spin" />
       </SubheadingGroup>
       <SubheadingGroup title="layouts" defaultOpen={false}>
         {["hero", "two-up", "gallery", "list", "quote", "footer", "bento grid"].map((b) => (
@@ -1776,6 +1809,8 @@ function BlocksPanel() {
   );
 }
 
+type AddFn = (kind: AssetKind, x?: number, y?: number, extra?: Partial<AssetBase>) => void;
+
 function AssetsPanel() {
   return (
     <div className="space-y-3">
@@ -1787,7 +1822,7 @@ function AssetsPanel() {
   );
 }
 
-function ShapePanel({ onAdd }: { onAdd: (kind: AssetKind) => void }) {
+function ShapePanel({ onAdd }: { onAdd: AddFn }) {
   const basic: { variant: NonNullable<AssetBase["shape"]>; preview: React.ReactNode }[] = [
     { variant: "rect", preview: <div className="size-10" style={{ background: "#8b7355" }} /> },
     { variant: "circle", preview: <div className="size-10 rounded-full" style={{ background: "#8b7355" }} /> },
@@ -1811,6 +1846,7 @@ function ShapePanel({ onAdd }: { onAdd: (kind: AssetKind) => void }) {
           </DraggableItem>
         ))}
       </SubheadingGroup>
+      <IconsSubsection onAdd={onAdd} />
       <SubheadingGroup title="arrows & lines" defaultOpen={false}>
         {["arrow", "line", "double arrow", "bracket"].map((l) => (
           <StubBlockTile key={l} label={l} />
@@ -1821,6 +1857,108 @@ function ShapePanel({ onAdd }: { onAdd: (kind: AssetKind) => void }) {
           <StubBlockTile key={l} label={l} />
         ))}
       </SubheadingGroup>
+    </div>
+  );
+}
+
+type SavedIcon = { id: string; label: string; url: string };
+function IconsSubsection({ onAdd }: { onAdd: AddFn }) {
+  const KEY = "boardr:icons:user";
+  const [icons, setIcons] = useState<SavedIcon[]>([]);
+  const [open, setOpen] = useState(false);
+  const [showImport, setShowImport] = useState(false);
+  const [importUrl, setImportUrl] = useState("");
+  const [importLabel, setImportLabel] = useState("");
+  const fileRef = useRef<HTMLInputElement | null>(null);
+
+  useEffect(() => {
+    try {
+      const raw = localStorage.getItem(KEY);
+      if (raw) setIcons(JSON.parse(raw));
+    } catch {}
+  }, []);
+  const persist = (next: SavedIcon[]) => {
+    setIcons(next);
+    try { localStorage.setItem(KEY, JSON.stringify(next)); } catch {}
+  };
+  const addFromUrl = () => {
+    const url = importUrl.trim();
+    if (!url) return;
+    const label = importLabel.trim() || url.split("/").pop()?.split("?")[0] || "icon";
+    persist([...icons, { id: `i-${Date.now()}`, label, url }]);
+    setImportUrl(""); setImportLabel(""); setShowImport(false);
+  };
+  const onFile = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const files = Array.from(e.target.files || []);
+    if (files.length === 0) return;
+    let pending = files.length;
+    const newIcons: SavedIcon[] = [];
+    files.forEach((f) => {
+      const reader = new FileReader();
+      reader.onload = () => {
+        newIcons.push({ id: `i-${Date.now()}-${Math.random().toString(36).slice(2, 6)}`, label: f.name.replace(/\.[^.]+$/, ""), url: String(reader.result || "") });
+        if (--pending === 0) persist([...icons, ...newIcons]);
+      };
+      reader.readAsDataURL(f);
+    });
+    e.target.value = "";
+  };
+
+  return (
+    <div className="rounded-md border border-border bg-card/40">
+      <button onClick={() => setOpen((v) => !v)} className="w-full flex items-center justify-between px-3 py-2 font-mono text-[11px] lowercase hover:bg-black/5">
+        <span>icons</span>
+        <ChevronDown size={12} className={`transition-transform ${open ? "" : "-rotate-90"}`} />
+      </button>
+      {open && (
+        <div className="p-2 space-y-2">
+          <div className="grid grid-cols-3 gap-1.5">
+            <button onClick={() => fileRef.current?.click()} className="rounded border border-dashed border-border bg-card/60 p-2 font-mono text-[9px] lowercase hover:bg-black/5">
+              + upload
+            </button>
+            <button onClick={() => setShowImport((v) => !v)} className="rounded border border-dashed border-border bg-card/60 p-2 font-mono text-[9px] lowercase hover:bg-black/5">
+              + from url
+            </button>
+            <input ref={fileRef} type="file" multiple accept="image/*,.svg" onChange={onFile} className="hidden" />
+            <div className="rounded border border-dashed border-border bg-card/60 p-2 font-mono text-[9px] lowercase text-muted-foreground grid place-items-center">
+              zip soon
+            </div>
+          </div>
+          {showImport && (
+            <div className="rounded border border-amber-700/40 bg-amber-50/40 p-2 space-y-1.5">
+              <input
+                autoFocus
+                value={importUrl}
+                onChange={(e) => setImportUrl(e.target.value)}
+                placeholder="https://… (svg/png) — works with lucide, icons8, etc."
+                className="w-full rounded border border-border bg-background px-2 py-1 font-mono text-[10px]"
+              />
+              <input
+                value={importLabel}
+                onChange={(e) => setImportLabel(e.target.value)}
+                placeholder="label (optional)"
+                className="w-full rounded border border-border bg-background px-2 py-1 font-mono text-[10px]"
+              />
+              <button onClick={addFromUrl} className="w-full rounded bg-stone-900 text-stone-50 py-1 font-mono text-[10px] lowercase">add icon</button>
+            </div>
+          )}
+          {icons.length > 0 && (
+            <div className="pt-1 grid grid-cols-3 gap-1.5">
+              {icons.map((ic) => (
+                <DraggableItem
+                  key={ic.id}
+                  kind="icon"
+                  label={ic.label}
+                  onAdd={onAdd}
+                  extra={{ imageUrl: ic.url, width: 64, height: 64 }}
+                >
+                  <img src={ic.url} alt="" width={32} height={32} draggable={false} className="object-contain" />
+                </DraggableItem>
+              ))}
+            </div>
+          )}
+        </div>
+      )}
     </div>
   );
 }
