@@ -1913,8 +1913,17 @@ function AssetContextMenu({
         chevron
         active={submenu === "style"}
         onMouseEnter={() => setSubmenu("style")}
-        onClick={() => { onEditStyle(); onClose(); }}
-      />
+        onClick={() => setSubmenu(submenu === "style" ? null : "style")}
+      >
+        {submenu === "style" && (
+          <Submenu>
+            <MenuRow label="edit component" onClick={() => { onEditStyle("content"); onClose(); }} />
+            <MenuRow label="edit tape" onClick={() => { onEditStyle("tape"); onClose(); }} />
+            <MenuRow label="edit pin" onClick={() => { onEditStyle("pin"); onClose(); }} />
+            <MenuRow label="size & rotation" onClick={() => { onEditStyle("mechanics"); onClose(); }} />
+          </Submenu>
+        )}
+      </MenuRow>
       <div className="my-1 border-t border-stone-700/15" />
       <MenuRow
         label="delete"
