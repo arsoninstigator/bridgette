@@ -532,6 +532,7 @@ function Editor({ board, setBoard }: { board: Board; setBoard: (b: Board) => voi
             >
               <BoardCanvas
                 kind={board.kind}
+                surface={board.surface}
                 assets={board.assets}
                 strings={board.strings}
                 interactive={!previewMode}
