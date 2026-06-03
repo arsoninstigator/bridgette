@@ -585,7 +585,7 @@ function Editor({ board, setBoard }: { board: Board; setBoard: (b: Board) => voi
           </div>
           {stringMode && (
             <div className="absolute top-4 left-1/2 -translate-x-1/2 rounded-md bg-stone-900/85 text-stone-50 px-3 py-2 font-mono text-[10px] lowercase tracking-wider">
-              string mode — click an asset, then click another to connect · click a string to remove it
+              string mode — click a pinned asset, then another to connect (pin-to-pin only) · click a string to remove it
             </div>
           )}
           {drawWashi && (
