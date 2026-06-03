@@ -234,3 +234,13 @@ export function BoardCanvas({
 function clamp(v: number, min: number, max: number) {
   return Math.max(min, Math.min(max, v));
 }
+
+function pinPoint(a: AssetBase): { x: number; y: number } {
+  // approximate pin head location: above center, accounting for rotation
+  const h = a.height ?? (a.kind === "polaroid" ? (a.width ?? 200) + 32 : 140);
+  const dy = -h / 2 - 6;
+  const rad = ((a.rotation || 0) * Math.PI) / 180;
+  const rx = -Math.sin(rad) * dy;
+  const ry = Math.cos(rad) * dy;
+  return { x: a.x + rx, y: a.y + ry };
+}
