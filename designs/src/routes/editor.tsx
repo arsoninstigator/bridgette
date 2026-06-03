@@ -1834,7 +1834,7 @@ function AssetContextMenu({
   onUngroup: () => void;
   onToggleTape: () => void;
   onTogglePin: () => void;
-  onEditStyle: () => void;
+  onEditStyle: (focus: "content" | "mechanics" | "tape" | "pin") => void;
   onDelete: () => void;
 }) {
   const [submenu, setSubmenu] = useState<null | "layer" | "style">(null);
