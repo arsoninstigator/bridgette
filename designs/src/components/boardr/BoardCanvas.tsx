@@ -13,6 +13,7 @@ interface Props {
   kind: BoardKind;
   assets: AssetBase[];
   strings: StringConn[];
+  surface?: SurfaceOverlay;
   interactive?: boolean;
   selectedId?: string | null;
   selectedIds?: string[];
