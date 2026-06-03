@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useState } from "react";
 import { Lock } from "lucide-react";
 import type { AssetBase } from "../../lib/boardr/types";
 import pushpinAsset from "@/assets/pushpin.svg.asset.json";
