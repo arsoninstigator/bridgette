@@ -158,9 +158,11 @@ export function BoardCanvas({
           const a = assets.find((x) => x.id === s.from);
           const b = assets.find((x) => x.id === s.to);
           if (!a || !b) return null;
-          const mx = (a.x + b.x) / 2;
-          const my = (a.y + b.y) / 2 + 16;
-          const d = `M ${a.x} ${a.y} Q ${mx} ${my} ${b.x} ${b.y}`;
+          const pa = pinPoint(a);
+          const pb = pinPoint(b);
+          const mx = (pa.x + pb.x) / 2;
+          const my = (pa.y + pb.y) / 2 + 16;
+          const d = `M ${pa.x} ${pa.y} Q ${mx} ${my} ${pb.x} ${pb.y}`;
           return (
             <g key={s.id} style={{ pointerEvents: onStringClick ? "auto" : "none" }}>
               {/* invisible thick hit target */}
