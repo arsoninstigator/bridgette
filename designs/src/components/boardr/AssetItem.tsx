@@ -119,12 +119,15 @@ export function AssetItem({
         {asset.flipEnabled && !interactive && (
           <button
             type="button"
+            onPointerDown={(e) => e.stopPropagation()}
             onClick={(e) => {
               e.stopPropagation();
+              e.preventDefault();
               setFlipped((f) => !f);
             }}
             aria-label="flip"
             className="absolute inset-0 bg-transparent border-0 p-0 m-0 cursor-pointer"
+            style={{ zIndex: 40 }}
             title="tap to flip"
           />
         )}
