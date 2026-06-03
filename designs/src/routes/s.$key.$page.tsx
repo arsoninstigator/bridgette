@@ -13,7 +13,9 @@ function PageViewer() {
   const [snap, setSnap] = useState<PublishedSnapshot | null | undefined>(undefined);
 
   useEffect(() => {
-    setSnap(getPublished(key));
+    let cancelled = false;
+    getPublished(key).then((s) => { if (!cancelled) setSnap(s); });
+    return () => { cancelled = true; };
   }, [key]);
 
   if (snap === undefined) {
