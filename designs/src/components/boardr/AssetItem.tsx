@@ -80,7 +80,7 @@ export function AssetItem({
       <div className="relative">
         {renderAssetBody(asset, showBack)}
         {asset.tapeAttached && <AttachedTape color={asset.tapeAttachColor} />}
-        {asset.pinEnabled && <PushPin highlight={pinHighlight} />}
+        {asset.pinEnabled && <PushPin color={asset.pinColor || asset.color} highlight={pinHighlight} />}
         {asset.locked && interactive && (
           <div
             className="absolute -top-2 -left-2 size-5 rounded-full bg-stone-900/85 text-stone-50 grid place-items-center"
@@ -140,22 +140,32 @@ function defaultSize(a: AssetBase): { w: number; h: number } {
   }
 }
 
-function PushPin({ highlight }: { highlight?: boolean }) {
+function PushPin({ highlight, color }: { highlight?: boolean; color?: string }) {
+  const head = color || "#c0212a";
   return (
     <div
-      className="absolute left-1/2 -top-2 -translate-x-1/2"
-      style={{ pointerEvents: "none" }}
+      className="absolute left-1/2 -top-3 -translate-x-1/2"
+      style={{ pointerEvents: "none", filter: highlight ? "drop-shadow(0 0 4px rgba(250,204,21,0.95))" : "drop-shadow(0 2px 2px rgba(0,0,0,0.45))" }}
     >
-      <div
-        className="size-4 rounded-full"
-        style={{
-          background:
-            "radial-gradient(circle at 30% 30%, #ff8a8a, #c0212a 60%, #6e0a10)",
-          boxShadow: highlight
-            ? "0 0 0 3px rgba(250,204,21,0.7), 0 2px 4px rgba(0,0,0,0.4)"
-            : "0 2px 4px rgba(0,0,0,0.4)",
-        }}
-      />
+      <svg width={22} height={26} viewBox="0 0 22 26" fill="none">
+        {/* needle */}
+        <path d="M11 14 L11 25" stroke="#3a2a1a" strokeWidth={1.4} strokeLinecap="round" />
+        {/* shoulder ring */}
+        <ellipse cx="11" cy="13" rx="6" ry="2" fill="#6e0a10" opacity="0.55" />
+        {/* dome */}
+        <circle cx="11" cy="9" r="7" fill={head} />
+        {/* shading */}
+        <circle cx="11" cy="9" r="7" fill="url(#pinShade)" />
+        {/* highlight */}
+        <ellipse cx="8.5" cy="6.5" rx="2.2" ry="1.4" fill="rgba(255,255,255,0.7)" />
+        <defs>
+          <radialGradient id="pinShade" cx="0.35" cy="0.3" r="0.8">
+            <stop offset="0%" stopColor="rgba(255,255,255,0.35)" />
+            <stop offset="60%" stopColor="rgba(0,0,0,0)" />
+            <stop offset="100%" stopColor="rgba(0,0,0,0.45)" />
+          </radialGradient>
+        </defs>
+      </svg>
     </div>
   );
 }

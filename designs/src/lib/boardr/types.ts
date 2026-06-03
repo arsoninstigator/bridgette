@@ -22,6 +22,7 @@ export interface AssetBase {
   pinEnabled?: boolean; // shows a pushpin on top + becomes a string anchor
   tapeAttached?: boolean; // shows a washi tape strip across the top
   tapeAttachColor?: string; // color of attached tape
+  pinColor?: string; // color of pushpin head (when pinEnabled)
   locked?: boolean; // when true, cannot be dragged or resized
   groupId?: string; // assets sharing groupId move together
   // Content (per kind, loose)

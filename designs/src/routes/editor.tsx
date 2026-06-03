@@ -166,6 +166,7 @@ function Editor({ board, setBoard }: { board: Board; setBoard: (b: Board) => voi
   const [surfaceStyle, setSurfaceStyle] = useState<SurfaceStyle>({ border: 0, borderColor: "#3a2b1f", borderStyle: "solid", radius: 2 });
   const [assetMenu, setAssetMenu] = useState<AssetMenuState>(null);
   const [drawWashi, setDrawWashi] = useState<{ tapeColor?: string } | null>(null);
+  const [settingsFocus, setSettingsFocus] = useState<"content" | "mechanics" | "tape" | "pin" | undefined>(undefined);
 
   function setSelectedId(id: string | null) {
     setSelectedIds(id ? [id] : []);
@@ -584,7 +585,7 @@ function Editor({ board, setBoard }: { board: Board; setBoard: (b: Board) => voi
           </div>
           {stringMode && (
             <div className="absolute top-4 left-1/2 -translate-x-1/2 rounded-md bg-stone-900/85 text-stone-50 px-3 py-2 font-mono text-[10px] lowercase tracking-wider">
-              string mode — click an asset, then click another to connect · click a string to remove it
+              string mode — click a pinned asset, then another to connect (pin-to-pin only) · click a string to remove it
             </div>
           )}
           {drawWashi && (
@@ -624,9 +625,10 @@ function Editor({ board, setBoard }: { board: Board; setBoard: (b: Board) => voi
         {showSettings && selected && !previewMode && (
           <SettingsPanel
             asset={selected}
+            initialFocus={settingsFocus}
             onChange={(patch) => updateAsset(selected.id, patch, false)}
             onDelete={() => deleteAsset(selected.id)}
-            onClose={() => setShowSettings(false)}
+            onClose={() => { setShowSettings(false); setSettingsFocus(undefined); }}
           />
         )}
 
@@ -680,9 +682,10 @@ function Editor({ board, setBoard }: { board: Board; setBoard: (b: Board) => voi
               ),
             });
           }}
-          onEditStyle={() => {
+          onEditStyle={(focus) => {
             const id = assetMenu.ids[0];
             setSelectedId(id);
+            setSettingsFocus(focus);
             setShowSettings(true);
           }}
           onDelete={() => {
@@ -1831,7 +1834,7 @@ function AssetContextMenu({
   onUngroup: () => void;
   onToggleTape: () => void;
   onTogglePin: () => void;
-  onEditStyle: () => void;
+  onEditStyle: (focus: "content" | "mechanics" | "tape" | "pin") => void;
   onDelete: () => void;
 }) {
   const [submenu, setSubmenu] = useState<null | "layer" | "style">(null);
@@ -1910,8 +1913,17 @@ function AssetContextMenu({
         chevron
         active={submenu === "style"}
         onMouseEnter={() => setSubmenu("style")}
-        onClick={() => { onEditStyle(); onClose(); }}
-      />
+        onClick={() => setSubmenu(submenu === "style" ? null : "style")}
+      >
+        {submenu === "style" && (
+          <Submenu>
+            <MenuRow label="edit component" onClick={() => { onEditStyle("content"); onClose(); }} />
+            <MenuRow label="edit tape" onClick={() => { onEditStyle("tape"); onClose(); }} />
+            <MenuRow label="edit pin" onClick={() => { onEditStyle("pin"); onClose(); }} />
+            <MenuRow label="size & rotation" onClick={() => { onEditStyle("mechanics"); onClose(); }} />
+          </Submenu>
+        )}
+      </MenuRow>
       <div className="my-1 border-t border-stone-700/15" />
       <MenuRow
         label="delete"
