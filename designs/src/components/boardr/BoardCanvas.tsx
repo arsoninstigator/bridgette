@@ -1,6 +1,6 @@
 import { useRef, useState } from "react";
 import type { AssetBase, AssetKind, BoardKind, StringConn } from "../../lib/boardr/types";
-import { AssetItem } from "./AssetItem";
+import { AssetItem, PinImage } from "./AssetItem";
 
 const BG: Record<BoardKind, string> = {
   cork: "bg-board-cork",
