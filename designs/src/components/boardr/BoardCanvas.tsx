@@ -1,5 +1,5 @@
 import { useRef, useState } from "react";
-import type { AssetBase, AssetKind, BoardKind, StringConn } from "../../lib/boardr/types";
+import type { AssetBase, AssetKind, BoardKind, StringConn, SurfaceOverlay } from "../../lib/boardr/types";
 import { AssetItem, PinImage } from "./AssetItem";
 
 const BG: Record<BoardKind, string> = {
