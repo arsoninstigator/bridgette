@@ -479,7 +479,13 @@ function Editor({ board, setBoard }: { board: Board; setBoard: (b: Board) => voi
             />
             <div className="p-3">
               {activePanel === "select" && (
-                <SurfacePanel board={board} onPick={(kind) => update({ kind })} onEdit={() => setRightPanel("canvas")} />
+                <SurfacePanel
+                  board={board}
+                  onPick={(kind) => update({ kind })}
+                  onSurfaceChange={(surface) => update({ surface })}
+                  onEdit={() => setRightPanel("canvas")}
+                />
+
               )}
               {activePanel === "layers" && (
                 <LayersPanel
