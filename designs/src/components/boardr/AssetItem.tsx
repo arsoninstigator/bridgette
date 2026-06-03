@@ -167,32 +167,41 @@ function defaultSize(a: AssetBase): { w: number; h: number } {
 }
 
 function PushPin({ highlight, color }: { highlight?: boolean; color?: string }) {
-  const head = color || "#c0212a";
   return (
     <div
-      className="absolute left-1/2 -top-3 -translate-x-1/2"
-      style={{ pointerEvents: "none", filter: highlight ? "drop-shadow(0 0 4px rgba(250,204,21,0.95))" : "drop-shadow(0 2px 2px rgba(0,0,0,0.45))" }}
+      className="absolute left-1/2 -translate-x-1/2"
+      style={{ top: -20, pointerEvents: "none" }}
     >
-      <svg width={22} height={26} viewBox="0 0 22 26" fill="none">
-        {/* needle */}
-        <path d="M11 14 L11 25" stroke="#3a2a1a" strokeWidth={1.4} strokeLinecap="round" />
-        {/* shoulder ring */}
-        <ellipse cx="11" cy="13" rx="6" ry="2" fill="#6e0a10" opacity="0.55" />
-        {/* dome */}
-        <circle cx="11" cy="9" r="7" fill={head} />
-        {/* shading */}
-        <circle cx="11" cy="9" r="7" fill="url(#pinShade)" />
-        {/* highlight */}
-        <ellipse cx="8.5" cy="6.5" rx="2.2" ry="1.4" fill="rgba(255,255,255,0.7)" />
-        <defs>
-          <radialGradient id="pinShade" cx="0.35" cy="0.3" r="0.8">
-            <stop offset="0%" stopColor="rgba(255,255,255,0.35)" />
-            <stop offset="60%" stopColor="rgba(0,0,0,0)" />
-            <stop offset="100%" stopColor="rgba(0,0,0,0.45)" />
-          </radialGradient>
-        </defs>
-      </svg>
+      <PinImage color={color} highlight={highlight} size={28} />
     </div>
+  );
+}
+
+/** Standalone pin image — also used in the canvas's top "pins" layer that
+ * sits above the string layer so strings appear to wrap under the pin. */
+export function PinImage({
+  color,
+  highlight,
+  size = 28,
+}: {
+  color?: string;
+  highlight?: boolean;
+  size?: number;
+}) {
+  return (
+    <img
+      src={pushpinAsset.url}
+      alt=""
+      width={size}
+      height={size}
+      draggable={false}
+      style={{
+        display: "block",
+        filter: pinFilter(color, highlight),
+        pointerEvents: "none",
+        userSelect: "none",
+      }}
+    />
   );
 }
 
