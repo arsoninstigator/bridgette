@@ -107,7 +107,7 @@ export async function publishBoard(board: Board): Promise<string> {
       board_id: board.id,
       name: board.name,
       kind: board.kind,
-      snapshot: snap as unknown as Record<string, unknown>,
+      snapshot: snap as never,
       updated_at: new Date().toISOString(),
     });
   } catch (e) {
