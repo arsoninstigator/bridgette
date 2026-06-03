@@ -162,7 +162,7 @@ function ColorField({
 }) {
   const [showCustom, setShowCustom] = useState(false);
   const [hex, setHex] = useState(value && /^#/.test(value) ? value : "#888888");
-  const savedColors = useMemo(() => readSavedPaletteColors(), []);
+  const savedColors = useMemo<string[]>(() => readSavedPaletteColors(), []);
   return (
     <div>
       <Label>{label}</Label>
