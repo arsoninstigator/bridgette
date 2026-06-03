@@ -507,7 +507,7 @@ function Editor({ board, setBoard }: { board: Board; setBoard: (b: Board) => voi
                   }}
                 />
               )}
-              {activePanel === "blocks" && <BlocksPanel />}
+              {activePanel === "blocks" && <BlocksPanel onAdd={addAsset} />}
               {activePanel === "styles" && <StylesPanel boardId={board.id} />}
               {activePanel === "assets" && <AssetsPanel />}
               {activePanel === "shape" && <ShapePanel onAdd={addAsset} />}
@@ -1455,6 +1455,10 @@ function LibraryPreview({ kind, extra, large }: { kind: AssetKind; extra?: Parti
       return <div className="rounded-full" style={{ width: 20 * scale, height: 20 * scale, background: "radial-gradient(circle at 30% 30%, #ff8a8a, #c0212a 60%, #6e0a10)", boxShadow: "0 2px 4px rgba(0,0,0,0.4)" }} />;
     case "shape":
       return <div className="rounded-sm" style={{ width: 32 * scale, height: 32 * scale, background: "#c9b99a" }} />;
+    case "icon":
+      return <div className="rounded-md border border-dashed border-stone-400 grid place-items-center font-mono text-[8px] lowercase text-stone-500" style={{ width: 32 * scale, height: 32 * scale }}>icon</div>;
+    case "marquee":
+      return <div className="overflow-hidden flex items-center text-[8px] font-mono" style={{ width: 50 * scale, height: 12 * scale, background: "#fef3c7", color: "#1a1a1a" }}><span className="px-1 whitespace-nowrap">marquee · marquee ·</span></div>;
   }
 }
 
@@ -1480,6 +1484,15 @@ function StylesPanel({ boardId }: { boardId: string }) {
   const [view, setView] = useState<"home" | "palettes" | "fonts">("home");
   const [tagFilter, setTagFilter] = useState("");
 
+  // inline forms (no browser prompts)
+  const [showNewPalette, setShowNewPalette] = useState(false);
+  const [newPaletteName, setNewPaletteName] = useState("");
+  const [newPaletteColors, setNewPaletteColors] = useState<string[]>(["#000000", "#ffffff"]);
+  const [showNewFont, setShowNewFont] = useState(false);
+  const [newFontFamily, setNewFontFamily] = useState("");
+  const [editingTagsFor, setEditingTagsFor] = useState<string | null>(null);
+  const [tagDraft, setTagDraft] = useState("");
+
   useEffect(() => {
     try {
       const p = localStorage.getItem(pKey);
@@ -1501,26 +1514,34 @@ function StylesPanel({ boardId }: { boardId: string }) {
     try { localStorage.setItem(fKey, JSON.stringify(next)); } catch {}
   };
 
-  const addPalette = () => {
-    const name = prompt("palette name");
-    if (!name) return;
-    const colorsRaw = prompt("colors (comma-separated hex)", "#000000, #ffffff");
-    if (!colorsRaw) return;
-    const colors = colorsRaw.split(",").map((s) => s.trim()).filter(Boolean);
+  const commitPalette = () => {
+    const name = newPaletteName.trim();
+    const colors = newPaletteColors.map((c) => c.trim()).filter(Boolean);
+    if (!name || colors.length === 0) return;
     persistPalettes([...palettes, { id: `p-${Date.now()}`, name, colors }]);
+    setShowNewPalette(false);
+    setNewPaletteName("");
+    setNewPaletteColors(["#000000", "#ffffff"]);
   };
-  const addFont = () => {
-    const family = prompt("font family name (e.g. 'Inter')");
+  const commitFont = () => {
+    const family = newFontFamily.trim();
     if (!family) return;
     persistFonts([...fonts, { id: `f-${Date.now()}`, family, tags: [] }]);
+    setShowNewFont(false);
+    setNewFontFamily("");
   };
-  const tagFont = (id: string) => {
+  const startTagEdit = (id: string) => {
     const f = fonts.find((x) => x.id === id);
     if (!f) return;
-    const t = prompt("tags (comma-separated)", f.tags.join(", "));
-    if (t === null) return;
-    const tags = t.split(",").map((s) => s.trim().toLowerCase()).filter(Boolean);
-    persistFonts(fonts.map((x) => (x.id === id ? { ...x, tags } : x)));
+    setEditingTagsFor(id);
+    setTagDraft(f.tags.join(", "));
+  };
+  const commitTags = () => {
+    if (!editingTagsFor) return;
+    const tags = tagDraft.split(",").map((s) => s.trim().toLowerCase()).filter(Boolean);
+    persistFonts(fonts.map((x) => (x.id === editingTagsFor ? { ...x, tags } : x)));
+    setEditingTagsFor(null);
+    setTagDraft("");
   };
   const removeFont = (id: string) => persistFonts(fonts.filter((x) => x.id !== id));
   const removePalette = (id: string) => persistPalettes(palettes.filter((x) => x.id !== id));
@@ -1530,8 +1551,41 @@ function StylesPanel({ boardId }: { boardId: string }) {
       <div className="space-y-3">
         <div className="flex items-center justify-between">
           <button onClick={() => setView("home")} className="font-mono text-[10px] lowercase text-muted-foreground hover:text-foreground">← back</button>
-          <button onClick={addPalette} className="font-mono text-[10px] lowercase rounded border border-border px-2 py-1 hover:bg-black/5">+ new palette</button>
+          <button onClick={() => setShowNewPalette((v) => !v)} className="font-mono text-[10px] lowercase rounded border border-border px-2 py-1 hover:bg-black/5">
+            {showNewPalette ? "cancel" : "+ new palette"}
+          </button>
         </div>
+        {showNewPalette && (
+          <div className="rounded-md border border-amber-700/40 bg-amber-50/40 p-3 space-y-2">
+            <input
+              autoFocus
+              value={newPaletteName}
+              onChange={(e) => setNewPaletteName(e.target.value)}
+              placeholder="palette name"
+              className="w-full rounded border border-border bg-background px-2 py-1 font-mono text-[11px] lowercase"
+            />
+            <div className="space-y-1">
+              {newPaletteColors.map((c, i) => (
+                <div key={i} className="flex items-center gap-1.5">
+                  <input
+                    type="color"
+                    value={/^#[0-9a-f]{6}$/i.test(c) ? c : "#000000"}
+                    onChange={(e) => setNewPaletteColors(newPaletteColors.map((x, j) => (j === i ? e.target.value : x)))}
+                    className="h-6 w-7 rounded border border-border bg-transparent"
+                  />
+                  <input
+                    value={c}
+                    onChange={(e) => setNewPaletteColors(newPaletteColors.map((x, j) => (j === i ? e.target.value : x)))}
+                    className="flex-1 rounded border border-border bg-background px-2 py-1 font-mono text-[11px]"
+                  />
+                  <button onClick={() => setNewPaletteColors(newPaletteColors.filter((_, j) => j !== i))} className="text-stone-500 hover:text-rose-600 text-xs px-1">×</button>
+                </div>
+              ))}
+              <button onClick={() => setNewPaletteColors([...newPaletteColors, "#888888"])} className="font-mono text-[10px] lowercase rounded border border-dashed border-border px-2 py-1 hover:bg-black/5">+ color</button>
+            </div>
+            <button onClick={commitPalette} className="w-full rounded bg-stone-900 text-stone-50 py-1.5 font-mono text-[11px] lowercase">save palette</button>
+          </div>
+        )}
         <p className="font-mono text-[10px] lowercase text-muted-foreground">private to you — not shown to viewers</p>
         <div className="space-y-2">
           {palettes.map((p) => (
@@ -1561,8 +1615,23 @@ function StylesPanel({ boardId }: { boardId: string }) {
       <div className="space-y-3">
         <div className="flex items-center justify-between">
           <button onClick={() => setView("home")} className="font-mono text-[10px] lowercase text-muted-foreground hover:text-foreground">← back</button>
-          <button onClick={addFont} className="font-mono text-[10px] lowercase rounded border border-border px-2 py-1 hover:bg-black/5">+ add font</button>
+          <button onClick={() => setShowNewFont((v) => !v)} className="font-mono text-[10px] lowercase rounded border border-border px-2 py-1 hover:bg-black/5">
+            {showNewFont ? "cancel" : "+ add font"}
+          </button>
         </div>
+        {showNewFont && (
+          <div className="rounded-md border border-amber-700/40 bg-amber-50/40 p-3 space-y-2">
+            <input
+              autoFocus
+              value={newFontFamily}
+              onChange={(e) => setNewFontFamily(e.target.value)}
+              onKeyDown={(e) => e.key === "Enter" && commitFont()}
+              placeholder="font family (e.g. Inter)"
+              className="w-full rounded border border-border bg-background px-2 py-1 font-mono text-[11px]"
+            />
+            <button onClick={commitFont} className="w-full rounded bg-stone-900 text-stone-50 py-1.5 font-mono text-[11px] lowercase">add</button>
+          </div>
+        )}
         <input
           value={tagFilter}
           onChange={(e) => setTagFilter(e.target.value)}
@@ -1583,10 +1652,24 @@ function StylesPanel({ boardId }: { boardId: string }) {
                       <span key={t} className="font-mono text-[9px] lowercase rounded-sm bg-muted px-1.5 py-0.5">{t}</span>
                     ))}
                   </div>
+                  {editingTagsFor === f.id && (
+                    <div className="mt-2 flex items-center gap-1">
+                      <input
+                        autoFocus
+                        value={tagDraft}
+                        onChange={(e) => setTagDraft(e.target.value)}
+                        onKeyDown={(e) => e.key === "Enter" && commitTags()}
+                        placeholder="comma-separated tags"
+                        className="flex-1 rounded border border-border bg-background px-2 py-1 font-mono text-[10px] lowercase"
+                      />
+                      <button onClick={commitTags} className="font-mono text-[10px] rounded bg-stone-900 text-stone-50 px-2 py-1">save</button>
+                      <button onClick={() => setEditingTagsFor(null)} className="font-mono text-[10px] text-muted-foreground">×</button>
+                    </div>
+                  )}
                 </div>
               </ContextMenuTrigger>
               <ContextMenuContent>
-                <ContextMenuItem onClick={() => tagFont(f.id)}>edit tags</ContextMenuItem>
+                <ContextMenuItem onClick={() => startTagEdit(f.id)}>edit tags</ContextMenuItem>
                 <ContextMenuItem onClick={() => removeFont(f.id)} className="text-destructive">remove</ContextMenuItem>
               </ContextMenuContent>
             </ContextMenu>
@@ -1670,7 +1753,7 @@ function StubBlockTile({ label }: { label: string }) {
   );
 }
 
-function BlocksPanel() {
+function BlocksPanel({ onAdd }: { onAdd: AddFn }) {
   return (
     <div className="space-y-3">
       <p className="font-mono text-[10px] lowercase text-muted-foreground">prebuilt building pieces</p>
@@ -1678,6 +1761,39 @@ function BlocksPanel() {
         {["text", "heading", "image", "button", "button list", "icon", "icon grid", "input field"].map((b) => (
           <StubBlockTile key={b} label={b} />
         ))}
+      </SubheadingGroup>
+      <SubheadingGroup title="motion graphics">
+        <DraggableItem
+          kind="marquee"
+          label="marquee strip"
+          onAdd={onAdd}
+          extra={{}}
+        >
+          <div className="overflow-hidden flex items-center text-[8px] font-mono" style={{ width: 60, height: 16, background: "#fef3c7" }}>
+            <span className="px-1 whitespace-nowrap">marquee · marquee ·</span>
+          </div>
+        </DraggableItem>
+        <DraggableItem
+          kind="marquee"
+          label="news ticker"
+          onAdd={onAdd}
+          extra={{ iconBg: "#1a1a1a", iconFg: "#fef3c7", iconText: "live · breaking · live ·", iconSpeed: 14 }}
+        >
+          <div className="overflow-hidden flex items-center text-[8px] font-mono" style={{ width: 60, height: 16, background: "#1a1a1a", color: "#fef3c7" }}>
+            <span className="px-1 whitespace-nowrap">live · breaking</span>
+          </div>
+        </DraggableItem>
+        <DraggableItem
+          kind="marquee"
+          label="pastel scroll"
+          onAdd={onAdd}
+          extra={{ iconBg: "#fce7f3", iconFg: "#9d174d", iconText: "soft · gentle · slow ·", iconSpeed: 28 }}
+        >
+          <div className="overflow-hidden flex items-center text-[8px] font-mono" style={{ width: 60, height: 16, background: "#fce7f3", color: "#9d174d" }}>
+            <span className="px-1 whitespace-nowrap">soft · gentle ·</span>
+          </div>
+        </DraggableItem>
+        <StubBlockTile label="ribbon spin" />
       </SubheadingGroup>
       <SubheadingGroup title="layouts" defaultOpen={false}>
         {["hero", "two-up", "gallery", "list", "quote", "footer", "bento grid"].map((b) => (
@@ -1693,6 +1809,8 @@ function BlocksPanel() {
   );
 }
 
+type AddFn = (kind: AssetKind, x?: number, y?: number, extra?: Partial<AssetBase>) => void;
+
 function AssetsPanel() {
   return (
     <div className="space-y-3">
@@ -1704,7 +1822,7 @@ function AssetsPanel() {
   );
 }
 
-function ShapePanel({ onAdd }: { onAdd: (kind: AssetKind) => void }) {
+function ShapePanel({ onAdd }: { onAdd: AddFn }) {
   const basic: { variant: NonNullable<AssetBase["shape"]>; preview: React.ReactNode }[] = [
     { variant: "rect", preview: <div className="size-10" style={{ background: "#8b7355" }} /> },
     { variant: "circle", preview: <div className="size-10 rounded-full" style={{ background: "#8b7355" }} /> },
@@ -1728,6 +1846,7 @@ function ShapePanel({ onAdd }: { onAdd: (kind: AssetKind) => void }) {
           </DraggableItem>
         ))}
       </SubheadingGroup>
+      <IconsSubsection onAdd={onAdd} />
       <SubheadingGroup title="arrows & lines" defaultOpen={false}>
         {["arrow", "line", "double arrow", "bracket"].map((l) => (
           <StubBlockTile key={l} label={l} />
@@ -1738,6 +1857,108 @@ function ShapePanel({ onAdd }: { onAdd: (kind: AssetKind) => void }) {
           <StubBlockTile key={l} label={l} />
         ))}
       </SubheadingGroup>
+    </div>
+  );
+}
+
+type SavedIcon = { id: string; label: string; url: string };
+function IconsSubsection({ onAdd }: { onAdd: AddFn }) {
+  const KEY = "boardr:icons:user";
+  const [icons, setIcons] = useState<SavedIcon[]>([]);
+  const [open, setOpen] = useState(false);
+  const [showImport, setShowImport] = useState(false);
+  const [importUrl, setImportUrl] = useState("");
+  const [importLabel, setImportLabel] = useState("");
+  const fileRef = useRef<HTMLInputElement | null>(null);
+
+  useEffect(() => {
+    try {
+      const raw = localStorage.getItem(KEY);
+      if (raw) setIcons(JSON.parse(raw));
+    } catch {}
+  }, []);
+  const persist = (next: SavedIcon[]) => {
+    setIcons(next);
+    try { localStorage.setItem(KEY, JSON.stringify(next)); } catch {}
+  };
+  const addFromUrl = () => {
+    const url = importUrl.trim();
+    if (!url) return;
+    const label = importLabel.trim() || url.split("/").pop()?.split("?")[0] || "icon";
+    persist([...icons, { id: `i-${Date.now()}`, label, url }]);
+    setImportUrl(""); setImportLabel(""); setShowImport(false);
+  };
+  const onFile = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const files = Array.from(e.target.files || []);
+    if (files.length === 0) return;
+    let pending = files.length;
+    const newIcons: SavedIcon[] = [];
+    files.forEach((f) => {
+      const reader = new FileReader();
+      reader.onload = () => {
+        newIcons.push({ id: `i-${Date.now()}-${Math.random().toString(36).slice(2, 6)}`, label: f.name.replace(/\.[^.]+$/, ""), url: String(reader.result || "") });
+        if (--pending === 0) persist([...icons, ...newIcons]);
+      };
+      reader.readAsDataURL(f);
+    });
+    e.target.value = "";
+  };
+
+  return (
+    <div className="rounded-md border border-border bg-card/40">
+      <button onClick={() => setOpen((v) => !v)} className="w-full flex items-center justify-between px-3 py-2 font-mono text-[11px] lowercase hover:bg-black/5">
+        <span>icons</span>
+        <ChevronDown size={12} className={`transition-transform ${open ? "" : "-rotate-90"}`} />
+      </button>
+      {open && (
+        <div className="p-2 space-y-2">
+          <div className="grid grid-cols-3 gap-1.5">
+            <button onClick={() => fileRef.current?.click()} className="rounded border border-dashed border-border bg-card/60 p-2 font-mono text-[9px] lowercase hover:bg-black/5">
+              + upload
+            </button>
+            <button onClick={() => setShowImport((v) => !v)} className="rounded border border-dashed border-border bg-card/60 p-2 font-mono text-[9px] lowercase hover:bg-black/5">
+              + from url
+            </button>
+            <input ref={fileRef} type="file" multiple accept="image/*,.svg" onChange={onFile} className="hidden" />
+            <div className="rounded border border-dashed border-border bg-card/60 p-2 font-mono text-[9px] lowercase text-muted-foreground grid place-items-center">
+              zip soon
+            </div>
+          </div>
+          {showImport && (
+            <div className="rounded border border-amber-700/40 bg-amber-50/40 p-2 space-y-1.5">
+              <input
+                autoFocus
+                value={importUrl}
+                onChange={(e) => setImportUrl(e.target.value)}
+                placeholder="https://… (svg/png) — works with lucide, icons8, etc."
+                className="w-full rounded border border-border bg-background px-2 py-1 font-mono text-[10px]"
+              />
+              <input
+                value={importLabel}
+                onChange={(e) => setImportLabel(e.target.value)}
+                placeholder="label (optional)"
+                className="w-full rounded border border-border bg-background px-2 py-1 font-mono text-[10px]"
+              />
+              <button onClick={addFromUrl} className="w-full rounded bg-stone-900 text-stone-50 py-1 font-mono text-[10px] lowercase">add icon</button>
+            </div>
+          )}
+          {icons.length > 0 && (
+            <div className="pt-1 grid grid-cols-3 gap-1.5">
+              {icons.map((ic) => (
+                <DraggableItem
+                  key={ic.id}
+                  kind="icon"
+                  label={ic.label}
+                  onAdd={onAdd}
+                  extra={{ imageUrl: ic.url, width: 64, height: 64 }}
+                >
+                  <img src={ic.url} alt="" width={32} height={32} draggable={false} className="object-contain" />
+                </DraggableItem>
+              ))}
+            </div>
+          )}
+        </div>
+      )}
     </div>
   );
 }

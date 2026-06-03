@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import type { AssetBase } from "../../lib/boardr/types";
 
 interface Props {
@@ -129,13 +129,118 @@ function ImageInput({ value, onChange }: { value?: string; onChange: (v: string)
   );
 }
 
+function readSavedPaletteColors(): string[] {
+  if (typeof window === "undefined") return [];
+  try {
+    const out = new Set<string>();
+    for (let i = 0; i < localStorage.length; i++) {
+      const k = localStorage.key(i);
+      if (!k || !k.startsWith("boardr:styles:palettes:")) continue;
+      const raw = localStorage.getItem(k);
+      if (!raw) continue;
+      const arr = JSON.parse(raw) as { colors?: string[] }[];
+      arr.forEach((p) => p.colors?.forEach((c) => out.add(c)));
+    }
+    return Array.from(out);
+  } catch {
+    return [];
+  }
+}
+
+function ColorField({
+  label,
+  value,
+  presets,
+  onChange,
+  swatchClass = "size-7 rounded-sm border border-stone-300",
+}: {
+  label: string;
+  value?: string;
+  presets: string[];
+  onChange: (c: string) => void;
+  swatchClass?: string;
+}) {
+  const [showCustom, setShowCustom] = useState(false);
+  const [hex, setHex] = useState(value && /^#/.test(value) ? value : "#888888");
+  const savedColors = useMemo<string[]>(() => readSavedPaletteColors(), []);
+  return (
+    <div>
+      <Label>{label}</Label>
+      <div className="flex gap-2 flex-wrap items-center">
+        {presets.map((c) => (
+          <button
+            key={c}
+            onClick={() => onChange(c)}
+            className={`${swatchClass} ${value === c ? "ring-2 ring-amber-700" : ""}`}
+            style={{ background: c }}
+            title={c}
+          />
+        ))}
+        <button
+          onClick={() => setShowCustom((v) => !v)}
+          className={`size-7 rounded-sm border border-dashed border-stone-400 grid place-items-center font-mono text-[10px] text-stone-600 hover:bg-black/5 ${showCustom ? "ring-2 ring-amber-700" : ""}`}
+          title="use custom color"
+        >
+          +
+        </button>
+      </div>
+      {showCustom && (
+        <div className="mt-2 rounded-md border border-amber-700/40 bg-amber-50/40 p-2 space-y-2">
+          <div className="flex items-center gap-2">
+            <input
+              type="color"
+              value={/^#[0-9a-f]{6}$/i.test(hex) ? hex : "#888888"}
+              onChange={(e) => { setHex(e.target.value); onChange(e.target.value); }}
+              className="h-7 w-9 rounded border border-border bg-transparent"
+            />
+            <input
+              value={hex}
+              onChange={(e) => setHex(e.target.value)}
+              onBlur={() => onChange(hex)}
+              onKeyDown={(e) => e.key === "Enter" && onChange(hex)}
+              placeholder="#hex or rgba(…)"
+              className="flex-1 rounded border border-border bg-background px-2 py-1 font-mono text-[10px]"
+            />
+          </div>
+          {savedColors.length > 0 && (
+            <div>
+              <div className="font-mono text-[9px] uppercase tracking-wider text-muted-foreground mb-1">from your palettes</div>
+              <div className="flex gap-1.5 flex-wrap">
+                {savedColors.map((c) => (
+                  <button
+                    key={c}
+                    onClick={() => { setHex(c); onChange(c); }}
+                    className={`size-5 rounded-sm border border-stone-300 ${value === c ? "ring-2 ring-amber-700" : ""}`}
+                    style={{ background: c }}
+                    title={c}
+                  />
+                ))}
+              </div>
+            </div>
+          )}
+        </div>
+      )}
+    </div>
+  );
+}
+
+const STICKY_COLORS = ["#fff59d", "#ffd6a5", "#ffadad", "#caffbf", "#bdb2ff", "#a0c4ff", "#fbf7ec"];
+const TAPE_CONTENT_COLORS = [
+  "rgba(180,160,210,0.75)",
+  "rgba(120,180,160,0.7)",
+  "rgba(220,170,140,0.75)",
+  "rgba(210,140,150,0.7)",
+  "rgba(230,220,140,0.75)",
+];
+
 function ContentTab({ asset, onChange }: { asset: AssetBase; onChange: (p: Partial<AssetBase>) => void }) {
   const hasFront = ["sticky", "paper"].includes(asset.kind);
   const hasCaption = asset.kind === "polaroid";
-  const hasImage = ["polaroid", "photo"].includes(asset.kind);
+  const hasImage = ["polaroid", "photo", "icon"].includes(asset.kind);
   const hasStrip = asset.kind === "photostrip";
   const hasColor = ["sticky", "paper"].includes(asset.kind);
   const hasTape = asset.kind === "washi";
+  const isMarquee = asset.kind === "marquee";
 
   return (
     <>
@@ -181,38 +286,70 @@ function ContentTab({ asset, onChange }: { asset: AssetBase; onChange: (p: Parti
       )}
       {hasColor && (
         <Field>
-          <Label>Color</Label>
-          <div className="flex gap-2 flex-wrap">
-            {["#fff59d", "#ffd6a5", "#ffadad", "#caffbf", "#bdb2ff", "#a0c4ff", "#fbf7ec"].map((c) => (
-              <button
-                key={c}
-                onClick={() => onChange({ color: c })}
-                className={`size-7 rounded-sm border ${asset.color === c ? "ring-2 ring-amber-700" : "border-stone-300"}`}
-                style={{ background: c }}
-              />
-            ))}
-          </div>
+          <ColorField
+            label="Color"
+            value={asset.color}
+            presets={STICKY_COLORS}
+            onChange={(c) => onChange({ color: c })}
+          />
         </Field>
       )}
       {hasTape && (
         <Field>
-          <Label>Tape color</Label>
-          <div className="flex gap-2 flex-wrap">
-            {[
-              "rgba(180,160,210,0.75)",
-              "rgba(120,180,160,0.7)",
-              "rgba(220,170,140,0.75)",
-              "rgba(210,140,150,0.7)",
-              "rgba(230,220,140,0.75)",
-            ].map((c) => (
-              <button
-                key={c}
-                onClick={() => onChange({ tapeColor: c })}
-                className={`h-5 w-9 ${asset.tapeColor === c ? "ring-2 ring-amber-700" : ""}`}
-                style={{ background: c }}
-              />
-            ))}
-          </div>
+          <ColorField
+            label="Tape color"
+            value={asset.tapeColor}
+            presets={TAPE_CONTENT_COLORS}
+            onChange={(c) => onChange({ tapeColor: c })}
+            swatchClass="h-5 w-9 rounded-sm border border-stone-300"
+          />
+        </Field>
+      )}
+      {isMarquee && (
+        <>
+          <Field>
+            <Label>Marquee text</Label>
+            <input
+              value={asset.iconText ?? ""}
+              onChange={(e) => onChange({ iconText: e.target.value })}
+              className="w-full rounded-md border border-input bg-background p-2 text-sm font-mono"
+            />
+          </Field>
+          <Field>
+            <Label>Speed ({asset.iconSpeed ?? 18}s per loop)</Label>
+            <input
+              type="range" min={4} max={60}
+              value={asset.iconSpeed ?? 18}
+              onChange={(e) => onChange({ iconSpeed: Number(e.target.value) })}
+              className="w-full"
+            />
+          </Field>
+          <Field>
+            <ColorField
+              label="Background"
+              value={asset.iconBg}
+              presets={["#fef3c7", "#1a1a1a", "#fce7f3", "#dbeafe", "#dcfce7"]}
+              onChange={(c) => onChange({ iconBg: c })}
+            />
+          </Field>
+          <Field>
+            <ColorField
+              label="Text color"
+              value={asset.iconFg}
+              presets={["#1a1a1a", "#fef3c7", "#9d174d", "#1e3a8a", "#166534"]}
+              onChange={(c) => onChange({ iconFg: c })}
+            />
+          </Field>
+        </>
+      )}
+      {asset.kind === "icon" && (
+        <Field>
+          <ColorField
+            label="Tint (used when no image)"
+            value={asset.fill}
+            presets={["#1a1a1a", "#b91c1c", "#1e6bbf", "#1d8a4f", "#c9a84c", "#ffffff"]}
+            onChange={(c) => onChange({ fill: c })}
+          />
         </Field>
       )}
       {asset.flipEnabled && (

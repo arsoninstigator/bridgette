@@ -26,5 +26,18 @@ export function makeAsset(kind: AssetKind, x: number, y: number): AssetBase {
       return { ...base, pinEnabled: true };
     case "shape":
       return { ...base, shape: "rect", width: 140, height: 140, fill: "#c9b99a", rotation: 0 };
+    case "icon":
+      return { ...base, width: 64, height: 64, fill: "#1a1a1a", rotation: 0 };
+    case "marquee":
+      return {
+        ...base,
+        width: 320,
+        height: 40,
+        rotation: 0,
+        iconText: "breaking news · breaking news · breaking news ·",
+        iconSpeed: 18,
+        iconBg: "#fef3c7",
+        iconFg: "#1a1a1a",
+      };
   }
 }
