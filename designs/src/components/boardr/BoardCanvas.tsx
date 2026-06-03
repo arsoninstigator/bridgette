@@ -267,9 +267,13 @@ function clamp(v: number, min: number, max: number) {
 }
 
 function pinPoint(a: AssetBase): { x: number; y: number } {
-  // approximate pin head location: above center, accounting for rotation
-  const h = a.height ?? (a.kind === "polaroid" ? (a.width ?? 200) + 32 : 140);
-  const dy = -h / 2 - 6;
+  // approximate pin head location: above center, accounting for rotation.
+  // For polaroid, the rendered height is always width + 32 (image + padding + caption),
+  // regardless of a.height (which the renderer ignores), so derive from width.
+  const h = a.kind === "polaroid"
+    ? (a.width ?? 200) + 32
+    : (a.height ?? 140);
+  const dy = -h / 2 - 4;
   const rad = ((a.rotation || 0) * Math.PI) / 180;
   const rx = -Math.sin(rad) * dy;
   const ry = Math.cos(rad) * dy;
