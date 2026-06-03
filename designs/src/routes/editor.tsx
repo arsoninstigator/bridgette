@@ -507,7 +507,7 @@ function Editor({ board, setBoard }: { board: Board; setBoard: (b: Board) => voi
                   }}
                 />
               )}
-              {activePanel === "blocks" && <BlocksPanel />}
+              {activePanel === "blocks" && <BlocksPanel onAdd={addAsset} />}
               {activePanel === "styles" && <StylesPanel boardId={board.id} />}
               {activePanel === "assets" && <AssetsPanel />}
               {activePanel === "shape" && <ShapePanel onAdd={addAsset} />}
