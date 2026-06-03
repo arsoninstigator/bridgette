@@ -624,9 +624,10 @@ function Editor({ board, setBoard }: { board: Board; setBoard: (b: Board) => voi
         {showSettings && selected && !previewMode && (
           <SettingsPanel
             asset={selected}
+            initialFocus={settingsFocus}
             onChange={(patch) => updateAsset(selected.id, patch, false)}
             onDelete={() => deleteAsset(selected.id)}
-            onClose={() => setShowSettings(false)}
+            onClose={() => { setShowSettings(false); setSettingsFocus(undefined); }}
           />
         )}
 
