@@ -1,6 +1,30 @@
 import { useEffect, useRef, useState } from "react";
 import { Lock } from "lucide-react";
 import type { AssetBase } from "../../lib/boardr/types";
+import pushpinAsset from "@/assets/pushpin.svg.asset.json";
+
+// Hue-rotate mapping for recoloring the (raster-inside-svg) pushpin which is
+// natively red. Values are approximate so the pin still reads as a tack.
+const PIN_HUE: Record<string, number> = {
+  "#c0212a": 0,        // red (default)
+  "#1e6bbf": 210,      // blue
+  "#c9a84c": 35,       // brass/gold (also lower saturation via filter)
+  "#1d8a4f": 120,      // green
+  "#3a2a1a": 0,        // dark brown (use saturate 0)
+  "#e8e4dd": 0,        // ivory (use saturate 0 + brightness)
+};
+function pinFilter(color?: string, highlight?: boolean): string {
+  const c = color || "#c0212a";
+  let f = "";
+  if (c === "#3a2a1a") f = "saturate(0) brightness(0.55)";
+  else if (c === "#e8e4dd") f = "saturate(0) brightness(1.6)";
+  else if (c === "#c9a84c") f = `hue-rotate(${PIN_HUE[c]}deg) saturate(0.7) brightness(1.1)`;
+  else f = `hue-rotate(${PIN_HUE[c] ?? 0}deg)`;
+  f += highlight
+    ? " drop-shadow(0 0 5px rgba(250,204,21,0.95))"
+    : " drop-shadow(0 2px 2px rgba(0,0,0,0.45))";
+  return f;
+}
 
 interface Props {
   asset: AssetBase;
