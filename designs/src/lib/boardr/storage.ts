@@ -94,6 +94,7 @@ export async function publishBoard(board: Board): Promise<string> {
     pages,
     pageAssets,
     publishedAt: Date.now(),
+    surface: board.surface,
   };
   published[key] = snap;
   write(PUBLISHED_KEY, published);
