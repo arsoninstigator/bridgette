@@ -1,4 +1,5 @@
 import type { Board, PublishedSnapshot } from "./types";
+import { supabase } from "@/integrations/supabase/client";
 
 const BOARDS_KEY = "boardr:boards";
 const KEY_INDEX = "boardr:keyIndex"; // hash -> boardId
