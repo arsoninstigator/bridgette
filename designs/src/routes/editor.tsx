@@ -1455,6 +1455,10 @@ function LibraryPreview({ kind, extra, large }: { kind: AssetKind; extra?: Parti
       return <div className="rounded-full" style={{ width: 20 * scale, height: 20 * scale, background: "radial-gradient(circle at 30% 30%, #ff8a8a, #c0212a 60%, #6e0a10)", boxShadow: "0 2px 4px rgba(0,0,0,0.4)" }} />;
     case "shape":
       return <div className="rounded-sm" style={{ width: 32 * scale, height: 32 * scale, background: "#c9b99a" }} />;
+    case "icon":
+      return <div className="rounded-md border border-dashed border-stone-400 grid place-items-center font-mono text-[8px] lowercase text-stone-500" style={{ width: 32 * scale, height: 32 * scale }}>icon</div>;
+    case "marquee":
+      return <div className="overflow-hidden flex items-center text-[8px] font-mono" style={{ width: 50 * scale, height: 12 * scale, background: "#fef3c7", color: "#1a1a1a" }}><span className="px-1 whitespace-nowrap">marquee · marquee ·</span></div>;
   }
 }
 
