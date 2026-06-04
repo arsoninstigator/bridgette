@@ -50,6 +50,7 @@ export function AssetItem({
   onClick,
   onContextMenu,
   onResize,
+  onPatch,
   pinHighlight,
   hidePin,
 }: Props) {
