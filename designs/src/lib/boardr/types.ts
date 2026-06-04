@@ -10,7 +10,8 @@ export type AssetKind =
   | "pin"
   | "shape"
   | "icon"
-  | "marquee";
+  | "marquee"
+  | "frame";
 
 export interface AssetBase {
   id: string;
