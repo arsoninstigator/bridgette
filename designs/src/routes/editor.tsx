@@ -803,6 +803,124 @@ function PanelHeader({ title, onClose, right }: { title: string; onClose: () => 
   );
 }
 
+function PatternsBlock({
+  surface,
+  setSurface,
+}: {
+  surface: NonNullable<Board["surface"]>;
+  setSurface: (p: Partial<NonNullable<Board["surface"]>>) => void;
+}) {
+  const p = surface.pattern;
+  const [open, setOpen] = useState(false);
+  const type = p?.type ?? "grid";
+  const size = p?.size ?? 24;
+  const thickness = p?.thickness ?? 1;
+  const color1 = p?.color1 ?? "#1a1a1a";
+  const color2 = p?.color2 ?? "#faf3f5";
+  const angle = p?.angle ?? 45;
+
+  function set(patch: Partial<NonNullable<typeof p>>) {
+    setSurface({
+      pattern: {
+        type, size, thickness, color1, color2, angle,
+        ...(p ?? {}),
+        ...patch,
+      },
+    });
+  }
+
+  return (
+    <div className="rounded-md border border-border bg-card/40">
+      <button
+        onClick={() => setOpen((v) => !v)}
+        className="w-full flex items-center justify-between px-3 py-2 font-mono text-[11px] lowercase hover:bg-black/5"
+      >
+        <span>patterns</span>
+        <span className="flex items-center gap-2">
+          {p && (
+            <span
+              onClick={(e) => { e.stopPropagation(); setSurface({ pattern: undefined }); }}
+              className="text-muted-foreground hover:text-destructive text-[10px]"
+            >clear</span>
+          )}
+          <ChevronDown size={12} className={`transition-transform ${open ? "" : "-rotate-90"}`} />
+        </span>
+      </button>
+      {open && (
+        <div className="p-2 space-y-2">
+          <div className="grid grid-cols-4 gap-1">
+            {(["grid", "stripes", "checker", "dots"] as const).map((t) => (
+              <button
+                key={t}
+                onClick={() => set({ type: t })}
+                className={`rounded border px-1.5 py-1 font-mono text-[10px] lowercase ${
+                  type === t ? "border-stone-900 bg-accent/40" : "border-border hover:bg-black/5"
+                }`}
+              >
+                {t}
+              </button>
+            ))}
+          </div>
+          <div className="grid grid-cols-2 gap-2">
+            <div>
+              <div className="font-mono text-[9px] lowercase text-muted-foreground mb-1">line / dot</div>
+              <input
+                type="color" value={/^#[0-9a-f]{6}$/i.test(color1) ? color1 : "#000000"}
+                onChange={(e) => set({ color1: e.target.value })}
+                className="h-7 w-full rounded border border-border bg-transparent"
+              />
+            </div>
+            <div>
+              <div className="font-mono text-[9px] lowercase text-muted-foreground mb-1">background</div>
+              <input
+                type="color" value={/^#[0-9a-f]{6}$/i.test(color2) ? color2 : "#ffffff"}
+                onChange={(e) => set({ color2: e.target.value })}
+                className="h-7 w-full rounded border border-border bg-transparent"
+              />
+            </div>
+          </div>
+          <div>
+            <div className="font-mono text-[9px] lowercase text-muted-foreground mb-1">cell size · {size}px</div>
+            <input
+              type="range" min={4} max={120} value={size}
+              onChange={(e) => set({ size: Number(e.target.value) })}
+              className="w-full"
+            />
+          </div>
+          {(type === "grid" || type === "stripes" || type === "dots") && (
+            <div>
+              <div className="font-mono text-[9px] lowercase text-muted-foreground mb-1">thickness · {thickness}px</div>
+              <input
+                type="range" min={1} max={12} value={thickness}
+                onChange={(e) => set({ thickness: Number(e.target.value) })}
+                className="w-full"
+              />
+            </div>
+          )}
+          {type === "stripes" && (
+            <div>
+              <div className="font-mono text-[9px] lowercase text-muted-foreground mb-1">angle · {angle}°</div>
+              <input
+                type="range" min={0} max={180} value={angle}
+                onChange={(e) => set({ angle: Number(e.target.value) })}
+                className="w-full"
+              />
+            </div>
+          )}
+          {!p && (
+            <button
+              onClick={() => set({})}
+              className="w-full rounded bg-stone-900 text-stone-50 py-1.5 font-mono text-[10px] lowercase"
+            >
+              apply pattern
+            </button>
+          )}
+        </div>
+      )}
+    </div>
+  );
+}
+
 function SurfacePanel({
   board,
   onPick,
