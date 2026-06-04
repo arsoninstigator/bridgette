@@ -552,3 +552,168 @@ function renderAssetBody(
     }
   }
 }
+
+function renderFrame(
+  a: AssetBase,
+  interactive?: boolean,
+  onPatch?: (p: Partial<AssetBase>) => void,
+) {
+  const w = a.width ?? 220;
+  const h = a.height ?? 260;
+  const style = a.frameStyle ?? "classic";
+  const frameColor = a.color || "#3a2a1a";
+  // configured inner cutout per style — leaves a hole for the image
+  const inset = style === "polaroid"
+    ? { top: 16, right: 16, bottom: 56, left: 16 }
+    : style === "ornate"
+    ? { top: 28, right: 28, bottom: 28, left: 28 }
+    : style === "double"
+    ? { top: 22, right: 22, bottom: 22, left: 22 }
+    : style === "oval"
+    ? { top: 18, right: 18, bottom: 18, left: 18 }
+    : style === "scalloped"
+    ? { top: 22, right: 22, bottom: 22, left: 22 }
+    : /* classic */ { top: 18, right: 18, bottom: 18, left: 18 };
+
+  const innerStyle: React.CSSProperties = {
+    position: "absolute",
+    top: inset.top,
+    left: inset.left,
+    right: inset.right,
+    bottom: inset.bottom,
+    background: a.imageUrl
+      ? `center/cover no-repeat url(${a.imageUrl})`
+      : "linear-gradient(135deg,#f5efe5,#e8e0d2)",
+    borderRadius: style === "oval" ? "50%" : 2,
+    overflow: "hidden",
+  };
+
+  // outer frame visuals
+  const baseShadow = "0 6px 14px rgba(40,25,10,0.25), 0 1px 2px rgba(40,25,10,0.2)";
+  const outer: React.CSSProperties = { position: "relative", width: w, height: h };
+  let outerEl: React.ReactNode;
+  if (style === "ornate") {
+    outerEl = (
+      <div
+        style={{
+          ...outer,
+          background: `linear-gradient(135deg, ${frameColor}, color-mix(in oklab, ${frameColor} 60%, #c9a84c))`,
+          boxShadow: baseShadow,
+          backgroundImage:
+            "repeating-linear-gradient(45deg, rgba(255,255,255,0.10) 0 2px, transparent 2px 6px)",
+          borderRadius: 4,
+        }}
+      />
+    );
+  } else if (style === "double") {
+    outerEl = (
+      <div
+        style={{
+          ...outer,
+          background: frameColor,
+          boxShadow: baseShadow,
+          borderRadius: 2,
+          padding: 0,
+        }}
+      >
+        <div
+          style={{
+            position: "absolute",
+            inset: 10,
+            border: `2px solid color-mix(in oklab, ${frameColor} 50%, #faf8f5)`,
+            borderRadius: 2,
+          }}
+        />
+      </div>
+    );
+  } else if (style === "polaroid") {
+    outerEl = (
+      <div
+        className="analog-shadow"
+        style={{ ...outer, background: "#fff", borderRadius: 2 }}
+      />
+    );
+  } else if (style === "oval") {
+    outerEl = (
+      <div
+        style={{
+          ...outer,
+          background: `radial-gradient(ellipse at center, color-mix(in oklab, ${frameColor} 85%, #faf8f5) 0%, ${frameColor} 70%)`,
+          boxShadow: baseShadow,
+          borderRadius: "50%",
+        }}
+      />
+    );
+  } else if (style === "scalloped") {
+    // scalloped border via SVG
+    outerEl = (
+      <svg width={w} height={h} viewBox={`0 0 ${w} ${h}`} style={{ display: "block", filter: "drop-shadow(0 6px 12px rgba(40,25,10,0.25))" }}>
+        <ScallopedRect w={w} h={h} fill={frameColor} />
+      </svg>
+    );
+  } else {
+    // classic — solid wood frame with subtle inner bevel
+    outerEl = (
+      <div
+        style={{
+          ...outer,
+          background: frameColor,
+          boxShadow: baseShadow,
+          borderRadius: 2,
+        }}
+      >
+        <div
+          style={{
+            position: "absolute",
+            inset: 6,
+            border: "1px solid rgba(255,255,255,0.18)",
+            borderRadius: 1,
+          }}
+        />
+      </div>
+    );
+  }
+
+  return (
+    <div style={{ position: "relative", width: w, height: h }}>
+      {outerEl}
+      <div style={innerStyle}>
+        {!a.imageUrl && onPatch && (
+          <PlusOverlay interactive={interactive} onPick={(d) => onPatch({ imageUrl: d })} />
+        )}
+      </div>
+    </div>
+  );
+}
+
+function ScallopedRect({ w, h, fill }: { w: number; h: number; fill: string }) {
+  // build a path with semicircle scallops along all four edges
+  const r = 10;
+  const cx = Math.max(2, Math.floor(w / (r * 2)));
+  const cy = Math.max(2, Math.floor(h / (r * 2)));
+  const dx = w / cx;
+  const dy = h / cy;
+  let d = `M 0 ${dy / 2}`;
+  // top edge
+  for (let i = 0; i < cx; i++) {
+    const x = (i + 0.5) * dx;
+    d += ` A ${dx / 2} ${dx / 2} 0 0 1 ${x + dx / 2} ${dy / 2}`;
+  }
+  // right edge
+  for (let i = 0; i < cy; i++) {
+    const y = (i + 0.5) * dy;
+    d += ` A ${dy / 2} ${dy / 2} 0 0 1 ${w - dx / 2} ${y + dy / 2}`;
+  }
+  // bottom edge
+  for (let i = cx - 1; i >= 0; i--) {
+    const x = (i + 0.5) * dx;
+    d += ` A ${dx / 2} ${dx / 2} 0 0 1 ${x - dx / 2} ${h - dy / 2}`;
+  }
+  // left edge
+  for (let i = cy - 1; i >= 0; i--) {
+    const y = (i + 0.5) * dy;
+    d += ` A ${dy / 2} ${dy / 2} 0 0 1 ${dx / 2} ${y - dy / 2}`;
+  }
+  d += " Z";
+  return <path d={d} fill={fill} />;
+}
