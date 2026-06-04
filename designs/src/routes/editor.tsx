@@ -568,7 +568,7 @@ function Editor({ board, setBoard }: { board: Board; setBoard: (b: Board) => voi
               {/* floating frame label */}
               <div className="absolute top-3 left-3 pointer-events-none">
                 <div className="inline-block bg-pink-50/85 backdrop-blur-sm border border-stone-700/20 rounded px-2.5 py-1 font-display text-xs lowercase shadow-sm">
-                  frame one (index) · {frameSize.w}×{frameSize.h}
+                  {(pages.find((p) => p.slug === activeSlug)?.name) || "frame one (index)"} · {frameSize.w}×{frameSize.h}
                 </div>
               </div>
               {!previewMode && (
