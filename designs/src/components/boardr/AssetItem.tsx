@@ -297,7 +297,12 @@ function PlusOverlay({
 }
 
 
-function renderAssetBody(a: AssetBase, back: boolean) {
+function renderAssetBody(
+  a: AssetBase,
+  back: boolean,
+  interactive?: boolean,
+  onPatch?: (p: Partial<AssetBase>) => void,
+) {
   switch (a.kind) {
     case "sticky": {
       const color = a.color || "#fff59d";
