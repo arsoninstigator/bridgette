@@ -35,6 +35,7 @@ interface Props {
   onClick?: (e: React.MouseEvent) => void;
   onContextMenu?: (e: React.MouseEvent) => void;
   onResize?: (w: number, h: number) => void;
+  onPatch?: (p: Partial<AssetBase>) => void; // partial update from inside the asset (e.g. inline image upload)
   pinHighlight?: boolean; // string mode highlight
   hidePin?: boolean; // when true, AssetItem skips drawing the pin overlay (canvas draws it on top)
 }
