@@ -296,11 +296,6 @@ function PlusOverlay({
   );
 }
 
-function useRef<T>(v: T | null) {
-  // re-export react's useRef to avoid additional top-level import shuffling
-  // (this helper exists only because the original imports didn't include useRef)
-  return (require("react") as typeof import("react")).useRef<T>(v);
-}
 
 function renderAssetBody(a: AssetBase, back: boolean) {
   switch (a.kind) {
