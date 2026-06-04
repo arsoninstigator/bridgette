@@ -325,6 +325,7 @@ function renderAssetBody(
     }
     case "polaroid": {
       const w = a.width ?? 200;
+      const inner = w - 24;
       return (
         <div
           className="analog-shadow bg-white"
@@ -333,28 +334,29 @@ function renderAssetBody(
           {back ? (
             <div
               className="font-mono text-[12px] text-stone-700 whitespace-pre-wrap"
-              style={{ width: w - 24, minHeight: w - 24 }}
+              style={{ width: inner, minHeight: inner }}
             >
               {a.back}
             </div>
           ) : (
             <div
+              className="relative"
               style={{
-                width: w - 24,
-                height: w - 24,
+                width: inner,
+                height: inner,
                 background: a.imageUrl
                   ? `center/cover no-repeat url(${a.imageUrl})`
-                  : "linear-gradient(135deg,#e8e4dd,#c9b99a)",
+                  : "linear-gradient(135deg,#f5efe5,#e8e0d2)",
               }}
-            />
+            >
+              {!a.imageUrl && onPatch && (
+                <PlusOverlay interactive={interactive} onPick={(d) => onPatch({ imageUrl: d })} />
+              )}
+            </div>
           )}
           <div
             className="absolute left-0 right-0 text-center text-stone-700"
-            style={{
-              bottom: 10,
-              fontFamily: "Caveat, cursive",
-              fontSize: 18,
-            }}
+            style={{ bottom: 10, fontFamily: "Caveat, cursive", fontSize: 18 }}
           >
             {a.caption}
           </div>
