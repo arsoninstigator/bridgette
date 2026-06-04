@@ -1162,6 +1162,18 @@ const LIBRARY_SETS: LibrarySet[] = [
     ],
   },
   { id: "decoration", label: "decoration", available: false, blurb: "stickers, doodles, marginalia.", items: [] },
+  {
+    id: "frame", label: "frames", available: true,
+    blurb: "empty photo frames in many shapes — click the plus inside to add an image.",
+    items: [
+      { id: "frame-classic", label: "classic wood", kind: "frame", extra: { frameStyle: "classic", color: "#3a2a1a", width: 220, height: 260 } },
+      { id: "frame-ornate", label: "ornate gilt", kind: "frame", extra: { frameStyle: "ornate", color: "#7a5a1a", width: 220, height: 260 } },
+      { id: "frame-double", label: "double matte", kind: "frame", extra: { frameStyle: "double", color: "#2d2d2d", width: 220, height: 260 } },
+      { id: "frame-oval", label: "oval", kind: "frame", extra: { frameStyle: "oval", color: "#5b3a22", width: 220, height: 260 } },
+      { id: "frame-scalloped", label: "scalloped", kind: "frame", extra: { frameStyle: "scalloped", color: "#c9a576", width: 220, height: 220 } },
+      { id: "frame-polaroid", label: "polaroid frame", kind: "frame", extra: { frameStyle: "polaroid", color: "#ffffff", width: 200, height: 240 } },
+    ],
+  },
   { id: "lettering", label: "lettering", available: false, blurb: "stamps, headlines, hand-lettered titles.", items: [] },
   { id: "flags", label: "flags, maps", available: false, blurb: "pennants, cartography, location markers.", items: [] },
   {
