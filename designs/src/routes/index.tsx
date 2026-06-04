@@ -16,13 +16,13 @@ const SURFACES: { kind: BoardKind; label: string; className: string; blurb: stri
 
 const ANALOG_OBJECTS = [
   { label: "polaroids", note: "01" },
-  { label: "photostrips", note: "02" },
-  { label: "sticky notes", note: "03" },
-  { label: "evidence tags", note: "04" },
-  { label: "library cards", note: "05" },
-  { label: "receipts", note: "06" },
-  { label: "stamps", note: "07" },
-  { label: "folders", note: "08" },
+  { label: "photo frames", note: "02" },
+  { label: "photostrips", note: "03" },
+  { label: "sticky notes", note: "04" },
+  { label: "washi tape", note: "05" },
+  { label: "loose sheets", note: "06" },
+  { label: "pushpins + thread", note: "07" },
+  { label: "patterns + textures", note: "08" },
 ];
 
 const FEATURES = [
