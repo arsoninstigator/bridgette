@@ -23,6 +23,7 @@ interface Props {
   onMove?: (id: string, x: number, y: number) => void;
   onMoveMany?: (moves: { id: string; x: number; y: number }[]) => void;
   onResize?: (id: string, w: number, h: number) => void;
+  onPatchAsset?: (id: string, p: Partial<AssetBase>) => void;
   onAssetClick?: (id: string) => void;
   onAssetContextMenu?: (id: string, clientX: number, clientY: number) => void;
   onDropAsset?: (kind: AssetKind, x: number, y: number, extra?: Partial<AssetBase>) => void;
