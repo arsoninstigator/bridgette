@@ -295,15 +295,68 @@ function ContentTab({ asset, onChange }: { asset: AssetBase; onChange: (p: Parti
         </Field>
       )}
       {hasTape && (
-        <Field>
-          <ColorField
-            label="Tape color"
-            value={asset.tapeColor}
-            presets={TAPE_CONTENT_COLORS}
-            onChange={(c) => onChange({ tapeColor: c })}
-            swatchClass="h-5 w-9 rounded-sm border border-stone-300"
-          />
-        </Field>
+        <>
+          <Field>
+            <ColorField
+              label="Tape color"
+              value={asset.tapeColor}
+              presets={TAPE_CONTENT_COLORS}
+              onChange={(c) => onChange({ tapeColor: c })}
+              swatchClass="h-5 w-9 rounded-sm border border-stone-300"
+            />
+          </Field>
+          <Field>
+            <Label>Opacity ({Math.round((asset.opacity ?? 0.92) * 100)}%)</Label>
+            <input
+              type="range" min={10} max={100}
+              value={Math.round((asset.opacity ?? 0.92) * 100)}
+              onChange={(e) => onChange({ opacity: Number(e.target.value) / 100 })}
+              className="w-full"
+            />
+          </Field>
+          <Field>
+            <label className="flex items-center justify-between cursor-pointer">
+              <span className="font-mono text-[10px] uppercase tracking-wider text-muted-foreground">jagged edges</span>
+              <input
+                type="checkbox"
+                checked={asset.tapeJagged !== false}
+                onChange={(e) => onChange({ tapeJagged: e.target.checked })}
+              />
+            </label>
+          </Field>
+        </>
+      )}
+      {asset.kind === "frame" && (
+        <>
+          <Field>
+            <Label>Frame style</Label>
+            <div className="grid grid-cols-3 gap-1.5">
+              {(["classic", "ornate", "double", "oval", "scalloped", "polaroid"] as const).map((s) => (
+                <button
+                  key={s}
+                  onClick={() => onChange({ frameStyle: s })}
+                  className={`rounded border px-2 py-1.5 font-mono text-[10px] lowercase ${
+                    (asset.frameStyle || "classic") === s ? "border-stone-900 bg-accent/40" : "border-border hover:bg-black/5"
+                  }`}
+                >
+                  {s}
+                </button>
+              ))}
+            </div>
+          </Field>
+          <Field>
+            <ColorField
+              label="Frame color"
+              value={asset.color}
+              presets={["#3a2a1a", "#5b3a22", "#7a5a1a", "#2d2d2d", "#ffffff", "#c9a576"]}
+              onChange={(c) => onChange({ color: c })}
+            />
+          </Field>
+          <Field>
+            <Label>Inner image (url or upload)</Label>
+            <ImageInput value={asset.imageUrl} onChange={(v) => onChange({ imageUrl: v })} />
+          </Field>
+        </>
       )}
       {isMarquee && (
         <>

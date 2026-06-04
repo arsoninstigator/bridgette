@@ -21,7 +21,7 @@ export function makeAsset(kind: AssetKind, x: number, y: number): AssetBase {
     case "paper":
       return { ...base, front: "A small note on torn paper.", back: "", color: "#fbf7ec", width: 220 };
     case "washi":
-      return { ...base, width: 200, tapeColor: "rgba(180,160,210,0.75)", rotation: -8 };
+      return { ...base, width: 200, tapeColor: "rgba(180,160,210,0.75)", rotation: -8, tapeJagged: true, opacity: 0.92 };
     case "pin":
       return { ...base, pinEnabled: true };
     case "shape":
@@ -39,5 +39,7 @@ export function makeAsset(kind: AssetKind, x: number, y: number): AssetBase {
         iconBg: "#fef3c7",
         iconFg: "#1a1a1a",
       };
+    case "frame":
+      return { ...base, width: 220, height: 260, frameStyle: "classic", color: "#3a2a1a", rotation: 0 };
   }
 }

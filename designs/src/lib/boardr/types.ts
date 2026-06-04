@@ -10,7 +10,8 @@ export type AssetKind =
   | "pin"
   | "shape"
   | "icon"
-  | "marquee";
+  | "marquee"
+  | "frame";
 
 export interface AssetBase {
   id: string;
@@ -39,6 +40,9 @@ export interface AssetBase {
   width?: number;
   height?: number;
   tapeColor?: string;
+  tapeJagged?: boolean; // jagged V-shape edges on washi tape
+  opacity?: number; // 0..1, applied per-asset (e.g. tape translucency)
+  frameStyle?: "classic" | "ornate" | "polaroid" | "oval" | "scalloped" | "double"; // for kind: frame
   shape?: "rect" | "circle" | "triangle" | "diamond" | "star";
   fill?: string;
   // icon / marquee
@@ -65,11 +69,21 @@ export interface PageContent {
   strings: StringConn[];
 }
 
+export interface SurfacePattern {
+  type: "grid" | "stripes" | "checker" | "dots";
+  size: number; // px
+  color1: string;
+  color2: string; // background color
+  thickness?: number; // px for grid/stripes
+  angle?: number; // deg for stripes
+}
+
 export interface SurfaceOverlay {
   textureId?: string; // matches a .bg-texture-* css class
   baseColor?: string; // hex / rgba — fills under the texture
   imageUrl?: string; // uploaded / pasted image used as the surface
   opacity?: number; // 0..1 — strength of the texture overlay
+  pattern?: SurfacePattern; // user-defined grid/stripe/checker overlay
 }
 
 export interface Board {

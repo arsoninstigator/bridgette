@@ -23,6 +23,7 @@ interface Props {
   onMove?: (id: string, x: number, y: number) => void;
   onMoveMany?: (moves: { id: string; x: number; y: number }[]) => void;
   onResize?: (id: string, w: number, h: number) => void;
+  onPatchAsset?: (id: string, p: Partial<AssetBase>) => void;
   onAssetClick?: (id: string) => void;
   onAssetContextMenu?: (id: string, clientX: number, clientY: number) => void;
   onDropAsset?: (kind: AssetKind, x: number, y: number, extra?: Partial<AssetBase>) => void;
@@ -44,6 +45,7 @@ export function BoardCanvas({
   onMove,
   onMoveMany,
   onResize,
+  onPatchAsset,
   onAssetClick,
   onAssetContextMenu,
   onDropAsset,
@@ -173,6 +175,14 @@ export function BoardCanvas({
           style={{ opacity: surface.opacity ?? 1 }}
         />
       )}
+      {/* Pattern overlay layer (user-defined grid/stripe/checker/dots) */}
+      {surface?.pattern && (
+        <div
+          aria-hidden
+          className="absolute inset-0 pointer-events-none"
+          style={patternStyle(surface.pattern)}
+        />
+      )}
       {/* asset bodies (pins are hidden here and rendered above the string layer) */}
       {assets.map((a) => (
         <AssetItem
@@ -199,6 +209,7 @@ export function BoardCanvas({
             onAssetContextMenu?.(a.id, e.clientX, e.clientY);
           }}
           onResize={onResize ? (w, h) => onResize(a.id, w, h) : undefined}
+          onPatch={onPatchAsset ? (p) => onPatchAsset(a.id, p) : undefined}
         />
       ))}
 
@@ -299,4 +310,39 @@ function pinPoint(a: AssetBase): { x: number; y: number } {
   const rx = -Math.sin(rad) * dy;
   const ry = Math.cos(rad) * dy;
   return { x: a.x + rx, y: a.y + ry };
+}
+
+function patternStyle(p: NonNullable<SurfaceOverlay["pattern"]>): React.CSSProperties {
+  const size = Math.max(4, p.size || 24);
+  const t = Math.max(1, p.thickness || 1);
+  const c1 = p.color1;
+  const c2 = p.color2;
+  if (p.type === "stripes") {
+    const angle = p.angle ?? 45;
+    return {
+      backgroundImage: `repeating-linear-gradient(${angle}deg, ${c1} 0 ${t}px, ${c2} ${t}px ${size}px)`,
+    };
+  }
+  if (p.type === "checker") {
+    const half = size / 2;
+    return {
+      backgroundColor: c2,
+      backgroundImage: `linear-gradient(45deg, ${c1} 25%, transparent 25%, transparent 75%, ${c1} 75%), linear-gradient(45deg, ${c1} 25%, transparent 25%, transparent 75%, ${c1} 75%)`,
+      backgroundSize: `${size}px ${size}px`,
+      backgroundPosition: `0 0, ${half}px ${half}px`,
+    };
+  }
+  if (p.type === "dots") {
+    return {
+      backgroundColor: c2,
+      backgroundImage: `radial-gradient(${c1} ${t}px, transparent ${t + 0.5}px)`,
+      backgroundSize: `${size}px ${size}px`,
+    };
+  }
+  // grid (default)
+  return {
+    backgroundColor: c2,
+    backgroundImage: `linear-gradient(${c1} ${t}px, transparent ${t}px), linear-gradient(90deg, ${c1} ${t}px, transparent ${t}px)`,
+    backgroundSize: `${size}px ${size}px`,
+  };
 }

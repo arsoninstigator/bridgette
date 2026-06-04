@@ -525,8 +525,42 @@ function Editor({ board, setBoard }: { board: Board; setBoard: (b: Board) => voi
         )}
 
         {/* Canvas area — contains a centered, resizable frame */}
-        <main className="flex-1 relative overflow-auto bg-editor-canvas">
-          <div className="min-w-full min-h-full flex items-center justify-center p-10">
+        <main className="flex-1 relative overflow-auto bg-editor-canvas flex flex-col">
+          {/* Page tabs strip */}
+          {!previewMode && (
+            <div className="sticky top-0 z-20 flex items-center gap-1 px-4 py-2 border-b border-border/60 bg-editor-canvas/95 backdrop-blur-sm">
+              {pages.map((p) => (
+                <button
+                  key={p.slug}
+                  onClick={() => switchPage(p.slug)}
+                  className={`group flex items-center gap-1.5 rounded-t-md px-3 py-1.5 font-mono text-[11px] lowercase border border-b-0 transition-colors ${
+                    p.slug === activeSlug
+                      ? "bg-card text-stone-900 border-stone-700/30"
+                      : "bg-transparent text-stone-600 hover:text-stone-900 border-transparent hover:border-stone-700/20"
+                  }`}
+                >
+                  <span>{p.name}</span>
+                  {p.slug !== "index" && p.slug === activeSlug && pages.length > 1 && (
+                    <span
+                      onClick={(e) => { e.stopPropagation(); deletePage(p.slug); }}
+                      className="text-stone-400 hover:text-rose-600 ml-1"
+                      title="delete frame"
+                    >
+                      ×
+                    </span>
+                  )}
+                </button>
+              ))}
+              <button
+                onClick={addPage}
+                className="ml-1 rounded-t-md px-2 py-1.5 font-mono text-[11px] lowercase text-stone-500 hover:text-stone-900 hover:bg-card border border-b-0 border-transparent hover:border-stone-700/20"
+                title="add a new frame / page"
+              >
+                + frame
+              </button>
+            </div>
+          )}
+          <div className="flex-1 min-w-full min-h-full flex items-center justify-center p-10">
             <div
               className="relative flex shadow-2xl ring-1 ring-stone-900/10 overflow-hidden"
               style={{
@@ -554,6 +588,7 @@ function Editor({ board, setBoard }: { board: Board; setBoard: (b: Board) => voi
                 onMove={(id, x, y) => updateAsset(id, { x, y }, false)}
                 onMoveMany={moveMany}
                 onResize={resizeAsset}
+                onPatchAsset={(id, p) => updateAsset(id, p)}
                 onAssetClick={handleAssetClickStringMode}
                 onAssetContextMenu={(id, x, y) => {
                   const ids = selectedIds.includes(id) && selectedIds.length > 1 ? selectedIds : [id];
@@ -567,7 +602,7 @@ function Editor({ board, setBoard }: { board: Board; setBoard: (b: Board) => voi
               {/* floating frame label */}
               <div className="absolute top-3 left-3 pointer-events-none">
                 <div className="inline-block bg-pink-50/85 backdrop-blur-sm border border-stone-700/20 rounded px-2.5 py-1 font-display text-xs lowercase shadow-sm">
-                  frame one (index) · {frameSize.w}×{frameSize.h}
+                  {(pages.find((p) => p.slug === activeSlug)?.name) || "frame one (index)"} · {frameSize.w}×{frameSize.h}
                 </div>
               </div>
               {!previewMode && (
@@ -764,6 +799,124 @@ function PanelHeader({ title, onClose, right }: { title: string; onClose: () => 
           <X size={14} />
         </button>
       </div>
+    </div>
+  );
+}
+
+function PatternsBlock({
+  surface,
+  setSurface,
+}: {
+  surface: NonNullable<Board["surface"]>;
+  setSurface: (p: Partial<NonNullable<Board["surface"]>>) => void;
+}) {
+  const p = surface.pattern;
+  const [open, setOpen] = useState(false);
+  const type = p?.type ?? "grid";
+  const size = p?.size ?? 24;
+  const thickness = p?.thickness ?? 1;
+  const color1 = p?.color1 ?? "#1a1a1a";
+  const color2 = p?.color2 ?? "#faf3f5";
+  const angle = p?.angle ?? 45;
+
+  function set(patch: Partial<NonNullable<typeof p>>) {
+    setSurface({
+      pattern: {
+        type, size, thickness, color1, color2, angle,
+        ...(p ?? {}),
+        ...patch,
+      },
+    });
+  }
+
+  return (
+    <div className="rounded-md border border-border bg-card/40">
+      <button
+        onClick={() => setOpen((v) => !v)}
+        className="w-full flex items-center justify-between px-3 py-2 font-mono text-[11px] lowercase hover:bg-black/5"
+      >
+        <span>patterns</span>
+        <span className="flex items-center gap-2">
+          {p && (
+            <span
+              onClick={(e) => { e.stopPropagation(); setSurface({ pattern: undefined }); }}
+              className="text-muted-foreground hover:text-destructive text-[10px]"
+            >clear</span>
+          )}
+          <ChevronDown size={12} className={`transition-transform ${open ? "" : "-rotate-90"}`} />
+        </span>
+      </button>
+      {open && (
+        <div className="p-2 space-y-2">
+          <div className="grid grid-cols-4 gap-1">
+            {(["grid", "stripes", "checker", "dots"] as const).map((t) => (
+              <button
+                key={t}
+                onClick={() => set({ type: t })}
+                className={`rounded border px-1.5 py-1 font-mono text-[10px] lowercase ${
+                  type === t ? "border-stone-900 bg-accent/40" : "border-border hover:bg-black/5"
+                }`}
+              >
+                {t}
+              </button>
+            ))}
+          </div>
+          <div className="grid grid-cols-2 gap-2">
+            <div>
+              <div className="font-mono text-[9px] lowercase text-muted-foreground mb-1">line / dot</div>
+              <input
+                type="color" value={/^#[0-9a-f]{6}$/i.test(color1) ? color1 : "#000000"}
+                onChange={(e) => set({ color1: e.target.value })}
+                className="h-7 w-full rounded border border-border bg-transparent"
+              />
+            </div>
+            <div>
+              <div className="font-mono text-[9px] lowercase text-muted-foreground mb-1">background</div>
+              <input
+                type="color" value={/^#[0-9a-f]{6}$/i.test(color2) ? color2 : "#ffffff"}
+                onChange={(e) => set({ color2: e.target.value })}
+                className="h-7 w-full rounded border border-border bg-transparent"
+              />
+            </div>
+          </div>
+          <div>
+            <div className="font-mono text-[9px] lowercase text-muted-foreground mb-1">cell size · {size}px</div>
+            <input
+              type="range" min={4} max={120} value={size}
+              onChange={(e) => set({ size: Number(e.target.value) })}
+              className="w-full"
+            />
+          </div>
+          {(type === "grid" || type === "stripes" || type === "dots") && (
+            <div>
+              <div className="font-mono text-[9px] lowercase text-muted-foreground mb-1">thickness · {thickness}px</div>
+              <input
+                type="range" min={1} max={12} value={thickness}
+                onChange={(e) => set({ thickness: Number(e.target.value) })}
+                className="w-full"
+              />
+            </div>
+          )}
+          {type === "stripes" && (
+            <div>
+              <div className="font-mono text-[9px] lowercase text-muted-foreground mb-1">angle · {angle}°</div>
+              <input
+                type="range" min={0} max={180} value={angle}
+                onChange={(e) => set({ angle: Number(e.target.value) })}
+                className="w-full"
+              />
+            </div>
+          )}
+          {!p && (
+            <button
+              onClick={() => set({})}
+              className="w-full rounded bg-stone-900 text-stone-50 py-1.5 font-mono text-[10px] lowercase"
+            >
+              apply pattern
+            </button>
+          )}
+        </div>
+      )}
     </div>
   );
 }
@@ -965,6 +1118,9 @@ function SurfacePanel({
         </div>
       </div>
 
+      {/* Patterns — user-defined grid/stripes/checker/dots overlays */}
+      <PatternsBlock surface={surface} setSurface={setSurface} />
+
       {/* Other — upload an image to use as the surface */}
       <div className="rounded-md border border-border bg-card/40">
         <div className="px-3 py-2 font-mono text-[11px] lowercase flex items-center justify-between">
@@ -1127,6 +1283,18 @@ const LIBRARY_SETS: LibrarySet[] = [
     ],
   },
   { id: "decoration", label: "decoration", available: false, blurb: "stickers, doodles, marginalia.", items: [] },
+  {
+    id: "frame", label: "frames", available: true,
+    blurb: "empty photo frames in many shapes — click the plus inside to add an image.",
+    items: [
+      { id: "frame-classic", label: "classic wood", kind: "frame", extra: { frameStyle: "classic", color: "#3a2a1a", width: 220, height: 260 } },
+      { id: "frame-ornate", label: "ornate gilt", kind: "frame", extra: { frameStyle: "ornate", color: "#7a5a1a", width: 220, height: 260 } },
+      { id: "frame-double", label: "double matte", kind: "frame", extra: { frameStyle: "double", color: "#2d2d2d", width: 220, height: 260 } },
+      { id: "frame-oval", label: "oval", kind: "frame", extra: { frameStyle: "oval", color: "#5b3a22", width: 220, height: 260 } },
+      { id: "frame-scalloped", label: "scalloped", kind: "frame", extra: { frameStyle: "scalloped", color: "#c9a576", width: 220, height: 220 } },
+      { id: "frame-polaroid", label: "polaroid frame", kind: "frame", extra: { frameStyle: "polaroid", color: "#ffffff", width: 200, height: 240 } },
+    ],
+  },
   { id: "lettering", label: "lettering", available: false, blurb: "stamps, headlines, hand-lettered titles.", items: [] },
   { id: "flags", label: "flags, maps", available: false, blurb: "pennants, cartography, location markers.", items: [] },
   {
@@ -1570,6 +1738,12 @@ function LibraryPreview({ kind, extra, large }: { kind: AssetKind; extra?: Parti
       return <div className="rounded-md border border-dashed border-stone-400 grid place-items-center font-mono text-[8px] lowercase text-stone-500" style={{ width: 32 * scale, height: 32 * scale }}>icon</div>;
     case "marquee":
       return <div className="overflow-hidden flex items-center text-[8px] font-mono" style={{ width: 50 * scale, height: 12 * scale, background: "#fef3c7", color: "#1a1a1a" }}><span className="px-1 whitespace-nowrap">marquee · marquee ·</span></div>;
+    case "frame":
+      return (
+        <div className="relative analog-shadow-sm" style={{ width: 36 * scale, height: 44 * scale, background: extra?.color || "#3a2a1a" }}>
+          <div className="absolute" style={{ inset: 4, background: "linear-gradient(135deg,#f5efe5,#e8e0d2)" }} />
+        </div>
+      );
   }
 }
 
