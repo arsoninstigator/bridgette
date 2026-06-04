@@ -554,6 +554,7 @@ function Editor({ board, setBoard }: { board: Board; setBoard: (b: Board) => voi
                 onMove={(id, x, y) => updateAsset(id, { x, y }, false)}
                 onMoveMany={moveMany}
                 onResize={resizeAsset}
+                onPatchAsset={(id, p) => updateAsset(id, p)}
                 onAssetClick={handleAssetClickStringMode}
                 onAssetContextMenu={(id, x, y) => {
                   const ids = selectedIds.includes(id) && selectedIds.length > 1 ? selectedIds : [id];
