@@ -175,6 +175,14 @@ export function BoardCanvas({
           style={{ opacity: surface.opacity ?? 1 }}
         />
       )}
+      {/* Pattern overlay layer (user-defined grid/stripe/checker/dots) */}
+      {surface?.pattern && (
+        <div
+          aria-hidden
+          className="absolute inset-0 pointer-events-none"
+          style={patternStyle(surface.pattern)}
+        />
+      )}
       {/* asset bodies (pins are hidden here and rendered above the string layer) */}
       {assets.map((a) => (
         <AssetItem
