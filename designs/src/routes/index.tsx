@@ -166,8 +166,9 @@ function Index() {
             <span className="font-mono text-[10px] uppercase tracking-[0.25em] text-muted-foreground">/ library</span>
             <h2 className="mt-2 font-display text-3xl md:text-4xl lowercase">curated analog-inspired objects</h2>
             <p className="mt-4 font-mono text-sm text-muted-foreground leading-relaxed">
-              fill your boards with polaroids, photostrips, sticky notes, evidence tags, library cards, and more. 
-              everything is interactive. cards unfold. folders expand. photographs flip over.
+              fill your boards with polaroids, photo frames, photostrips, sticky notes, washi tape with jagged edges,
+              loose sheets, and multi-frame pages. every photo holder has a giant plus inside — click to upload.
+              cards unfold. folders expand. photographs flip over.
             </p>
           </div>
           <div className="md:col-span-7 grid grid-cols-2 sm:grid-cols-4 gap-3">
