@@ -45,6 +45,7 @@ export function BoardCanvas({
   onMove,
   onMoveMany,
   onResize,
+  onPatchAsset,
   onAssetClick,
   onAssetContextMenu,
   onDropAsset,
