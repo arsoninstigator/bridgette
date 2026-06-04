@@ -103,14 +103,21 @@ export async function publishBoard(board: Board): Promise<string> {
 
   // Mirror to Lovable Cloud so anyone with the link can view it.
   try {
-    await supabase.from("published_boards").upsert({
-      key,
-      board_id: board.id,
-      name: board.name,
-      kind: board.kind,
-      snapshot: snap as never,
-      updated_at: new Date().toISOString(),
-    });
+    const { data: userData } = await supabase.auth.getUser();
+    const ownerId = userData.user?.id;
+    if (!ownerId) {
+      console.warn("publish requires sign-in for cloud sharing; link will only work locally");
+    } else {
+      await supabase.from("published_boards").upsert({
+        key,
+        board_id: board.id,
+        name: board.name,
+        kind: board.kind,
+        snapshot: snap as never,
+        owner_id: ownerId,
+        updated_at: new Date().toISOString(),
+      });
+    }
   } catch (e) {
     console.warn("cloud publish failed, link will only work locally", e);
   }

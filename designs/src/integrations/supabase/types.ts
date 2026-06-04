@@ -130,6 +130,7 @@ export type Database = {
           key: string
           kind: string
           name: string
+          owner_id: string | null
           published_at: string
           snapshot: Json
           updated_at: string
@@ -139,6 +140,7 @@ export type Database = {
           key: string
           kind: string
           name: string
+          owner_id?: string | null
           published_at?: string
           snapshot: Json
           updated_at?: string
@@ -148,6 +150,7 @@ export type Database = {
           key?: string
           kind?: string
           name?: string
+          owner_id?: string | null
           published_at?: string
           snapshot?: Json
           updated_at?: string
