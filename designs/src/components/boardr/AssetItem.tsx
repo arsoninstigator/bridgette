@@ -217,13 +217,16 @@ export function PinImage({
 
 function AttachedTape({ color }: { color?: string }) {
   const c = color || "rgba(86,142,160,0.85)";
+  // jagged V-shape edge clip (same as washi for visual consistency)
+  const clip =
+    "polygon(0 20%, 4% 0, 8% 22%, 12% 0, 16% 22%, 20% 0, 24% 22%, 28% 0, 32% 22%, 36% 0, 40% 22%, 44% 0, 48% 22%, 52% 0, 56% 22%, 60% 0, 64% 22%, 68% 0, 72% 22%, 76% 0, 80% 22%, 84% 0, 88% 22%, 92% 0, 96% 22%, 100% 0, 100% 80%, 96% 100%, 92% 78%, 88% 100%, 84% 78%, 80% 100%, 76% 78%, 72% 100%, 68% 78%, 64% 100%, 60% 78%, 56% 100%, 52% 78%, 48% 100%, 44% 78%, 40% 100%, 36% 78%, 32% 100%, 28% 78%, 24% 100%, 20% 78%, 16% 100%, 12% 78%, 8% 100%, 4% 78%, 0 100%)";
   return (
     <div
       className="absolute left-1/2 -translate-x-1/2"
       style={{
-        top: -12,
-        width: 90,
-        height: 24,
+        top: -14,
+        width: 96,
+        height: 28,
         background: c,
         backgroundImage:
           "repeating-linear-gradient(45deg, rgba(255,255,255,0.22) 0 5px, transparent 5px 10px)",
@@ -232,9 +235,71 @@ function AttachedTape({ color }: { color?: string }) {
         opacity: 0.92,
         transform: "translate(-50%, 0) rotate(-3deg)",
         pointerEvents: "none",
+        clipPath: clip,
       }}
     />
   );
+}
+
+function PlusOverlay({
+  onPick,
+  interactive,
+}: {
+  onPick: (dataUrl: string) => void;
+  interactive?: boolean;
+}) {
+  const ref = useRef<HTMLInputElement | null>(null);
+  if (!interactive) return null;
+  return (
+    <button
+      type="button"
+      onPointerDown={(e) => e.stopPropagation()}
+      onClick={(e) => {
+        e.stopPropagation();
+        e.preventDefault();
+        ref.current?.click();
+      }}
+      title="add a photo"
+      className="absolute inset-0 grid place-items-center cursor-pointer bg-transparent border-0 m-0 p-0"
+      style={{ zIndex: 5 }}
+    >
+      <div
+        className="grid place-items-center rounded-full"
+        style={{
+          width: 56,
+          height: 56,
+          background: "rgba(255,255,255,0.85)",
+          color: "rgba(120,100,90,0.7)",
+          boxShadow: "0 2px 6px rgba(0,0,0,0.12)",
+          fontSize: 36,
+          fontWeight: 200,
+          lineHeight: 1,
+        }}
+      >
+        +
+      </div>
+      <input
+        ref={ref}
+        type="file"
+        accept="image/*"
+        className="hidden"
+        onChange={(e) => {
+          const f = e.target.files?.[0];
+          if (!f) return;
+          const fr = new FileReader();
+          fr.onload = () => onPick(String(fr.result || ""));
+          fr.readAsDataURL(f);
+          e.target.value = "";
+        }}
+      />
+    </button>
+  );
+}
+
+function useRef<T>(v: T | null) {
+  // re-export react's useRef to avoid additional top-level import shuffling
+  // (this helper exists only because the original imports didn't include useRef)
+  return (require("react") as typeof import("react")).useRef<T>(v);
 }
 
 function renderAssetBody(a: AssetBase, back: boolean) {
