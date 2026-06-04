@@ -525,8 +525,42 @@ function Editor({ board, setBoard }: { board: Board; setBoard: (b: Board) => voi
         )}
 
         {/* Canvas area — contains a centered, resizable frame */}
-        <main className="flex-1 relative overflow-auto bg-editor-canvas">
-          <div className="min-w-full min-h-full flex items-center justify-center p-10">
+        <main className="flex-1 relative overflow-auto bg-editor-canvas flex flex-col">
+          {/* Page tabs strip */}
+          {!previewMode && (
+            <div className="sticky top-0 z-20 flex items-center gap-1 px-4 py-2 border-b border-border/60 bg-editor-canvas/95 backdrop-blur-sm">
+              {pages.map((p) => (
+                <button
+                  key={p.slug}
+                  onClick={() => switchPage(p.slug)}
+                  className={`group flex items-center gap-1.5 rounded-t-md px-3 py-1.5 font-mono text-[11px] lowercase border border-b-0 transition-colors ${
+                    p.slug === activeSlug
+                      ? "bg-card text-stone-900 border-stone-700/30"
+                      : "bg-transparent text-stone-600 hover:text-stone-900 border-transparent hover:border-stone-700/20"
+                  }`}
+                >
+                  <span>{p.name}</span>
+                  {p.slug !== "index" && p.slug === activeSlug && pages.length > 1 && (
+                    <span
+                      onClick={(e) => { e.stopPropagation(); deletePage(p.slug); }}
+                      className="text-stone-400 hover:text-rose-600 ml-1"
+                      title="delete frame"
+                    >
+                      ×
+                    </span>
+                  )}
+                </button>
+              ))}
+              <button
+                onClick={addPage}
+                className="ml-1 rounded-t-md px-2 py-1.5 font-mono text-[11px] lowercase text-stone-500 hover:text-stone-900 hover:bg-card border border-b-0 border-transparent hover:border-stone-700/20"
+                title="add a new frame / page"
+              >
+                + frame
+              </button>
+            </div>
+          )}
+          <div className="flex-1 min-w-full min-h-full flex items-center justify-center p-10">
             <div
               className="relative flex shadow-2xl ring-1 ring-stone-900/10 overflow-hidden"
               style={{
