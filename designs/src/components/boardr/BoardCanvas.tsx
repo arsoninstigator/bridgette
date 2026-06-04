@@ -201,6 +201,7 @@ export function BoardCanvas({
             onAssetContextMenu?.(a.id, e.clientX, e.clientY);
           }}
           onResize={onResize ? (w, h) => onResize(a.id, w, h) : undefined}
+          onPatch={onPatchAsset ? (p) => onPatchAsset(a.id, p) : undefined}
         />
       ))}
 
