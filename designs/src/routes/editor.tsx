@@ -1000,6 +1000,9 @@ function SurfacePanel({
         </div>
       </div>
 
+      {/* Patterns — user-defined grid/stripes/checker/dots overlays */}
+      <PatternsBlock surface={surface} setSurface={setSurface} />
+
       {/* Other — upload an image to use as the surface */}
       <div className="rounded-md border border-border bg-card/40">
         <div className="px-3 py-2 font-mono text-[11px] lowercase flex items-center justify-between">
