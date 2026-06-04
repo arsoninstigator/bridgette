@@ -364,12 +364,10 @@ function renderAssetBody(
       );
     }
     case "photostrip": {
-      const photos = [a.imageUrl, a.imageUrl2, a.imageUrl3, a.imageUrl4];
+      const photos = [a.imageUrl, a.imageUrl2, a.imageUrl3, a.imageUrl4] as (string | undefined)[];
+      const keys = ["imageUrl", "imageUrl2", "imageUrl3", "imageUrl4"] as const;
       return (
-        <div
-          className="analog-shadow bg-stone-900"
-          style={{ width: 110, padding: 8, borderRadius: 2 }}
-        >
+        <div className="analog-shadow bg-stone-900" style={{ width: 110, padding: 8, borderRadius: 2 }}>
           {back ? (
             <div
               className="bg-white p-2 font-mono text-[11px] text-stone-700 whitespace-pre-wrap"
@@ -382,6 +380,7 @@ function renderAssetBody(
               {photos.map((p, i) => (
                 <div
                   key={i}
+                  className="relative"
                   style={{
                     width: 94,
                     height: 80,
@@ -389,7 +388,14 @@ function renderAssetBody(
                       ? `center/cover no-repeat url(${p})`
                       : "linear-gradient(135deg,#3a3a3a,#1a1a1a)",
                   }}
-                />
+                >
+                  {!p && onPatch && (
+                    <PlusOverlay
+                      interactive={interactive}
+                      onPick={(d) => onPatch({ [keys[i]]: d } as Partial<AssetBase>)}
+                    />
+                  )}
+                </div>
               ))}
             </div>
           )}
