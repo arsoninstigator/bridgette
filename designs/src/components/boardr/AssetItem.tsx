@@ -171,6 +171,8 @@ function defaultSize(a: AssetBase): { w: number; h: number } {
       return { w: a.width ?? 64, h: a.height ?? 64 };
     case "marquee":
       return { w: a.width ?? 320, h: a.height ?? 40 };
+    case "frame":
+      return { w: a.width ?? 220, h: a.height ?? 260 };
   }
 }
 
