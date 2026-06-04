@@ -1617,6 +1617,12 @@ function LibraryPreview({ kind, extra, large }: { kind: AssetKind; extra?: Parti
       return <div className="rounded-md border border-dashed border-stone-400 grid place-items-center font-mono text-[8px] lowercase text-stone-500" style={{ width: 32 * scale, height: 32 * scale }}>icon</div>;
     case "marquee":
       return <div className="overflow-hidden flex items-center text-[8px] font-mono" style={{ width: 50 * scale, height: 12 * scale, background: "#fef3c7", color: "#1a1a1a" }}><span className="px-1 whitespace-nowrap">marquee · marquee ·</span></div>;
+    case "frame":
+      return (
+        <div className="relative analog-shadow-sm" style={{ width: 36 * scale, height: 44 * scale, background: extra?.color || "#3a2a1a" }}>
+          <div className="absolute" style={{ inset: 4, background: "linear-gradient(135deg,#f5efe5,#e8e0d2)" }} />
+        </div>
+      );
   }
 }
 
