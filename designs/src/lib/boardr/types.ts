@@ -40,6 +40,13 @@ export interface AssetBase {
   width?: number;
   height?: number;
   tapeColor?: string;
+  tapeJagged?: boolean; // jagged V-shape edges on washi tape
+  opacity?: number; // 0..1, applied per-asset (e.g. tape translucency)
+  frameStyle?: "classic" | "ornate" | "polaroid" | "oval" | "scalloped" | "double"; // for kind: frame
+  caption?: string;
+  width?: number;
+  height?: number;
+  tapeColor?: string;
   shape?: "rect" | "circle" | "triangle" | "diamond" | "star";
   fill?: string;
   // icon / marquee
