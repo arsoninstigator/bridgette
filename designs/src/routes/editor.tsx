@@ -1027,7 +1027,9 @@ function SurfacePanel({
             {open && (
               <div className="p-2 grid grid-cols-2 gap-2">
                 {s.items.map((it) => {
-                  const isActive = it.kind && board.kind === it.kind && !surface.textureId && !surface.imageUrl && !surface.baseColor;
+                  const isActive = it.imageUrl
+                    ? surface.imageUrl === it.imageUrl
+                    : (it.kind && board.kind === it.kind && !surface.textureId && !surface.imageUrl && !surface.baseColor);
                   return (
                     <div
                       key={it.id}
@@ -1036,10 +1038,17 @@ function SurfacePanel({
                       }`}
                     >
                       <button
-                        onClick={() => { if (it.kind) { onPick(it.kind); clearSurface(); } }}
+                        onClick={() => {
+                          if (it.kind) onPick(it.kind);
+                          if (it.imageUrl) setSurface({ imageUrl: it.imageUrl, textureId: undefined, baseColor: undefined, pattern: undefined });
+                          else clearSurface();
+                        }}
                         className="block w-full text-left"
                       >
-                        <div className={`h-14 ${it.className ?? "bg-stone-200/60"}`} />
+                        <div
+                          className={`h-14 ${it.className ?? "bg-stone-200/60"}`}
+                          style={it.imageUrl ? { backgroundImage: `url(${it.imageUrl})`, backgroundSize: "cover", backgroundPosition: "center" } : undefined}
+                        />
                         <div className="bg-card px-2 py-1 font-mono text-[10px] lowercase">{it.label}</div>
                       </button>
                       {isActive && (
