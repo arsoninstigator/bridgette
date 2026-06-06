@@ -108,6 +108,7 @@ export function AssetItem({
       <div className="relative">
         {renderAssetBody(asset, showBack, interactive, onPatch)}
         {asset.tapeAttached && <AttachedTape color={asset.tapeAttachColor} />}
+        {asset.clipAttached && <AttachedClip color={asset.clipColor} />}
         {asset.pinEnabled && !hidePin && <PushPin color={asset.pinColor || asset.color} highlight={pinHighlight} />}
         {asset.locked && interactive && (
           <div
@@ -238,6 +239,32 @@ function AttachedTape({ color }: { color?: string }) {
         clipPath: clip,
       }}
     />
+  );
+}
+
+/** Wooden clothespin / clip — sits above an asset, attached to a hanging string. */
+function AttachedClip({ color }: { color?: string }) {
+  const wood = color || "#c8965a";
+  const dark = "#7a4f2a";
+  return (
+    <div
+      aria-hidden
+      className="absolute left-1/2 pointer-events-none"
+      style={{ top: -22, transform: "translate(-50%, 0)", width: 44, height: 30, filter: "drop-shadow(0 2px 2px rgba(0,0,0,0.35))" }}
+    >
+      <svg viewBox="0 0 44 30" width="44" height="30">
+        {/* upper jaw */}
+        <path d="M6 4 Q22 0 38 4 L40 14 Q22 11 4 14 Z" fill={wood} stroke={dark} strokeWidth="0.8" />
+        {/* lower jaw */}
+        <path d="M4 14 Q22 17 40 14 L38 26 Q22 30 6 26 Z" fill={wood} stroke={dark} strokeWidth="0.8" />
+        {/* wood grain */}
+        <path d="M10 7 Q22 5 34 7" stroke={dark} strokeOpacity="0.35" strokeWidth="0.5" fill="none" />
+        <path d="M10 22 Q22 24 34 22" stroke={dark} strokeOpacity="0.35" strokeWidth="0.5" fill="none" />
+        {/* metal spring pivot */}
+        <circle cx="22" cy="14.5" r="2.2" fill="#9aa0a6" stroke="#4a4f55" strokeWidth="0.6" />
+        <circle cx="22" cy="14.5" r="0.8" fill="#4a4f55" />
+      </svg>
+    </div>
   );
 }
 

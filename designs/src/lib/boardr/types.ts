@@ -26,6 +26,8 @@ export interface AssetBase {
   tapeAttached?: boolean; // shows a washi tape strip across the top
   tapeAttachColor?: string; // color of attached tape
   pinColor?: string; // color of pushpin head (when pinEnabled)
+  clipAttached?: boolean; // wooden clothespin clip on top (for hanging on strings)
+  clipColor?: string; // wood tint of the clothespin
   locked?: boolean; // when true, cannot be dragged or resized
   groupId?: string; // assets sharing groupId move together
   // Content (per kind, loose)
@@ -57,6 +59,7 @@ export interface StringConn {
   from: string; // asset id
   to: string;
   color?: string;
+  hanging?: boolean; // sags as a clothesline (heavier droop, thicker)
 }
 
 export interface PageMeta {

@@ -38,6 +38,7 @@ import { makeAsset, nextZ } from "../lib/boardr/factories";
 import { BoardCanvas } from "../components/boardr/BoardCanvas";
 import { SettingsPanel } from "../components/boardr/SettingsPanel";
 import { ContextMenu, ContextMenuTrigger, ContextMenuContent, ContextMenuItem } from "../components/ui/context-menu";
+import corkboardAsset from "@/assets/corkboard.jpg.asset.json";
 
 const search = z.object({
   id: z.string().optional(),
@@ -96,6 +97,8 @@ function Editor({ board, setBoard }: { board: Board; setBoard: (b: Board) => voi
   const [selectedIds, setSelectedIds] = useState<string[]>([]);
   const selectedId = selectedIds[selectedIds.length - 1] ?? null;
   const [stringFromId, setStringFromId] = useState<string | null>(null);
+  const [stringColor, setStringColor] = useState<string>("#a8231a");
+  const [hangingMode, setHangingMode] = useState<boolean>(false);
   const [showPublish, setShowPublish] = useState(false);
   const [activePanel, setActivePanel] = useState<PanelKey | null>("library");
   const [previewMode, setPreviewMode] = useState(false);
@@ -372,6 +375,8 @@ function Editor({ board, setBoard }: { board: Board; setBoard: (b: Board) => voi
       id: Math.random().toString(36).slice(2, 9),
       from: stringFromId,
       to: id,
+      color: stringColor,
+      hanging: hangingMode || undefined,
     };
     const exists = board.strings.some(
       (s) => (s.from === conn.from && s.to === conn.to) || (s.from === conn.to && s.to === conn.from),
@@ -518,7 +523,14 @@ function Editor({ board, setBoard }: { board: Board; setBoard: (b: Board) => voi
               {activePanel === "assets" && <AssetsPanel />}
               {activePanel === "shape" && <ShapePanel onAdd={addAsset} />}
               {activePanel === "string" && (
-                <StringPanel stringFromId={stringFromId} onClear={() => setStringFromId(null)} />
+                <StringPanel
+                  stringFromId={stringFromId}
+                  onClear={() => setStringFromId(null)}
+                  stringColor={stringColor}
+                  setStringColor={setStringColor}
+                  hangingMode={hangingMode}
+                  setHangingMode={setHangingMode}
+                />
               )}
             </div>
           </aside>
@@ -721,6 +733,14 @@ function Editor({ board, setBoard }: { board: Board; setBoard: (b: Board) => voi
             update({
               assets: board.assets.map((a) =>
                 assetMenu.ids.includes(a.id) ? { ...a, pinEnabled: anyOff } : a,
+              ),
+            });
+          }}
+          onToggleClip={() => {
+            const anyOff = assetMenu.ids.some((id) => !board.assets.find((a) => a.id === id)?.clipAttached);
+            update({
+              assets: board.assets.map((a) =>
+                assetMenu.ids.includes(a.id) ? { ...a, clipAttached: anyOff } : a,
               ),
             });
           }}
@@ -933,13 +953,14 @@ function SurfacePanel({
   onEdit: () => void;
 }) {
   // sets of surfaces. only a handful are wired (cork/mat/wall/metal). others are stubs.
-  type Surf = { id: string; label: string; kind?: BoardKind; className?: string };
+  type Surf = { id: string; label: string; kind?: BoardKind; className?: string; imageUrl?: string };
   const SURFACE_SETS: { id: string; label: string; items: Surf[] }[] = [
     {
       id: "boards",
       label: "boards",
       items: [
         { id: "cork-default", label: "corkboard", kind: "cork", className: "bg-board-cork" },
+        { id: "cork-photo", label: "corkboard (photo)", kind: "cork", imageUrl: corkboardAsset.url },
         { id: "metal", label: "metallic", kind: "metal", className: "bg-board-metal" },
       ],
     },
@@ -1007,7 +1028,9 @@ function SurfacePanel({
             {open && (
               <div className="p-2 grid grid-cols-2 gap-2">
                 {s.items.map((it) => {
-                  const isActive = it.kind && board.kind === it.kind && !surface.textureId && !surface.imageUrl && !surface.baseColor;
+                  const isActive = it.imageUrl
+                    ? surface.imageUrl === it.imageUrl
+                    : (it.kind && board.kind === it.kind && !surface.textureId && !surface.imageUrl && !surface.baseColor);
                   return (
                     <div
                       key={it.id}
@@ -1016,10 +1039,17 @@ function SurfacePanel({
                       }`}
                     >
                       <button
-                        onClick={() => { if (it.kind) { onPick(it.kind); clearSurface(); } }}
+                        onClick={() => {
+                          if (it.kind) onPick(it.kind);
+                          if (it.imageUrl) setSurface({ imageUrl: it.imageUrl, textureId: undefined, baseColor: undefined, pattern: undefined });
+                          else clearSurface();
+                        }}
                         className="block w-full text-left"
                       >
-                        <div className={`h-14 ${it.className ?? "bg-stone-200/60"}`} />
+                        <div
+                          className={`h-14 ${it.className ?? "bg-stone-200/60"}`}
+                          style={it.imageUrl ? { backgroundImage: `url(${it.imageUrl})`, backgroundSize: "cover", backgroundPosition: "center" } : undefined}
+                        />
                         <div className="bg-card px-2 py-1 font-mono text-[10px] lowercase">{it.label}</div>
                       </button>
                       {isActive && (
@@ -2248,23 +2278,101 @@ function IconsSubsection({ onAdd }: { onAdd: AddFn }) {
   );
 }
 
-function StringPanel({ stringFromId, onClear }: { stringFromId: string | null; onClear: () => void }) {
+function StringPanel({
+  stringFromId,
+  onClear,
+  stringColor,
+  setStringColor,
+  hangingMode,
+  setHangingMode,
+}: {
+  stringFromId: string | null;
+  onClear: () => void;
+  stringColor: string;
+  setStringColor: (c: string) => void;
+  hangingMode: boolean;
+  setHangingMode: (v: boolean) => void;
+}) {
+  const [tab, setTab] = useState<"connect" | "edit">("connect");
+  const swatches = ["#a8231a", "#3a2a1a", "#1e6bbf", "#1d8a4f", "#c9a84c", "#e8e4dd", "#0d0d0d"];
   return (
     <div className="space-y-3">
-      <p className="font-mono text-[11px] lowercase text-muted-foreground">
-        click a pinned asset, then click another to connect them, murderboard style.
-      </p>
-      <div className="rounded-md bg-accent/30 px-3 py-2 font-mono text-[10px] lowercase">
-        {stringFromId ? `selected: ${stringFromId.slice(0, 6)}…` : "no anchor yet"}
-      </div>
-      {stringFromId && (
-        <button onClick={onClear} className="w-full rounded border border-border py-2 font-mono text-[11px] lowercase hover:bg-black/5">
-          cancel selection
+      <div className="grid grid-cols-2 rounded-md border border-border overflow-hidden font-mono text-[11px] lowercase">
+        <button
+          onClick={() => setTab("connect")}
+          className={`py-1.5 ${tab === "connect" ? "bg-stone-900 text-stone-50" : "bg-card hover:bg-black/5"}`}
+        >
+          connect
         </button>
+        <button
+          onClick={() => setTab("edit")}
+          className={`py-1.5 ${tab === "edit" ? "bg-stone-900 text-stone-50" : "bg-card hover:bg-black/5"}`}
+        >
+          edit string
+        </button>
+      </div>
+
+      {tab === "connect" && (
+        <>
+          <p className="font-mono text-[11px] lowercase text-muted-foreground">
+            click a pinned asset, then click another to connect them — murderboard style, or clothesline if hanging mode is on.
+          </p>
+          <div className="rounded-md bg-accent/30 px-3 py-2 font-mono text-[10px] lowercase">
+            {stringFromId ? `anchor: ${stringFromId.slice(0, 6)}…` : "no anchor yet"}
+          </div>
+          {stringFromId && (
+            <button onClick={onClear} className="w-full rounded border border-border py-2 font-mono text-[11px] lowercase hover:bg-black/5">
+              cancel selection
+            </button>
+          )}
+          <p className="font-mono text-[10px] lowercase text-muted-foreground/80">
+            only assets with "pin enabled" can be connected. toggle that in the asset settings panel.
+          </p>
+        </>
       )}
-      <p className="font-mono text-[10px] lowercase text-muted-foreground/80">
-        only assets with "pin enabled" can be connected. toggle that in the asset settings panel.
-      </p>
+
+      {tab === "edit" && (
+        <>
+          <div>
+            <div className="font-mono text-[10px] lowercase text-muted-foreground mb-1.5">string color</div>
+            <div className="flex flex-wrap items-center gap-2">
+              {swatches.map((c) => (
+                <button
+                  key={c}
+                  onClick={() => setStringColor(c)}
+                  className={`size-6 rounded-full border ${stringColor === c ? "ring-2 ring-stone-900 ring-offset-2" : "border-stone-700/30"}`}
+                  style={{ background: c }}
+                  title={c}
+                />
+              ))}
+              <input
+                type="color"
+                value={stringColor}
+                onChange={(e) => setStringColor(e.target.value)}
+                className="size-6 rounded border border-stone-700/30 cursor-pointer bg-transparent"
+                title="custom"
+              />
+            </div>
+          </div>
+          <label className="flex items-start gap-2 cursor-pointer rounded-md border border-border bg-card/40 px-3 py-2">
+            <input
+              type="checkbox"
+              checked={hangingMode}
+              onChange={(e) => setHangingMode(e.target.checked)}
+              className="mt-0.5"
+            />
+            <span className="font-mono text-[11px] lowercase">
+              hanging mode
+              <span className="block text-[10px] text-muted-foreground normal-case">
+                new strings sag like a clothesline. right-click any polaroid and pick "add wooden clip" to hang it from the line.
+              </span>
+            </span>
+          </label>
+          <p className="font-mono text-[10px] lowercase text-muted-foreground/80">
+            color & hanging apply to the next string you draw — existing strings keep their original style.
+          </p>
+        </>
+      )}
     </div>
   );
 }
@@ -2327,6 +2435,7 @@ function AssetContextMenu({
   onUngroup,
   onToggleTape,
   onTogglePin,
+  onToggleClip,
   onEditStyle,
   onDelete,
 }: {
@@ -2340,6 +2449,7 @@ function AssetContextMenu({
   onUngroup: () => void;
   onToggleTape: () => void;
   onTogglePin: () => void;
+  onToggleClip: () => void;
   onEditStyle: (focus: "content" | "mechanics" | "tape" | "pin") => void;
   onDelete: () => void;
 }) {
@@ -2362,6 +2472,7 @@ function AssetContextMenu({
   const anyGrouped = assets.some((a) => a.groupId);
   const allTaped = assets.length > 0 && assets.every((a) => a.tapeAttached);
   const allPinned = assets.length > 0 && assets.every((a) => a.pinEnabled);
+  const allClipped = assets.length > 0 && assets.every((a) => a.clipAttached);
 
   // clamp to viewport
   const x = Math.min(state.x, (typeof window !== "undefined" ? window.innerWidth : 1000) - 240);
@@ -2384,6 +2495,12 @@ function AssetContextMenu({
         label="pin this up"
         onClick={() => { onTogglePin(); onClose(); }}
       />
+      <MenuRow
+        check={allClipped}
+        label="add wooden clip"
+        onClick={() => { onToggleClip(); onClose(); }}
+      />
+
       <MenuRow
         label="change layer"
         chevron
