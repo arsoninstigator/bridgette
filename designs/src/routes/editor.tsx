@@ -2259,23 +2259,101 @@ function IconsSubsection({ onAdd }: { onAdd: AddFn }) {
   );
 }
 
-function StringPanel({ stringFromId, onClear }: { stringFromId: string | null; onClear: () => void }) {
+function StringPanel({
+  stringFromId,
+  onClear,
+  stringColor,
+  setStringColor,
+  hangingMode,
+  setHangingMode,
+}: {
+  stringFromId: string | null;
+  onClear: () => void;
+  stringColor: string;
+  setStringColor: (c: string) => void;
+  hangingMode: boolean;
+  setHangingMode: (v: boolean) => void;
+}) {
+  const [tab, setTab] = useState<"connect" | "edit">("connect");
+  const swatches = ["#a8231a", "#3a2a1a", "#1e6bbf", "#1d8a4f", "#c9a84c", "#e8e4dd", "#0d0d0d"];
   return (
     <div className="space-y-3">
-      <p className="font-mono text-[11px] lowercase text-muted-foreground">
-        click a pinned asset, then click another to connect them, murderboard style.
-      </p>
-      <div className="rounded-md bg-accent/30 px-3 py-2 font-mono text-[10px] lowercase">
-        {stringFromId ? `selected: ${stringFromId.slice(0, 6)}…` : "no anchor yet"}
-      </div>
-      {stringFromId && (
-        <button onClick={onClear} className="w-full rounded border border-border py-2 font-mono text-[11px] lowercase hover:bg-black/5">
-          cancel selection
+      <div className="grid grid-cols-2 rounded-md border border-border overflow-hidden font-mono text-[11px] lowercase">
+        <button
+          onClick={() => setTab("connect")}
+          className={`py-1.5 ${tab === "connect" ? "bg-stone-900 text-stone-50" : "bg-card hover:bg-black/5"}`}
+        >
+          connect
         </button>
+        <button
+          onClick={() => setTab("edit")}
+          className={`py-1.5 ${tab === "edit" ? "bg-stone-900 text-stone-50" : "bg-card hover:bg-black/5"}`}
+        >
+          edit string
+        </button>
+      </div>
+
+      {tab === "connect" && (
+        <>
+          <p className="font-mono text-[11px] lowercase text-muted-foreground">
+            click a pinned asset, then click another to connect them — murderboard style, or clothesline if hanging mode is on.
+          </p>
+          <div className="rounded-md bg-accent/30 px-3 py-2 font-mono text-[10px] lowercase">
+            {stringFromId ? `anchor: ${stringFromId.slice(0, 6)}…` : "no anchor yet"}
+          </div>
+          {stringFromId && (
+            <button onClick={onClear} className="w-full rounded border border-border py-2 font-mono text-[11px] lowercase hover:bg-black/5">
+              cancel selection
+            </button>
+          )}
+          <p className="font-mono text-[10px] lowercase text-muted-foreground/80">
+            only assets with "pin enabled" can be connected. toggle that in the asset settings panel.
+          </p>
+        </>
       )}
-      <p className="font-mono text-[10px] lowercase text-muted-foreground/80">
-        only assets with "pin enabled" can be connected. toggle that in the asset settings panel.
-      </p>
+
+      {tab === "edit" && (
+        <>
+          <div>
+            <div className="font-mono text-[10px] lowercase text-muted-foreground mb-1.5">string color</div>
+            <div className="flex flex-wrap items-center gap-2">
+              {swatches.map((c) => (
+                <button
+                  key={c}
+                  onClick={() => setStringColor(c)}
+                  className={`size-6 rounded-full border ${stringColor === c ? "ring-2 ring-stone-900 ring-offset-2" : "border-stone-700/30"}`}
+                  style={{ background: c }}
+                  title={c}
+                />
+              ))}
+              <input
+                type="color"
+                value={stringColor}
+                onChange={(e) => setStringColor(e.target.value)}
+                className="size-6 rounded border border-stone-700/30 cursor-pointer bg-transparent"
+                title="custom"
+              />
+            </div>
+          </div>
+          <label className="flex items-start gap-2 cursor-pointer rounded-md border border-border bg-card/40 px-3 py-2">
+            <input
+              type="checkbox"
+              checked={hangingMode}
+              onChange={(e) => setHangingMode(e.target.checked)}
+              className="mt-0.5"
+            />
+            <span className="font-mono text-[11px] lowercase">
+              hanging mode
+              <span className="block text-[10px] text-muted-foreground normal-case">
+                new strings sag like a clothesline. right-click any polaroid and pick "add wooden clip" to hang it from the line.
+              </span>
+            </span>
+          </label>
+          <p className="font-mono text-[10px] lowercase text-muted-foreground/80">
+            color & hanging apply to the next string you draw — existing strings keep their original style.
+          </p>
+        </>
+      )}
     </div>
   );
 }
