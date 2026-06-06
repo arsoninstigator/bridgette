@@ -225,8 +225,11 @@ export function BoardCanvas({
           const pa = pinPoint(a);
           const pb = pinPoint(b);
           const mx = (pa.x + pb.x) / 2;
-          const my = (pa.y + pb.y) / 2 + 16;
+          const sag = s.hanging ? Math.max(40, Math.hypot(pb.x - pa.x, pb.y - pa.y) * 0.18) : 16;
+          const my = (pa.y + pb.y) / 2 + sag;
           const d = `M ${pa.x} ${pa.y} Q ${mx} ${my} ${pb.x} ${pb.y}`;
+          const stroke = s.color || (s.hanging ? "#3a2a1a" : "#a8231a");
+          const width = s.hanging ? 3 : 2.4;
           return (
             <g key={s.id} style={{ pointerEvents: onStringClick ? "auto" : "none" }}>
               {onStringClick && (
@@ -245,10 +248,10 @@ export function BoardCanvas({
               )}
               <path
                 d={d}
-                stroke={s.color || "#a8231a"}
-                strokeWidth={2.4}
+                stroke={stroke}
+                strokeWidth={width}
                 fill="none"
-                opacity={0.9}
+                opacity={0.92}
                 style={{ filter: "drop-shadow(0 1px 1px rgba(0,0,0,0.35))", pointerEvents: "none" }}
               />
             </g>
