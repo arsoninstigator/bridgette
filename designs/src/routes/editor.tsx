@@ -96,6 +96,8 @@ function Editor({ board, setBoard }: { board: Board; setBoard: (b: Board) => voi
   const [selectedIds, setSelectedIds] = useState<string[]>([]);
   const selectedId = selectedIds[selectedIds.length - 1] ?? null;
   const [stringFromId, setStringFromId] = useState<string | null>(null);
+  const [stringColor, setStringColor] = useState<string>("#a8231a");
+  const [hangingMode, setHangingMode] = useState<boolean>(false);
   const [showPublish, setShowPublish] = useState(false);
   const [activePanel, setActivePanel] = useState<PanelKey | null>("library");
   const [previewMode, setPreviewMode] = useState(false);
@@ -372,6 +374,8 @@ function Editor({ board, setBoard }: { board: Board; setBoard: (b: Board) => voi
       id: Math.random().toString(36).slice(2, 9),
       from: stringFromId,
       to: id,
+      color: stringColor,
+      hanging: hangingMode || undefined,
     };
     const exists = board.strings.some(
       (s) => (s.from === conn.from && s.to === conn.to) || (s.from === conn.to && s.to === conn.from),
@@ -518,7 +522,14 @@ function Editor({ board, setBoard }: { board: Board; setBoard: (b: Board) => voi
               {activePanel === "assets" && <AssetsPanel />}
               {activePanel === "shape" && <ShapePanel onAdd={addAsset} />}
               {activePanel === "string" && (
-                <StringPanel stringFromId={stringFromId} onClear={() => setStringFromId(null)} />
+                <StringPanel
+                  stringFromId={stringFromId}
+                  onClear={() => setStringFromId(null)}
+                  stringColor={stringColor}
+                  setStringColor={setStringColor}
+                  hangingMode={hangingMode}
+                  setHangingMode={setHangingMode}
+                />
               )}
             </div>
           </aside>
