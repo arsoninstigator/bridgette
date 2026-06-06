@@ -2461,6 +2461,7 @@ function AssetContextMenu({
   const anyGrouped = assets.some((a) => a.groupId);
   const allTaped = assets.length > 0 && assets.every((a) => a.tapeAttached);
   const allPinned = assets.length > 0 && assets.every((a) => a.pinEnabled);
+  const allClipped = assets.length > 0 && assets.every((a) => a.clipAttached);
 
   // clamp to viewport
   const x = Math.min(state.x, (typeof window !== "undefined" ? window.innerWidth : 1000) - 240);
@@ -2483,6 +2484,12 @@ function AssetContextMenu({
         label="pin this up"
         onClick={() => { onTogglePin(); onClose(); }}
       />
+      <MenuRow
+        check={allClipped}
+        label="add wooden clip"
+        onClick={() => { onToggleClip(); onClose(); }}
+      />
+
       <MenuRow
         label="change layer"
         chevron
