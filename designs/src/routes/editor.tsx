@@ -952,13 +952,14 @@ function SurfacePanel({
   onEdit: () => void;
 }) {
   // sets of surfaces. only a handful are wired (cork/mat/wall/metal). others are stubs.
-  type Surf = { id: string; label: string; kind?: BoardKind; className?: string };
+  type Surf = { id: string; label: string; kind?: BoardKind; className?: string; imageUrl?: string };
   const SURFACE_SETS: { id: string; label: string; items: Surf[] }[] = [
     {
       id: "boards",
       label: "boards",
       items: [
         { id: "cork-default", label: "corkboard", kind: "cork", className: "bg-board-cork" },
+        { id: "cork-photo", label: "corkboard (photo)", kind: "cork", imageUrl: corkboardAsset.url },
         { id: "metal", label: "metallic", kind: "metal", className: "bg-board-metal" },
       ],
     },
