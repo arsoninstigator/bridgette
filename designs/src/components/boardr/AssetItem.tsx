@@ -267,6 +267,8 @@ function AttachedClip({ color }: { color?: string }) {
     </div>
   );
 }
+
+function PlusOverlay({
   onPick,
   interactive,
 }: {
