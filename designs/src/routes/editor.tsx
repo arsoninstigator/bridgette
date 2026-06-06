@@ -2424,6 +2424,7 @@ function AssetContextMenu({
   onUngroup,
   onToggleTape,
   onTogglePin,
+  onToggleClip,
   onEditStyle,
   onDelete,
 }: {
@@ -2437,6 +2438,7 @@ function AssetContextMenu({
   onUngroup: () => void;
   onToggleTape: () => void;
   onTogglePin: () => void;
+  onToggleClip: () => void;
   onEditStyle: (focus: "content" | "mechanics" | "tape" | "pin") => void;
   onDelete: () => void;
 }) {
