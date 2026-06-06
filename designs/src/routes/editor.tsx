@@ -735,6 +735,14 @@ function Editor({ board, setBoard }: { board: Board; setBoard: (b: Board) => voi
               ),
             });
           }}
+          onToggleClip={() => {
+            const anyOff = assetMenu.ids.some((id) => !board.assets.find((a) => a.id === id)?.clipAttached);
+            update({
+              assets: board.assets.map((a) =>
+                assetMenu.ids.includes(a.id) ? { ...a, clipAttached: anyOff } : a,
+              ),
+            });
+          }}
           onEditStyle={(focus) => {
             const id = assetMenu.ids[0];
             setSelectedId(id);
