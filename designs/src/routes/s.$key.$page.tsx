@@ -18,6 +18,16 @@ function PageViewer() {
     return () => { cancelled = true; };
   }, [key]);
 
+  useEffect(() => {
+    if (!snap) return;
+    if (typeof window === "undefined") return;
+    const hash = window.location.hash.replace(/^#/, "");
+    if (!hash) return;
+    requestAnimationFrame(() => {
+      document.getElementById(hash)?.scrollIntoView({ behavior: "smooth", block: "start" });
+    });
+  }, [snap, page]);
+
   if (snap === undefined) {
     return <div className="min-h-screen grid place-items-center font-mono text-xs lowercase tracking-wider text-muted-foreground">loading…</div>;
   }
@@ -47,9 +57,11 @@ function PageViewer() {
     );
   }
 
+  const pageHeight = content.height ?? 640;
+
   return (
     <div className="h-screen flex flex-col">
-      <header className="flex items-center justify-between px-4 py-2 border-b border-border bg-card/80">
+      <header className="flex items-center justify-between px-4 py-2 border-b border-border bg-card/80 flex-shrink-0">
         <div className="flex items-center gap-3">
           <Link to="/" className="font-mono text-xs lowercase tracking-[0.18em]">zinegeist</Link>
           <span className="text-muted-foreground">/</span>
@@ -57,7 +69,7 @@ function PageViewer() {
           <span className="text-muted-foreground">/</span>
           <span className="font-mono text-sm">{pageMeta.name}</span>
         </div>
-        <nav className="flex items-center gap-2 font-mono text-[10px] lowercase tracking-wider text-muted-foreground">
+        <nav className="flex items-center gap-3 font-mono text-[10px] lowercase tracking-wider text-muted-foreground">
           {snap.pages?.map((p) => (
             <Link
               key={p.slug}
@@ -68,10 +80,25 @@ function PageViewer() {
               {p.name}
             </Link>
           ))}
+          {content.sections && content.sections.length > 0 && (
+            <div className="flex items-center gap-2 pl-3 border-l border-border">
+              {content.sections.map((s) => (
+                <a key={s.slug} href={`#${s.slug}`} className="hover:text-foreground">#{s.name}</a>
+              ))}
+            </div>
+          )}
         </nav>
       </header>
-      <div className="flex-1 flex">
-        <BoardCanvas kind={snap.kind} surface={snap.surface} assets={content.assets} strings={content.strings} />
+      <div className="flex-1 overflow-auto">
+        <div style={{ height: pageHeight }} className="relative">
+          <BoardCanvas
+            kind={snap.kind}
+            surface={snap.surface}
+            assets={content.assets}
+            strings={content.strings}
+            sections={content.sections}
+          />
+        </div>
       </div>
     </div>
   );
