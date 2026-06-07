@@ -659,8 +659,30 @@ function Editor({ board, setBoard }: { board: Board; setBoard: (b: Board) => voi
               >
                 + frame
               </button>
-            </div>
-          )}
+              {sections.length > 0 && (
+                <div className="ml-3 pl-3 border-l border-stone-700/20 flex items-center gap-1 overflow-x-auto">
+                  <span className="font-mono text-[10px] lowercase text-stone-400 mr-1">#</span>
+                  {sections.map((s) => (
+                    <button
+                      key={s.slug}
+                      onClick={() => {
+                        const el = document.getElementById(`section-anchor-${s.slug}`);
+                        el?.scrollIntoView({ behavior: "smooth", block: "start" });
+                      }}
+                      className="group flex items-center gap-1 rounded-md px-2 py-1 font-mono text-[10px] lowercase text-stone-600 hover:text-stone-900 hover:bg-card border border-transparent hover:border-stone-700/20"
+                      title={`scroll to #${s.slug} · click × to remove`}
+                    >
+                      <span>#{s.name}</span>
+                      <span
+                        onClick={(e) => { e.stopPropagation(); deleteSection(s.slug); }}
+                        className="text-stone-400 hover:text-rose-600"
+                      >
+                        ×
+                      </span>
+                    </button>
+                  ))}
+                </div>
+              )}
           <div className="flex-1 min-w-full min-h-full flex items-center justify-center p-10">
             <div
               className="relative flex shadow-2xl ring-1 ring-stone-900/10 overflow-hidden"
