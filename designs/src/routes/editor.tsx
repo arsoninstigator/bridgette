@@ -700,6 +700,7 @@ function Editor({ board, setBoard }: { board: Board; setBoard: (b: Board) => voi
                 surface={board.surface}
                 assets={board.assets}
                 strings={board.strings}
+                sections={sections}
                 interactive={!previewMode}
                 selectedId={selectedId}
                 selectedIds={selectedIds}
