@@ -37,6 +37,7 @@ export function BoardCanvas({
   assets,
   strings,
   surface,
+  sections,
   interactive,
   selectedId,
   selectedIds,
