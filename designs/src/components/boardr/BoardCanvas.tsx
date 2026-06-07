@@ -295,6 +295,17 @@ export function BoardCanvas({
         })}
       </div>
 
+      {/* section anchors — invisible scroll targets that make #slug navigate
+          within the same page while keeping the background continuous */}
+      {sections?.map((s) => (
+        <div
+          key={s.slug}
+          id={s.slug}
+          className="absolute left-0 right-0 pointer-events-none"
+          style={{ top: s.y, height: 1, scrollMarginTop: 80 }}
+        />
+      ))}
+
     </div>
   );
 }
