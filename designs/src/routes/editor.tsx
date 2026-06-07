@@ -683,7 +683,8 @@ function Editor({ board, setBoard }: { board: Board; setBoard: (b: Board) => voi
                   ))}
                 </div>
               )}
-          <div className="flex-1 min-w-full min-h-full flex items-center justify-center p-10">
+            </div>
+          )}
             <div
               className="relative flex shadow-2xl ring-1 ring-stone-900/10 overflow-hidden"
               style={{
