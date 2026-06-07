@@ -14,6 +14,7 @@ interface Props {
   assets: AssetBase[];
   strings: StringConn[];
   surface?: SurfaceOverlay;
+  sections?: SectionMark[];
   interactive?: boolean;
   selectedId?: string | null;
   selectedIds?: string[];
