@@ -1,5 +1,5 @@
 import { useRef, useState } from "react";
-import type { AssetBase, AssetKind, BoardKind, StringConn, SurfaceOverlay } from "../../lib/boardr/types";
+import type { AssetBase, AssetKind, BoardKind, SectionMark, StringConn, SurfaceOverlay } from "../../lib/boardr/types";
 import { AssetItem, PinImage } from "./AssetItem";
 
 const BG: Record<BoardKind, string> = {
@@ -14,6 +14,7 @@ interface Props {
   assets: AssetBase[];
   strings: StringConn[];
   surface?: SurfaceOverlay;
+  sections?: SectionMark[];
   interactive?: boolean;
   selectedId?: string | null;
   selectedIds?: string[];
@@ -36,6 +37,7 @@ export function BoardCanvas({
   assets,
   strings,
   surface,
+  sections,
   interactive,
   selectedId,
   selectedIds,
@@ -292,6 +294,17 @@ export function BoardCanvas({
           );
         })}
       </div>
+
+      {/* section anchors — invisible scroll targets that make #slug navigate
+          within the same page while keeping the background continuous */}
+      {sections?.map((s) => (
+        <div
+          key={s.slug}
+          id={s.slug}
+          className="absolute left-0 right-0 pointer-events-none"
+          style={{ top: s.y, height: 1, scrollMarginTop: 80 }}
+        />
+      ))}
 
     </div>
   );

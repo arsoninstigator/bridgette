@@ -111,13 +111,33 @@ function Editor({ board, setBoard }: { board: Board; setBoard: (b: Board) => voi
   const [addMenu, setAddMenu] = useState<null | "root" | "section">(null);
   const [activeSlug, setActiveSlug] = useState<string>(board.activeSlug || "index");
   const pages = board.pages && board.pages.length > 0 ? board.pages : [{ slug: "index", name: "frame one (index)" }];
-  const [sections, setSections] = useState<{ id: string; kind: "header" | "navbar" | "footer" | "blank" }[]>([]);
+  const activePageContent = board.pageAssets?.[activeSlug];
+  const sections = activePageContent?.sections ?? [];
+
+  // Sync frame height when active page changes or its stored height changes.
+  const lastSyncedHeightRef = useRef<{ slug: string; h: number } | null>(null);
+  useEffect(() => {
+    const h = activePageContent?.height ?? frameSize.h;
+    const last = lastSyncedHeightRef.current;
+    if (!last || last.slug !== activeSlug || last.h !== h) {
+      lastSyncedHeightRef.current = { slug: activeSlug, h };
+      if (h !== frameSize.h) setFrameSize((s) => ({ ...s, h }));
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [activeSlug, activePageContent?.height]);
 
   function slugify(s: string) {
     return s.toLowerCase().trim().replace(/[^a-z0-9]+/g, "-").replace(/(^-|-$)/g, "") || "page";
   }
   function uniqueSlug(base: string) {
     const taken = new Set(pages.map((p) => p.slug));
+    if (!taken.has(base)) return base;
+    let i = 2;
+    while (taken.has(`${base}-${i}`)) i++;
+    return `${base}-${i}`;
+  }
+  function uniqueSectionSlug(base: string) {
+    const taken = new Set(sections.map((s) => s.slug));
     if (!taken.has(base)) return base;
     let i = 2;
     while (taken.has(`${base}-${i}`)) i++;
@@ -130,8 +150,13 @@ function Editor({ board, setBoard }: { board: Board; setBoard: (b: Board) => voi
     const slug = uniqueSlug(slugify(`frame-${n}`));
     const newPages = [...pages, { slug, name }];
     const pageAssets = { ...(board.pageAssets || {}) };
-    pageAssets[activeSlug] = { assets: board.assets, strings: board.strings };
-    pageAssets[slug] = { assets: [], strings: [] };
+    pageAssets[activeSlug] = {
+      assets: board.assets,
+      strings: board.strings,
+      sections: activePageContent?.sections,
+      height: frameSize.h,
+    };
+    pageAssets[slug] = { assets: [], strings: [], sections: [], height: 640 };
     update({ pages: newPages, pageAssets, assets: [], strings: [], activeSlug: slug });
     setActiveSlug(slug);
     setAddMenu(null);
@@ -139,11 +164,15 @@ function Editor({ board, setBoard }: { board: Board; setBoard: (b: Board) => voi
   function switchPage(slug: string) {
     if (slug === activeSlug) return;
     const pageAssets = { ...(board.pageAssets || {}) };
-    pageAssets[activeSlug] = { assets: board.assets, strings: board.strings };
-    const target = pageAssets[slug] || { assets: [], strings: [] };
+    pageAssets[activeSlug] = {
+      assets: board.assets,
+      strings: board.strings,
+      sections: activePageContent?.sections,
+      height: frameSize.h,
+    };
+    const target = pageAssets[slug] || { assets: [], strings: [], sections: [], height: 640 };
     update({ pages, pageAssets, assets: target.assets, strings: target.strings, activeSlug: slug }, false);
     setActiveSlug(slug);
-    setSelectedIds([]);
   }
   function renamePage(slug: string, name: string) {
     const newPages = pages.map((p) => (p.slug === slug ? { ...p, name } : p));
@@ -155,7 +184,7 @@ function Editor({ board, setBoard }: { board: Board; setBoard: (b: Board) => voi
     const pageAssets = { ...(board.pageAssets || {}) };
     delete pageAssets[slug];
     if (slug === activeSlug) {
-      const target = pageAssets["index"] || { assets: [], strings: [] };
+      const target = pageAssets["index"] || { assets: [], strings: [], sections: [], height: 640 };
       update({ pages: newPages, pageAssets, assets: target.assets, strings: target.strings, activeSlug: "index" });
       setActiveSlug("index");
     } else {
@@ -163,28 +192,68 @@ function Editor({ board, setBoard }: { board: Board; setBoard: (b: Board) => voi
     }
   }
   function addSection(kind: "header" | "navbar" | "footer" | "blank") {
-    setSections((s) => [...s, { id: crypto.randomUUID(), kind }]);
-    // Sections also create a new page, seeded with a representative asset so
-    // the user immediately sees something on the new frame.
-    const n = pages.length + 1;
-    const name = `${kind} ${n}`;
-    const slug = uniqueSlug(slugify(`${kind}-${n}`));
-    const newPages = [...pages, { slug, name }];
-    const pageAssets = { ...(board.pageAssets || {}) };
-    pageAssets[activeSlug] = { assets: board.assets, strings: board.strings };
+    // Sections are anchors on the CURRENT page — they extend the same canvas
+    // downward with a continuous background, and get a #slug on the published
+    // page. They are NOT separate pages/frames.
+    const bandH = 520;
+    const prevH = frameSize.h;
+    const newH = prevH + bandH;
+    const bandTop = prevH;
+    const bandCenterY = prevH + bandH / 2;
+    const cx = Math.round(frameSize.w / 2);
+    const n = sections.length + 1;
+    const baseSlug = kind === "blank" ? `section-${n}` : kind;
+    const slug = uniqueSectionSlug(slugify(baseSlug));
+    const name = kind === "blank" ? `section ${n}` : kind;
+
     const seeded: AssetBase[] = [];
-    const cx = 500;
     if (kind === "header") {
-      seeded.push({ ...makeAsset("paper", cx, 120), front: "Header — your big title", width: 520, rotation: 0 });
+      seeded.push({ ...makeAsset("paper", cx, bandCenterY), front: "Header — your big title", width: 520, rotation: 0 });
     } else if (kind === "navbar") {
-      seeded.push({ ...makeAsset("marquee", cx, 70), width: 720, iconText: "home · about · work · contact ·", rotation: 0 });
+      seeded.push({ ...makeAsset("marquee", cx, bandTop + 60), width: 720, iconText: "home · about · work · contact ·", rotation: 0 });
     } else if (kind === "footer") {
-      seeded.push({ ...makeAsset("paper", cx, 520), front: "© footer · small print", width: 520, rotation: 0 });
+      seeded.push({ ...makeAsset("paper", cx, bandCenterY), front: "© footer · small print", width: 520, rotation: 0 });
     }
-    pageAssets[slug] = { assets: seeded, strings: [] };
-    update({ pages: newPages, pageAssets, assets: seeded, strings: [], activeSlug: slug });
-    setActiveSlug(slug);
+
+    const newAssets = [...board.assets, ...seeded];
+    const newSections = [...sections, { slug, name, y: bandTop + 16 }];
+    const pageAssets = { ...(board.pageAssets || {}) };
+    pageAssets[activeSlug] = {
+      assets: newAssets,
+      strings: board.strings,
+      sections: newSections,
+      height: newH,
+    };
+    setFrameSize((s) => ({ ...s, h: newH }));
+    update({ assets: newAssets, pageAssets });
     setAddMenu(null);
+    // Scroll the new section into view in the editor canvas.
+    requestAnimationFrame(() => {
+      const el = document.getElementById(`section-anchor-${slug}`);
+      el?.scrollIntoView({ behavior: "smooth", block: "start" });
+    });
+  }
+  function renameSection(slug: string, name: string) {
+    const newSections = sections.map((s) => (s.slug === slug ? { ...s, name } : s));
+    const pageAssets = { ...(board.pageAssets || {}) };
+    pageAssets[activeSlug] = {
+      assets: board.assets,
+      strings: board.strings,
+      sections: newSections,
+      height: frameSize.h,
+    };
+    update({ pageAssets }, false);
+  }
+  function deleteSection(slug: string) {
+    const newSections = sections.filter((s) => s.slug !== slug);
+    const pageAssets = { ...(board.pageAssets || {}) };
+    pageAssets[activeSlug] = {
+      assets: board.assets,
+      strings: board.strings,
+      sections: newSections,
+      height: frameSize.h,
+    };
+    update({ pageAssets });
   }
   const [surfaceStyle, setSurfaceStyle] = useState<SurfaceStyle>({ border: 0, borderColor: "#3a2b1f", borderStyle: "solid", radius: 2 });
   const [assetMenu, setAssetMenu] = useState<AssetMenuState>(null);
@@ -590,9 +659,33 @@ function Editor({ board, setBoard }: { board: Board; setBoard: (b: Board) => voi
               >
                 + frame
               </button>
+              {sections.length > 0 && (
+                <div className="ml-3 pl-3 border-l border-stone-700/20 flex items-center gap-1 overflow-x-auto">
+                  <span className="font-mono text-[10px] lowercase text-stone-400 mr-1">#</span>
+                  {sections.map((s) => (
+                    <button
+                      key={s.slug}
+                      onClick={() => {
+                        const el = document.getElementById(`section-anchor-${s.slug}`);
+                        el?.scrollIntoView({ behavior: "smooth", block: "start" });
+                      }}
+                      className="group flex items-center gap-1 rounded-md px-2 py-1 font-mono text-[10px] lowercase text-stone-600 hover:text-stone-900 hover:bg-card border border-transparent hover:border-stone-700/20"
+                      title={`scroll to #${s.slug} · click × to remove`}
+                    >
+                      <span>#{s.name}</span>
+                      <span
+                        onClick={(e) => { e.stopPropagation(); deleteSection(s.slug); }}
+                        className="text-stone-400 hover:text-rose-600"
+                      >
+                        ×
+                      </span>
+                    </button>
+                  ))}
+                </div>
+              )}
             </div>
           )}
-          <div className="flex-1 min-w-full min-h-full flex items-center justify-center p-10">
+          <div className="flex-1 min-w-full min-h-full flex items-start justify-center p-10">
             <div
               className="relative flex shadow-2xl ring-1 ring-stone-900/10 overflow-hidden"
               style={{
@@ -607,6 +700,7 @@ function Editor({ board, setBoard }: { board: Board; setBoard: (b: Board) => voi
                 surface={board.surface}
                 assets={board.assets}
                 strings={board.strings}
+                sections={sections}
                 interactive={!previewMode}
                 selectedId={selectedId}
                 selectedIds={selectedIds}
@@ -637,6 +731,28 @@ function Editor({ board, setBoard }: { board: Board; setBoard: (b: Board) => voi
                   {(pages.find((p) => p.slug === activeSlug)?.name) || "frame one (index)"} · {frameSize.w}×{frameSize.h}
                 </div>
               </div>
+              {/* section anchor markers — same continuous background, just labeled bands */}
+              {sections.map((s) => (
+                <div
+                  key={s.slug}
+                  id={`section-anchor-${s.slug}`}
+                  className="absolute left-0 right-0 pointer-events-none"
+                  style={{ top: s.y }}
+                >
+                  {!previewMode && (
+                    <div className="border-t border-dashed border-stone-900/25 flex items-center">
+                      <div className="pointer-events-auto -mt-3 ml-3 inline-flex items-center gap-1 bg-amber-50/90 backdrop-blur-sm border border-stone-900/20 rounded px-2 py-0.5 font-mono text-[10px] lowercase shadow-sm">
+                        <span className="text-stone-500">#</span>
+                        <input
+                          value={s.name}
+                          onChange={(e) => renameSection(s.slug, e.target.value)}
+                          className="bg-transparent outline-none w-32"
+                        />
+                      </div>
+                    </div>
+                  )}
+                </div>
+              ))}
               {!previewMode && (
                 <>
                   {/* resize handles — canva style */}
