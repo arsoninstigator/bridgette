@@ -164,6 +164,26 @@ function Editor({ board, setBoard }: { board: Board; setBoard: (b: Board) => voi
   }
   function addSection(kind: "header" | "navbar" | "footer" | "blank") {
     setSections((s) => [...s, { id: crypto.randomUUID(), kind }]);
+    // Sections also create a new page, seeded with a representative asset so
+    // the user immediately sees something on the new frame.
+    const n = pages.length + 1;
+    const name = `${kind} ${n}`;
+    const slug = uniqueSlug(slugify(`${kind}-${n}`));
+    const newPages = [...pages, { slug, name }];
+    const pageAssets = { ...(board.pageAssets || {}) };
+    pageAssets[activeSlug] = { assets: board.assets, strings: board.strings };
+    const seeded: AssetBase[] = [];
+    const cx = 500;
+    if (kind === "header") {
+      seeded.push({ ...makeAsset("paper", cx, 120), front: "Header — your big title", width: 520, rotation: 0 });
+    } else if (kind === "navbar") {
+      seeded.push({ ...makeAsset("marquee", cx, 70), width: 720, iconText: "home · about · work · contact ·", rotation: 0 });
+    } else if (kind === "footer") {
+      seeded.push({ ...makeAsset("paper", cx, 520), front: "© footer · small print", width: 520, rotation: 0 });
+    }
+    pageAssets[slug] = { assets: seeded, strings: [] };
+    update({ pages: newPages, pageAssets, assets: seeded, strings: [], activeSlug: slug });
+    setActiveSlug(slug);
     setAddMenu(null);
   }
   const [surfaceStyle, setSurfaceStyle] = useState<SurfaceStyle>({ border: 0, borderColor: "#3a2b1f", borderStyle: "solid", radius: 2 });
