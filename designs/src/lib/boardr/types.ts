@@ -67,9 +67,17 @@ export interface PageMeta {
   name: string;
 }
 
+export interface SectionMark {
+  slug: string; // becomes #slug on the published page
+  name: string;
+  y: number; // vertical position on the page canvas
+}
+
 export interface PageContent {
   assets: AssetBase[];
   strings: StringConn[];
+  sections?: SectionMark[];
+  height?: number; // per-page canvas height (extends as sections are added)
 }
 
 export interface SurfacePattern {
