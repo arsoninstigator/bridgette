@@ -730,6 +730,28 @@ function Editor({ board, setBoard }: { board: Board; setBoard: (b: Board) => voi
                   {(pages.find((p) => p.slug === activeSlug)?.name) || "frame one (index)"} · {frameSize.w}×{frameSize.h}
                 </div>
               </div>
+              {/* section anchor markers — same continuous background, just labeled bands */}
+              {sections.map((s) => (
+                <div
+                  key={s.slug}
+                  id={`section-anchor-${s.slug}`}
+                  className="absolute left-0 right-0 pointer-events-none"
+                  style={{ top: s.y }}
+                >
+                  {!previewMode && (
+                    <div className="border-t border-dashed border-stone-900/25 flex items-center">
+                      <div className="pointer-events-auto -mt-3 ml-3 inline-flex items-center gap-1 bg-amber-50/90 backdrop-blur-sm border border-stone-900/20 rounded px-2 py-0.5 font-mono text-[10px] lowercase shadow-sm">
+                        <span className="text-stone-500">#</span>
+                        <input
+                          value={s.name}
+                          onChange={(e) => renameSection(s.slug, e.target.value)}
+                          className="bg-transparent outline-none w-32"
+                        />
+                      </div>
+                    </div>
+                  )}
+                </div>
+              ))}
               {!previewMode && (
                 <>
                   {/* resize handles — canva style */}
