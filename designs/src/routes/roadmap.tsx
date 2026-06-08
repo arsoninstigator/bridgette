@@ -40,14 +40,47 @@ const MILESTONES: { date: string; status: Status; title: string; bullets: string
     ],
   },
   {
-    date: "in progress",
-    status: "in-progress",
-    title: "tactile surface kit",
+    date: "shipped · q3",
+    status: "shipped",
+    title: "surface kit + custom patterns",
     bullets: [
-      "wooden boards (oak, walnut, pine)",
-      "paper variants (grid, dotted, lined) — recolorable",
-      "textile, tiles, pegboard, blackboard, whiteboard",
-      "bring-your-own surface (upload image)",
+      "corkboard (photo) added alongside the drawn cork",
+      "build-your-own grid / stripe / checker / dot patterns",
+      "bring-your-own surface (upload any image)",
+      "texture overlays: kraft, linen, burlap, leather, brick, marble, woodgrain",
+    ],
+  },
+  {
+    date: "shipped · q3",
+    status: "shipped",
+    title: "frames, polaroids, plus-to-fill",
+    bullets: [
+      "photo frames as objects — classic, ornate, oval, scalloped",
+      "every empty photo slot gets a big plus — click to upload",
+      "photostrips with plus-to-fill on each of four frames",
+      "washi tape now has real jagged v-edges + opacity slider",
+    ],
+  },
+  {
+    date: "shipped · q4",
+    status: "shipped",
+    title: "strings, hanging mode, wooden clips",
+    bullets: [
+      "string panel split into connect + edit string tabs",
+      "hanging mode — strings sag with real droop physics",
+      "wooden clip context menu — clip any asset to a hanging string",
+      "recolorable string thread",
+    ],
+  },
+  {
+    date: "shipped · q4",
+    status: "shipped",
+    title: "pages + sections (rooms + walls)",
+    bullets: [
+      "multi-page boards publish each page as its own route",
+      "sections share one continuous canvas as #anchors",
+      "tab bar for pages, jump-link bar for sections",
+      "viewer honors url hash on load and scrolls to anchor",
     ],
   },
   {
@@ -58,16 +91,6 @@ const MILESTONES: { date: string; status: Status; title: string; bullets: string
       "building blocks: text, images, buttons, icons",
       "bento grids, accordions, tables, chips, tags",
       "input fields & forms (read-only previews first)",
-    ],
-  },
-  {
-    date: "next",
-    status: "next",
-    title: "resizable frames + multi-page boards",
-    bullets: [
-      "drag the frame edge to resize, canva-style",
-      "multiple frames per board (pages & sections)",
-      "navigation between frames at publish time",
     ],
   },
   {

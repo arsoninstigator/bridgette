@@ -15,19 +15,26 @@ const SURFACES: { kind: BoardKind; label: string; className: string; blurb: stri
 ];
 
 const ANALOG_OBJECTS = [
-  { label: "polaroids", note: "01" },
+  { label: "polaroids + plus-to-fill", note: "01" },
   { label: "photo frames", note: "02" },
   { label: "photostrips", note: "03" },
   { label: "sticky notes", note: "04" },
-  { label: "washi tape", note: "05" },
-  { label: "loose sheets", note: "06" },
-  { label: "pushpins + thread", note: "07" },
-  { label: "patterns + textures", note: "08" },
+  { label: "jagged washi tape", note: "05" },
+  { label: "wooden clips", note: "06" },
+  { label: "hanging strings", note: "07" },
+  { label: "custom patterns", note: "08" },
+];
+
+const NEW = [
+  { t: "hanging mode", d: "strings sag with real droop. right-click any asset → add wooden clip, and hang polaroids from the rope gallery-style." },
+  { t: "pages + sections", d: "pages publish as /routes. sections live as #anchors on one continuous canvas — same background, no breaks." },
+  { t: "plus-to-fill", d: "every empty polaroid, photo frame, and photostrip slot has a big plus inside. click to upload — no menus to hunt." },
+  { t: "custom patterns", d: "build your own background: grid, stripes, checker, dots. pick rows, shades, thickness, angle. or upload your own surface." },
 ];
 
 const FEATURES = [
   { n: "nonlinear", d: "thought doesn’t happen in straight lines. zinegeist was built for the way curiosity actually feels." },
-  { n: "tactile", d: "pin photographs to corkboards. scatter annotations across wallpaper. flip over polaroids." },
+  { n: "tactile", d: "pin photographs to cork. drape strings with sag. clip polaroids to the line. flip cards to read the back." },
   { n: "obsessive", d: "part corkboard, part scrapbook, part dossier archive, part evidence wall." },
   { n: "spatial", d: "the board itself becomes part of the meaning. mess carries meaning. arrangement matters." },
 ];
@@ -182,8 +189,35 @@ function Index() {
         </div>
       </section>
 
+      {/* WHAT'S NEW */}
+      <section className="border-b border-border/60">
+        <div className="max-w-6xl mx-auto px-6 py-20">
+          <div className="flex items-end justify-between flex-wrap gap-3">
+            <div>
+              <span className="font-mono text-[10px] uppercase tracking-[0.25em] text-muted-foreground">/ newly shipped</span>
+              <h2 className="mt-2 font-display text-3xl md:text-4xl lowercase">fresh off the wall</h2>
+            </div>
+            <Link to="/roadmap" className="font-mono text-[11px] uppercase tracking-wider underline underline-offset-4">full roadmap →</Link>
+          </div>
+          <div className="mt-10 grid md:grid-cols-4 gap-4">
+            {NEW.map((n, i) => (
+              <div
+                key={n.t}
+                className="bg-card rounded-md border border-border p-5 analog-shadow-sm"
+                style={{ transform: `rotate(${((i % 4) - 1.5) * 0.4}deg)` }}
+              >
+                <div className="font-mono text-[10px] uppercase tracking-[0.2em] text-rose-700">new</div>
+                <div className="mt-2 font-display text-xl lowercase">{n.t}</div>
+                <p className="mt-2 font-mono text-xs text-muted-foreground leading-relaxed lowercase">{n.d}</p>
+              </div>
+            ))}
+          </div>
+        </div>
+      </section>
+
       {/* CORE FEEL */}
       <section className="border-b border-border/60">
+
         <div className="max-w-6xl mx-auto px-6 py-20">
           <span className="font-mono text-[10px] uppercase tracking-[0.25em] text-muted-foreground">/ the feel</span>
           <h2 className="mt-2 font-display text-3xl md:text-4xl lowercase">how curiosity actually feels</h2>

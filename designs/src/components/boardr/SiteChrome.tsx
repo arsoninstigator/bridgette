@@ -1,7 +1,25 @@
 import { Link, useLocation } from "@tanstack/react-router";
 import { useAuth } from "@/hooks/useAuth";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
+import { ChevronDown } from "lucide-react";
 
-type NavTo = "/" | "/about" | "/positioning" | "/features" | "/roadmap" | "/compare" | "/dashboard" | "/assets" | "/templates" | "/auth";
+type NavTo =
+  | "/"
+  | "/about"
+  | "/positioning"
+  | "/philosophy"
+  | "/features"
+  | "/roadmap"
+  | "/compare"
+  | "/dashboard"
+  | "/assets"
+  | "/templates"
+  | "/auth";
 
 export function SiteHeader() {
   const { pathname } = useLocation();
@@ -16,6 +34,16 @@ export function SiteHeader() {
       {label}
     </Link>
   );
+
+  const otherRoutes: { to: NavTo; label: string; blurb: string }[] = [
+    { to: "/assets", label: "assets", blurb: "the asset library" },
+    { to: "/templates", label: "templates", blurb: "starter boards" },
+    { to: "/roadmap", label: "roadmap", blurb: "what's pinned next" },
+    { to: "/compare", label: "compare", blurb: "vs other tools" },
+    { to: "/philosophy", label: "philosophy", blurb: "why tactile" },
+  ];
+  const otherActive = otherRoutes.some((r) => r.to === pathname);
+
   return (
     <header className="bg-editor-header border-b border-border/60">
       <div className="max-w-6xl mx-auto px-6 py-4 flex items-center justify-between">
@@ -25,11 +53,26 @@ export function SiteHeader() {
         </Link>
         <nav className="flex items-center gap-5">
           <NavLink to="/" label="home" />
-          <NavLink to="/assets" label="assets" />
-          <NavLink to="/templates" label="templates" />
           <NavLink to="/features" label="features" />
-          <NavLink to="/roadmap" label="roadmap" />
-          <NavLink to="/compare" label="compare" />
+          <DropdownMenu>
+            <DropdownMenuTrigger
+              className={`flex items-center gap-1 font-mono text-[11px] uppercase tracking-[0.18em] hover:text-foreground transition-colors outline-none ${
+                otherActive ? "text-foreground" : "text-stone-600"
+              }`}
+            >
+              other <ChevronDown className="size-3" />
+            </DropdownMenuTrigger>
+            <DropdownMenuContent align="end" className="min-w-[200px]">
+              {otherRoutes.map((r) => (
+                <DropdownMenuItem key={r.to} asChild>
+                  <Link to={r.to} className="flex flex-col items-start gap-0.5 cursor-pointer">
+                    <span className="font-mono text-[11px] uppercase tracking-[0.18em]">{r.label}</span>
+                    <span className="font-mono text-[10px] lowercase text-muted-foreground">{r.blurb}</span>
+                  </Link>
+                </DropdownMenuItem>
+              ))}
+            </DropdownMenuContent>
+          </DropdownMenu>
           {user ? (
             <button
               onClick={() => signOut()}
