@@ -189,8 +189,35 @@ function Index() {
         </div>
       </section>
 
+      {/* WHAT'S NEW */}
+      <section className="border-b border-border/60">
+        <div className="max-w-6xl mx-auto px-6 py-20">
+          <div className="flex items-end justify-between flex-wrap gap-3">
+            <div>
+              <span className="font-mono text-[10px] uppercase tracking-[0.25em] text-muted-foreground">/ newly shipped</span>
+              <h2 className="mt-2 font-display text-3xl md:text-4xl lowercase">fresh off the wall</h2>
+            </div>
+            <Link to="/roadmap" className="font-mono text-[11px] uppercase tracking-wider underline underline-offset-4">full roadmap →</Link>
+          </div>
+          <div className="mt-10 grid md:grid-cols-4 gap-4">
+            {NEW.map((n, i) => (
+              <div
+                key={n.t}
+                className="bg-card rounded-md border border-border p-5 analog-shadow-sm"
+                style={{ transform: `rotate(${((i % 4) - 1.5) * 0.4}deg)` }}
+              >
+                <div className="font-mono text-[10px] uppercase tracking-[0.2em] text-rose-700">new</div>
+                <div className="mt-2 font-display text-xl lowercase">{n.t}</div>
+                <p className="mt-2 font-mono text-xs text-muted-foreground leading-relaxed lowercase">{n.d}</p>
+              </div>
+            ))}
+          </div>
+        </div>
+      </section>
+
       {/* CORE FEEL */}
       <section className="border-b border-border/60">
+
         <div className="max-w-6xl mx-auto px-6 py-20">
           <span className="font-mono text-[10px] uppercase tracking-[0.25em] text-muted-foreground">/ the feel</span>
           <h2 className="mt-2 font-display text-3xl md:text-4xl lowercase">how curiosity actually feels</h2>
