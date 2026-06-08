@@ -15,19 +15,26 @@ const SURFACES: { kind: BoardKind; label: string; className: string; blurb: stri
 ];
 
 const ANALOG_OBJECTS = [
-  { label: "polaroids", note: "01" },
+  { label: "polaroids + plus-to-fill", note: "01" },
   { label: "photo frames", note: "02" },
   { label: "photostrips", note: "03" },
   { label: "sticky notes", note: "04" },
-  { label: "washi tape", note: "05" },
-  { label: "loose sheets", note: "06" },
-  { label: "pushpins + thread", note: "07" },
-  { label: "patterns + textures", note: "08" },
+  { label: "jagged washi tape", note: "05" },
+  { label: "wooden clips", note: "06" },
+  { label: "hanging strings", note: "07" },
+  { label: "custom patterns", note: "08" },
+];
+
+const NEW = [
+  { t: "hanging mode", d: "strings sag with real droop. right-click any asset → add wooden clip, and hang polaroids from the rope gallery-style." },
+  { t: "pages + sections", d: "pages publish as /routes. sections live as #anchors on one continuous canvas — same background, no breaks." },
+  { t: "plus-to-fill", d: "every empty polaroid, photo frame, and photostrip slot has a big plus inside. click to upload — no menus to hunt." },
+  { t: "custom patterns", d: "build your own background: grid, stripes, checker, dots. pick rows, shades, thickness, angle. or upload your own surface." },
 ];
 
 const FEATURES = [
   { n: "nonlinear", d: "thought doesn’t happen in straight lines. zinegeist was built for the way curiosity actually feels." },
-  { n: "tactile", d: "pin photographs to corkboards. scatter annotations across wallpaper. flip over polaroids." },
+  { n: "tactile", d: "pin photographs to cork. drape strings with sag. clip polaroids to the line. flip cards to read the back." },
   { n: "obsessive", d: "part corkboard, part scrapbook, part dossier archive, part evidence wall." },
   { n: "spatial", d: "the board itself becomes part of the meaning. mess carries meaning. arrangement matters." },
 ];
