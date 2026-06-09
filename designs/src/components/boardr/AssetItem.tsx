@@ -45,6 +45,7 @@ interface Props {
   onPatch?: (p: Partial<AssetBase>) => void; // partial update from inside the asset (e.g. inline image upload)
   pinHighlight?: boolean; // string mode highlight
   hidePin?: boolean; // when true, AssetItem skips drawing the pin overlay (canvas draws it on top)
+  gallery?: string[]; // existing image URLs available in this board for quick re-use
 }
 
 /** Shared analog-feel asset renderer. */
@@ -60,6 +61,7 @@ export function AssetItem({
   onPatch,
   pinHighlight,
   hidePin,
+  gallery,
 }: Props) {
   const [flipped, setFlipped] = useState(false);
   useEffect(() => {
