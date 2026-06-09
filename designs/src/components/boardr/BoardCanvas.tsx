@@ -20,6 +20,7 @@ interface Props {
   selectedIds?: string[];
   stringMode?: boolean;
   stringFromId?: string | null;
+  gallery?: string[];
   onSelect?: (id: string | null, additive?: boolean) => void;
   onMove?: (id: string, x: number, y: number) => void;
   onMoveMany?: (moves: { id: string; x: number; y: number }[]) => void;
@@ -43,6 +44,7 @@ export function BoardCanvas({
   selectedIds,
   stringMode,
   stringFromId,
+  gallery,
   onSelect,
   onMove,
   onMoveMany,
@@ -188,6 +190,7 @@ export function BoardCanvas({
       {/* asset bodies (pins are hidden here and rendered above the string layer) */}
       {assets.map((a) => (
         <AssetItem
+          gallery={gallery}
           key={a.id}
           asset={a}
           interactive={interactive}

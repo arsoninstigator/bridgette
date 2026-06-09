@@ -3,6 +3,12 @@ import { Lock } from "lucide-react";
 import type { AssetBase } from "../../lib/boardr/types";
 import pushpinAsset from "@/assets/pushpin.svg.asset.json";
 import woodenClipAsset from "@/assets/wooden-clip.svg.asset.json";
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog";
 
 // Hue-rotate mapping for recoloring the (raster-inside-svg) pushpin which is
 // natively red. Values are approximate so the pin still reads as a tack.
@@ -39,6 +45,7 @@ interface Props {
   onPatch?: (p: Partial<AssetBase>) => void; // partial update from inside the asset (e.g. inline image upload)
   pinHighlight?: boolean; // string mode highlight
   hidePin?: boolean; // when true, AssetItem skips drawing the pin overlay (canvas draws it on top)
+  gallery?: string[]; // existing image URLs available in this board for quick re-use
 }
 
 /** Shared analog-feel asset renderer. */
@@ -54,6 +61,7 @@ export function AssetItem({
   onPatch,
   pinHighlight,
   hidePin,
+  gallery,
 }: Props) {
   const [flipped, setFlipped] = useState(false);
   useEffect(() => {
@@ -107,7 +115,7 @@ export function AssetItem({
       ].join(" ")}
     >
       <div className="relative">
-        {renderAssetBody(asset, showBack, interactive, onPatch)}
+        {renderAssetBody(asset, showBack, interactive, onPatch, gallery)}
         {asset.tapeAttached && <AttachedTape color={asset.tapeAttachColor} />}
         {asset.clipAttached && <AttachedClip color={asset.clipColor} />}
         {asset.pinEnabled && !hidePin && <PushPin color={asset.pinColor || asset.color} highlight={pinHighlight} />}
@@ -245,7 +253,9 @@ function AttachedTape({ color }: { color?: string }) {
 
 /** Wooden clothespin / clip — sits above an asset, attached to a hanging string. */
 function AttachedClip({ color: _color }: { color?: string }) {
-  // Render the user-provided wooden clothespin SVG as-is.
+  // Render the user-provided wooden clothespin SVG. The source SVG has a white
+  // raster background baked in; multiply blend drops the white so only the
+  // clothespin remains visible against the board.
   return (
     <div
       aria-hidden
@@ -263,7 +273,13 @@ function AttachedClip({ color: _color }: { color?: string }) {
         alt=""
         width={30}
         height={50}
-        style={{ width: "100%", height: "100%", objectFit: "contain", display: "block" }}
+        style={{
+          width: "100%",
+          height: "100%",
+          objectFit: "contain",
+          display: "block",
+          mixBlendMode: "multiply",
+        }}
         draggable={false}
       />
     </div>
@@ -273,42 +289,49 @@ function AttachedClip({ color: _color }: { color?: string }) {
 function PlusOverlay({
   onPick,
   interactive,
+  gallery,
 }: {
   onPick: (dataUrl: string) => void;
   interactive?: boolean;
+  gallery?: string[];
 }) {
-  const ref = useRef<HTMLInputElement | null>(null);
+  const fileRef = useRef<HTMLInputElement | null>(null);
+  const [open, setOpen] = useState(false);
   if (!interactive) return null;
+  const photos = (gallery ?? []).filter(Boolean);
   return (
-    <button
-      type="button"
-      onPointerDown={(e) => e.stopPropagation()}
-      onClick={(e) => {
-        e.stopPropagation();
-        e.preventDefault();
-        ref.current?.click();
-      }}
-      title="add a photo"
-      className="absolute inset-0 grid place-items-center cursor-pointer bg-transparent border-0 m-0 p-0"
-      style={{ zIndex: 5 }}
-    >
-      <div
-        className="grid place-items-center rounded-full"
-        style={{
-          width: 56,
-          height: 56,
-          background: "rgba(255,255,255,0.85)",
-          color: "rgba(120,100,90,0.7)",
-          boxShadow: "0 2px 6px rgba(0,0,0,0.12)",
-          fontSize: 36,
-          fontWeight: 200,
-          lineHeight: 1,
+    <>
+      <button
+        type="button"
+        onPointerDown={(e) => e.stopPropagation()}
+        onClick={(e) => {
+          e.stopPropagation();
+          e.preventDefault();
+          if (photos.length > 0) setOpen(true);
+          else fileRef.current?.click();
         }}
+        title={photos.length > 0 ? "choose a photo" : "add a photo"}
+        className="absolute inset-0 grid place-items-center cursor-pointer bg-transparent border-0 m-0 p-0"
+        style={{ zIndex: 5 }}
       >
-        +
-      </div>
+        <div
+          className="grid place-items-center rounded-full"
+          style={{
+            width: 56,
+            height: 56,
+            background: "rgba(255,255,255,0.85)",
+            color: "rgba(120,100,90,0.7)",
+            boxShadow: "0 2px 6px rgba(0,0,0,0.12)",
+            fontSize: 36,
+            fontWeight: 200,
+            lineHeight: 1,
+          }}
+        >
+          +
+        </div>
+      </button>
       <input
-        ref={ref}
+        ref={fileRef}
         type="file"
         accept="image/*"
         className="hidden"
@@ -321,7 +344,47 @@ function PlusOverlay({
           e.target.value = "";
         }}
       />
-    </button>
+      <Dialog open={open} onOpenChange={setOpen}>
+        <DialogContent
+          className="max-w-2xl"
+          onPointerDown={(e) => e.stopPropagation()}
+          onClick={(e) => e.stopPropagation()}
+        >
+          <DialogHeader>
+            <DialogTitle className="font-display lowercase">choose a photo</DialogTitle>
+          </DialogHeader>
+          <div className="grid grid-cols-4 gap-2 max-h-[60vh] overflow-y-auto">
+            <button
+              type="button"
+              onClick={(e) => {
+                e.stopPropagation();
+                setOpen(false);
+                fileRef.current?.click();
+              }}
+              className="aspect-square rounded border border-dashed border-stone-400 grid place-items-center font-mono text-xs lowercase text-stone-600 hover:bg-stone-100"
+            >
+              + upload new
+            </button>
+            {photos.map((src, i) => (
+              <button
+                key={i}
+                type="button"
+                onClick={(e) => {
+                  e.stopPropagation();
+                  onPick(src);
+                  setOpen(false);
+                }}
+                className="aspect-square rounded overflow-hidden border border-stone-300 hover:ring-2 hover:ring-amber-600"
+                style={{
+                  background: `center/cover no-repeat url(${src})`,
+                }}
+                aria-label={`photo ${i + 1}`}
+              />
+            ))}
+          </div>
+        </DialogContent>
+      </Dialog>
+    </>
   );
 }
 
@@ -331,6 +394,7 @@ function renderAssetBody(
   back: boolean,
   interactive?: boolean,
   onPatch?: (p: Partial<AssetBase>) => void,
+  gallery?: string[],
 ) {
   switch (a.kind) {
     case "sticky": {
@@ -379,7 +443,7 @@ function renderAssetBody(
               }}
             >
               {!a.imageUrl && onPatch && (
-                <PlusOverlay interactive={interactive} onPick={(d) => onPatch({ imageUrl: d })} />
+                <PlusOverlay interactive={interactive} gallery={gallery} onPick={(d) => onPatch({ imageUrl: d })} />
               )}
             </div>
           )}
@@ -421,6 +485,7 @@ function renderAssetBody(
                   {!p && onPatch && (
                     <PlusOverlay
                       interactive={interactive}
+                      gallery={gallery}
                       onPick={(d) => onPatch({ [keys[i]]: d } as Partial<AssetBase>)}
                     />
                   )}
@@ -450,7 +515,7 @@ function renderAssetBody(
               }}
             >
               {!a.imageUrl && onPatch && (
-                <PlusOverlay interactive={interactive} onPick={(d) => onPatch({ imageUrl: d })} />
+                <PlusOverlay interactive={interactive} gallery={gallery} onPick={(d) => onPatch({ imageUrl: d })} />
               )}
             </div>
           )}
@@ -500,7 +565,7 @@ function renderAssetBody(
       );
     }
     case "frame": {
-      return renderFrame(a, interactive, onPatch);
+      return renderFrame(a, interactive, onPatch, gallery);
     }
     case "pin": {
       return <div style={{ width: 18, height: 18 }} />;
@@ -586,6 +651,7 @@ function renderFrame(
   a: AssetBase,
   interactive?: boolean,
   onPatch?: (p: Partial<AssetBase>) => void,
+  gallery?: string[],
 ) {
   const w = a.width ?? 220;
   const h = a.height ?? 260;
@@ -708,7 +774,7 @@ function renderFrame(
       {outerEl}
       <div style={innerStyle}>
         {!a.imageUrl && onPatch && (
-          <PlusOverlay interactive={interactive} onPick={(d) => onPatch({ imageUrl: d })} />
+          <PlusOverlay interactive={interactive} gallery={gallery} onPick={(d) => onPatch({ imageUrl: d })} />
         )}
       </div>
     </div>
