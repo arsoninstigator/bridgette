@@ -190,6 +190,7 @@ export function BoardCanvas({
       {/* asset bodies (pins are hidden here and rendered above the string layer) */}
       {assets.map((a) => (
         <AssetItem
+          gallery={gallery}
           key={a.id}
           asset={a}
           interactive={interactive}
