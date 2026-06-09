@@ -485,6 +485,7 @@ function renderAssetBody(
                   {!p && onPatch && (
                     <PlusOverlay
                       interactive={interactive}
+                      gallery={gallery}
                       onPick={(d) => onPatch({ [keys[i]]: d } as Partial<AssetBase>)}
                     />
                   )}
