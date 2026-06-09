@@ -115,7 +115,7 @@ export function AssetItem({
       ].join(" ")}
     >
       <div className="relative">
-        {renderAssetBody(asset, showBack, interactive, onPatch)}
+        {renderAssetBody(asset, showBack, interactive, onPatch, gallery)}
         {asset.tapeAttached && <AttachedTape color={asset.tapeAttachColor} />}
         {asset.clipAttached && <AttachedClip color={asset.clipColor} />}
         {asset.pinEnabled && !hidePin && <PushPin color={asset.pinColor || asset.color} highlight={pinHighlight} />}
