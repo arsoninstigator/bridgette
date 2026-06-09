@@ -565,7 +565,7 @@ function renderAssetBody(
       );
     }
     case "frame": {
-      return renderFrame(a, interactive, onPatch);
+      return renderFrame(a, interactive, onPatch, gallery);
     }
     case "pin": {
       return <div style={{ width: 18, height: 18 }} />;
