@@ -651,6 +651,7 @@ function renderFrame(
   a: AssetBase,
   interactive?: boolean,
   onPatch?: (p: Partial<AssetBase>) => void,
+  gallery?: string[],
 ) {
   const w = a.width ?? 220;
   const h = a.height ?? 260;
