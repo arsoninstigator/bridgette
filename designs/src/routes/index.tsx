@@ -120,23 +120,88 @@ function Index() {
             )}
           </div>
 
-          {/* Mini diorama */}
+          {/* Mini diorama — tactile scrapboard */}
           <div className="md:col-span-5 relative">
-            <div className="relative h-72 rounded-md bg-board-cork analog-shadow overflow-hidden border border-stone-900/10">
-              <div className="absolute left-6 top-6 w-32 h-32 bg-yellow-200 rotate-[-4deg] analog-shadow-sm p-3 font-display text-xs">
-                mess carries meaning.
-              </div>
-              <div className="absolute right-6 top-10 w-32 bg-stone-50 p-2 pb-6 rotate-[5deg] analog-shadow-sm">
-                <div className="h-20 bg-stone-300" />
-              </div>
-              <div className="absolute left-12 bottom-6 w-40 bg-stone-50 p-2 pb-5 rotate-[-2deg] analog-shadow-sm">
-                <div className="h-14 bg-stone-300" />
-              </div>
-              <div className="absolute right-10 bottom-10 w-20 h-5 bg-pink-300/80 rotate-[20deg]" />
-              <svg className="absolute inset-0 w-full h-full pointer-events-none">
-                <path d="M 60 90 Q 150 160 200 60" stroke="#a33" strokeWidth="1.5" fill="none" />
-                <path d="M 60 90 Q 120 200 180 240" stroke="#a33" strokeWidth="1.5" fill="none" />
+            <div
+              className="relative w-full max-w-[520px] mx-auto aspect-[560/380] rounded-xl bg-board-cork overflow-hidden border-[12px] border-[#8d6a4a] ring-1 ring-black/10 shadow-[0_20px_50px_rgba(0,0,0,0.25)]"
+            >
+              {/* sagging strings */}
+              <svg className="absolute inset-0 w-full h-full pointer-events-none z-20" viewBox="0 0 560 380" fill="none" preserveAspectRatio="none">
+                <path d="M80 120 Q 280 240 480 100" stroke="#7c2d12" strokeWidth="1.5" fill="none" opacity="0.6" />
+                <path d="M480 100 Q 520 280 340 330" stroke="#7c2d12" strokeWidth="1.2" fill="none" opacity="0.5" />
               </svg>
+
+              {/* hanging polaroid (left) with wooden clip */}
+              <div className="absolute top-[14%] left-[10%] rotate-[-5deg] z-10">
+                <div className="absolute -top-4 left-1/2 -translate-x-1/2 w-3 h-9 bg-[#d2b48c] border border-black/10 shadow-sm rounded-sm z-30">
+                  <div className="absolute top-2 inset-x-0.5 h-px bg-black/20" />
+                  <div className="absolute bottom-2 inset-x-0.5 h-px bg-black/20" />
+                  <div className="absolute top-1/2 -translate-y-1/2 inset-x-0 h-1.5 bg-black/10" />
+                </div>
+                <div className="bg-[#f9f9f9] p-2 pb-7 shadow-[5px_10px_15px_rgba(0,0,0,0.2)] border border-black/5">
+                  <div className="w-24 h-24 bg-gradient-to-br from-stone-400 via-stone-500 to-stone-700 grayscale" />
+                </div>
+              </div>
+
+              {/* sticky note */}
+              <div className="absolute top-[10%] right-[18%] rotate-[3deg] z-10">
+                <div className="bg-[#ffff88] w-32 h-32 p-4 shadow-[4px_4px_10px_rgba(0,0,0,0.15)] flex items-center justify-center text-center relative">
+                  <div className="absolute bottom-0 right-0 w-3 h-3 bg-black/5 rounded-tl-lg" />
+                  <p className="font-display text-base leading-snug text-[#5d5a2d] lowercase">mess carries meaning.</p>
+                  <div className="absolute top-1.5 left-1/2 -translate-x-1/2 w-3 h-3">
+                    <div className="w-full h-full bg-red-600 rounded-full shadow-inner ring-1 ring-red-800" />
+                    <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-0.5 h-0.5 bg-white/60 rounded-full" />
+                  </div>
+                </div>
+              </div>
+
+              {/* taped polaroid (bottom) */}
+              <div className="absolute bottom-[6%] left-[22%] rotate-[8deg] z-20">
+                <div className="bg-white p-2 pb-7 shadow-[8px_12px_20px_rgba(0,0,0,0.25)] border border-black/5">
+                  <div className="w-32 h-20 bg-gradient-to-tr from-stone-300 via-stone-400 to-stone-500" />
+                </div>
+                {/* jagged pink washi tape */}
+                <div
+                  className="absolute -top-2 -left-5 w-16 h-5 bg-[#f472b6]/80 rotate-[-35deg] shadow-sm mix-blend-multiply"
+                  style={{
+                    clipPath:
+                      "polygon(0% 10%, 4% 0%, 12% 12%, 18% 2%, 25% 15%, 32% 0%, 40% 10%, 48% 2%, 55% 18%, 62% 0%, 70% 12%, 78% 2%, 85% 15%, 92% 0%, 100% 10%, 100% 90%, 94% 100%, 86% 88%, 79% 98%, 72% 85%, 65% 100%, 58% 88%, 51% 98%, 44% 82%, 36% 100%, 28% 88%, 20% 98%, 12% 82%, 5% 100%, 0% 90%)",
+                  }}
+                />
+              </div>
+
+              {/* torn paper scrap */}
+              <div className="absolute bottom-[18%] right-[8%] rotate-[-12deg] z-10">
+                <div
+                  className="bg-[#ebe7e0] w-24 h-16 p-2 shadow-md border-l-2 border-black/5"
+                  style={{
+                    clipPath:
+                      "polygon(2% 2%, 98% 0%, 100% 98%, 85% 100%, 72% 95%, 58% 100%, 45% 92%, 30% 98%, 15% 90%, 0% 100%)",
+                  }}
+                >
+                  <div className="space-y-1 opacity-40">
+                    <div className="h-1 w-full bg-black/20 rounded-full" />
+                    <div className="h-1 w-4/5 bg-black/20 rounded-full" />
+                    <div className="h-1 w-full bg-black/20 rounded-full" />
+                  </div>
+                </div>
+              </div>
+
+              {/* clipped artifact ticket */}
+              <div className="absolute top-[20%] right-[4%] rotate-[15deg] z-10">
+                <div className="absolute -top-3 left-1/2 -translate-x-1/2 w-2.5 h-7 bg-[#c19a6b] border border-black/10 shadow-sm rounded-sm z-30" />
+                <div className="bg-[#f3f4f6] w-20 h-20 p-1.5 shadow-lg border-t-4 border-[#e5e7eb]">
+                  <div className="w-full h-full border border-black/5 flex flex-col items-center justify-center">
+                    <span className="font-mono text-[7px] text-black/40 tracking-widest uppercase">artifact</span>
+                    <div className="w-8 h-px bg-black/10 my-1" />
+                    <span className="font-mono text-[6px] text-black/30">00429-A</span>
+                  </div>
+                </div>
+              </div>
+
+              {/* scuff specks */}
+              <div className="absolute top-1/4 right-1/4 w-1 h-1 bg-black/10 rounded-full blur-[1px]" />
+              <div className="absolute bottom-1/3 left-1/2 w-2 h-0.5 bg-black/5 rotate-45" />
             </div>
           </div>
         </div>
