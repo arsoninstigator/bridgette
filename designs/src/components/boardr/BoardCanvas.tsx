@@ -44,6 +44,7 @@ export function BoardCanvas({
   selectedIds,
   stringMode,
   stringFromId,
+  gallery,
   onSelect,
   onMove,
   onMoveMany,
