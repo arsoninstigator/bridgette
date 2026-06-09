@@ -123,7 +123,7 @@ function Index() {
           {/* Mini diorama — tactile scrapboard */}
           <div className="md:col-span-5 relative">
             <div
-              className="relative w-full max-w-[520px] mx-auto aspect-[560/380] rounded-xl bg-board-cork overflow-hidden border-[12px] border-[#8d6a4a] ring-1 ring-black/10 shadow-[0_20px_50px_rgba(0,0,0,0.25)]"
+              className="relative w-full max-w-[520px] mx-auto h-[340px] rounded-xl bg-board-cork overflow-hidden border-[12px] border-[#8d6a4a] ring-1 ring-black/10 shadow-[0_20px_50px_rgba(0,0,0,0.25)]"
             >
               {/* sagging strings */}
               <svg className="absolute inset-0 w-full h-full pointer-events-none z-20" viewBox="0 0 560 380" fill="none" preserveAspectRatio="none">
