@@ -1,4 +1,4 @@
-import { Link, useLocation } from "@tanstack/react-router";
+import { Link, useLocation, useNavigate } from "@tanstack/react-router";
 import { useAuth } from "@/hooks/useAuth";
 import {
   DropdownMenu,
@@ -24,6 +24,7 @@ type NavTo =
 export function SiteHeader() {
   const { pathname } = useLocation();
   const { user, signOut } = useAuth();
+  const navigate = useNavigate();
   const NavLink = ({ to, label }: { to: NavTo; label: string }) => (
     <Link
       to={to}
@@ -64,11 +65,13 @@ export function SiteHeader() {
             </DropdownMenuTrigger>
             <DropdownMenuContent align="end" className="min-w-[200px]">
               {otherRoutes.map((r) => (
-                <DropdownMenuItem key={r.to} asChild>
-                  <Link to={r.to} className="flex flex-col items-start gap-0.5 cursor-pointer">
-                    <span className="font-mono text-[11px] uppercase tracking-[0.18em]">{r.label}</span>
-                    <span className="font-mono text-[10px] lowercase text-muted-foreground">{r.blurb}</span>
-                  </Link>
+                <DropdownMenuItem
+                  key={r.to}
+                  onSelect={() => navigate({ to: r.to })}
+                  className="flex flex-col items-start gap-0.5 cursor-pointer"
+                >
+                  <span className="font-mono text-[11px] uppercase tracking-[0.18em]">{r.label}</span>
+                  <span className="font-mono text-[10px] lowercase text-muted-foreground">{r.blurb}</span>
                 </DropdownMenuItem>
               ))}
             </DropdownMenuContent>
