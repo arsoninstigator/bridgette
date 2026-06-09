@@ -443,7 +443,7 @@ function renderAssetBody(
               }}
             >
               {!a.imageUrl && onPatch && (
-                <PlusOverlay interactive={interactive} onPick={(d) => onPatch({ imageUrl: d })} />
+                <PlusOverlay interactive={interactive} gallery={gallery} onPick={(d) => onPatch({ imageUrl: d })} />
               )}
             </div>
           )}
@@ -514,7 +514,7 @@ function renderAssetBody(
               }}
             >
               {!a.imageUrl && onPatch && (
-                <PlusOverlay interactive={interactive} onPick={(d) => onPatch({ imageUrl: d })} />
+                <PlusOverlay interactive={interactive} gallery={gallery} onPick={(d) => onPatch({ imageUrl: d })} />
               )}
             </div>
           )}
@@ -772,7 +772,7 @@ function renderFrame(
       {outerEl}
       <div style={innerStyle}>
         {!a.imageUrl && onPatch && (
-          <PlusOverlay interactive={interactive} onPick={(d) => onPatch({ imageUrl: d })} />
+          <PlusOverlay interactive={interactive} gallery={gallery} onPick={(d) => onPatch({ imageUrl: d })} />
         )}
       </div>
     </div>
