@@ -706,6 +706,17 @@ function Editor({ board, setBoard }: { board: Board; setBoard: (b: Board) => voi
                 selectedIds={selectedIds}
                 stringMode={stringMode}
                 stringFromId={stringFromId}
+                gallery={(() => {
+                  const urls = new Set<string>();
+                  const collect = (arr?: { imageUrl?: string; imageUrl2?: string; imageUrl3?: string; imageUrl4?: string }[]) => {
+                    arr?.forEach((a) => {
+                      [a.imageUrl, a.imageUrl2, a.imageUrl3, a.imageUrl4].forEach((u) => { if (u) urls.add(u); });
+                    });
+                  };
+                  collect(board.assets);
+                  Object.values(board.pageAssets || {}).forEach((pc) => collect(pc?.assets));
+                  return Array.from(urls);
+                })()}
                 onSelect={(id, additive) => {
                   toggleSelect(id, additive);
                   if (id && !additive) setShowSettings(true);
