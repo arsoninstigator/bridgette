@@ -3,6 +3,12 @@ import { Lock } from "lucide-react";
 import type { AssetBase } from "../../lib/boardr/types";
 import pushpinAsset from "@/assets/pushpin.svg.asset.json";
 import woodenClipAsset from "@/assets/wooden-clip.svg.asset.json";
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog";
 
 // Hue-rotate mapping for recoloring the (raster-inside-svg) pushpin which is
 // natively red. Values are approximate so the pin still reads as a tack.
