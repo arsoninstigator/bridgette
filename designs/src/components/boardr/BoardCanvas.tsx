@@ -20,6 +20,7 @@ interface Props {
   selectedIds?: string[];
   stringMode?: boolean;
   stringFromId?: string | null;
+  gallery?: string[];
   onSelect?: (id: string | null, additive?: boolean) => void;
   onMove?: (id: string, x: number, y: number) => void;
   onMoveMany?: (moves: { id: string; x: number; y: number }[]) => void;
