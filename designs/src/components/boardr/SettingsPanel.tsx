@@ -324,8 +324,32 @@ function ContentTab({ asset, onChange }: { asset: AssetBase; onChange: (p: Parti
               />
             </label>
           </Field>
+          <Field>
+            <Label>Repeating text (overlay)</Label>
+            <input
+              value={asset.tapePattern ?? ""}
+              onChange={(e) => onChange({ tapePattern: e.target.value })}
+              placeholder="e.g. CRIME SCENE DO NOT CROSS"
+              className="w-full rounded-md border border-input bg-background p-2 text-xs font-mono"
+            />
+          </Field>
+          {asset.tapePattern && (
+            <Field>
+              <ColorField
+                label="Text color"
+                value={asset.tapeTextColor}
+                presets={["#0a0a0a", "#fef3c7", "#ffffff", "#b91c1c", "#1e3a8a"]}
+                onChange={(c) => onChange({ tapeTextColor: c })}
+              />
+            </Field>
+          )}
+          <Field>
+            <Label>Pattern image (tiles horizontally)</Label>
+            <ImageInput value={asset.imageUrl} onChange={(v) => onChange({ imageUrl: v })} />
+          </Field>
         </>
       )}
+      {asset.kind === "block" && <BlockContent asset={asset} onChange={onChange} />}
       {asset.kind === "frame" && (
         <>
           <Field>
