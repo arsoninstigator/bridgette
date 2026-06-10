@@ -1935,6 +1935,14 @@ function LibraryPreview({ kind, extra, large }: { kind: AssetKind; extra?: Parti
           <div className="absolute" style={{ inset: 4, background: "linear-gradient(135deg,#f5efe5,#e8e0d2)" }} />
         </div>
       );
+    case "block": {
+      const bt = (extra as Partial<AssetBase> | undefined)?.blockType || "table";
+      return (
+        <div className="rounded-sm analog-shadow-sm grid place-items-center font-mono text-[8px] lowercase text-stone-700" style={{ width: 46 * scale, height: 34 * scale, background: "#fbf7ec", padding: 4 }}>
+          {bt}
+        </div>
+      );
+    }
   }
 }
 
