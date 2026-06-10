@@ -2225,6 +2225,14 @@ function SubheadingGroup({
   );
 }
 
+function BlockMini({ label }: { label: string }) {
+  return (
+    <div className="rounded-sm grid place-items-center font-mono text-[9px] lowercase text-stone-700" style={{ width: 56, height: 28, background: "#fbf7ec", border: "1px solid #c9b99a" }}>
+      {label}
+    </div>
+  );
+}
+
 function StubBlockTile({ label }: { label: string }) {
   return (
     <div
