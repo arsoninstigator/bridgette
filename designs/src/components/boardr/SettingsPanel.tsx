@@ -598,3 +598,40 @@ function Toggle({ label, checked, onChange }: { label: string; checked: boolean;
     </label>
   );
 }
+
+function BlockContent({ asset, onChange }: { asset: AssetBase; onChange: (p: Partial<AssetBase>) => void }) {
+  const t = asset.blockType || "table";
+  return (
+    <>
+      <Field>
+        <Label>Block type</Label>
+        <div className="grid grid-cols-3 gap-1.5">
+          {(["table", "chips", "tags", "accordion", "tabs"] as const).map((bt) => (
+            <button
+              key={bt}
+              onClick={() => onChange({ blockType: bt })}
+              className={`rounded border px-2 py-1.5 font-mono text-[10px] lowercase ${
+                t === bt ? "border-stone-900 bg-accent/40" : "border-border hover:bg-black/5"
+              }`}
+            >
+              {bt}
+            </button>
+          ))}
+        </div>
+      </Field>
+      <Field>
+        <Label>Data (JSON)</Label>
+        <textarea
+          value={asset.blockData ?? ""}
+          onChange={(e) => onChange({ blockData: e.target.value })}
+          rows={10}
+          spellCheck={false}
+          className="w-full rounded-md border border-input bg-background p-2 text-xs font-mono"
+        />
+        <p className="mt-1 font-mono text-[9px] text-muted-foreground">
+          shape: table=&#123;headers,rows&#125;, chips/tags=&#123;items&#125;, accordion=&#123;items:[&#123;q,a&#125;]&#125;, tabs=&#123;items:[&#123;label,body&#125;]&#125;
+        </p>
+      </Field>
+    </>
+  );
+}
