@@ -41,5 +41,40 @@ export function makeAsset(kind: AssetKind, x: number, y: number): AssetBase {
       };
     case "frame":
       return { ...base, width: 220, height: 260, frameStyle: "classic", color: "#3a2a1a", rotation: 0 };
+    case "block":
+      return { ...base, width: 280, height: 180, rotation: 0, blockType: "table", blockData: defaultBlockData("table") };
+  }
+}
+
+export function defaultBlockData(t: NonNullable<AssetBase["blockType"]>): string {
+  switch (t) {
+    case "table":
+      return JSON.stringify({
+        headers: ["name", "role", "since"],
+        rows: [
+          ["ada", "founder", "2019"],
+          ["lin", "design", "2021"],
+          ["jun", "ops", "2023"],
+        ],
+      });
+    case "chips":
+      return JSON.stringify({ items: ["new", "draft", "archived"] });
+    case "tags":
+      return JSON.stringify({ items: ["#analog", "#zine", "#collage", "#corkboard"] });
+    case "accordion":
+      return JSON.stringify({
+        items: [
+          { q: "what is this?", a: "a tactile, scrappy sectioned answer." },
+          { q: "how does it work?", a: "tap a row to expand on the published page." },
+        ],
+      });
+    case "tabs":
+      return JSON.stringify({
+        items: [
+          { label: "one", body: "first tab body." },
+          { label: "two", body: "second tab body." },
+          { label: "three", body: "third tab body." },
+        ],
+      });
   }
 }
