@@ -545,26 +545,66 @@ function renderAssetBody(
     case "washi": {
       const w = a.width ?? 200;
       const jagged = a.tapeJagged !== false; // default jagged on
-      // jagged V-shape edges: torn-tape look from the reference image
       const clip = jagged
         ? "polygon(0 18%, 3% 0, 6% 20%, 9% 0, 12% 20%, 15% 0, 18% 20%, 21% 0, 24% 20%, 27% 0, 30% 20%, 33% 0, 36% 20%, 39% 0, 42% 20%, 45% 0, 48% 20%, 51% 0, 54% 20%, 57% 0, 60% 20%, 63% 0, 66% 20%, 69% 0, 72% 20%, 75% 0, 78% 20%, 81% 0, 84% 20%, 87% 0, 90% 20%, 93% 0, 96% 20%, 99% 0, 100% 18%, 100% 82%, 99% 100%, 96% 80%, 93% 100%, 90% 80%, 87% 100%, 84% 80%, 81% 100%, 78% 80%, 75% 100%, 72% 80%, 69% 100%, 66% 80%, 63% 100%, 60% 80%, 57% 100%, 54% 80%, 51% 100%, 48% 80%, 45% 100%, 42% 80%, 39% 100%, 36% 80%, 33% 100%, 30% 80%, 27% 100%, 24% 80%, 21% 100%, 18% 80%, 15% 100%, 12% 80%, 9% 100%, 6% 80%, 3% 100%, 0 82%)"
         : undefined;
+      const h = 28;
+      const hasImage = !!a.imageUrl;
+      const hasPattern = !!a.tapePattern;
+      const textColor = a.tapeTextColor || "#1a1a1a";
+      // For pattern text, build a repeated string filling the width.
+      const patternRepeats = hasPattern
+        ? Math.max(2, Math.ceil(w / Math.max(40, (a.tapePattern!.length * 7))))
+        : 0;
+      const patternText = hasPattern
+        ? Array.from({ length: patternRepeats }, () => a.tapePattern).join(" \u2022 ")
+        : "";
       return (
         <div
           style={{
+            position: "relative",
             width: w,
-            height: 28,
+            height: h,
             background: a.tapeColor || "rgba(180,160,210,0.7)",
-            backgroundImage:
-              "repeating-linear-gradient(45deg, rgba(255,255,255,0.18) 0 6px, transparent 6px 12px)",
+            backgroundImage: hasImage
+              ? `url(${a.imageUrl})`
+              : "repeating-linear-gradient(45deg, rgba(255,255,255,0.18) 0 6px, transparent 6px 12px)",
+            backgroundSize: hasImage ? "auto 100%" : undefined,
+            backgroundRepeat: hasImage ? "repeat-x" : undefined,
             boxShadow: jagged
               ? "0 2px 4px rgba(0,0,0,0.15)"
               : "0 2px 6px rgba(0,0,0,0.18), inset 0 0 0 1px rgba(255,255,255,0.25)",
             opacity: a.opacity ?? 0.92,
             clipPath: clip,
+            overflow: "hidden",
           }}
-        />
+        >
+          {hasPattern && (
+            <div
+              style={{
+                position: "absolute",
+                inset: 0,
+                display: "flex",
+                alignItems: "center",
+                justifyContent: "center",
+                color: textColor,
+                fontFamily: "ui-monospace, SFMono-Regular, Menlo, monospace",
+                fontWeight: 800,
+                fontSize: 11,
+                letterSpacing: "0.08em",
+                textTransform: "uppercase",
+                whiteSpace: "nowrap",
+                pointerEvents: "none",
+              }}
+            >
+              {patternText}
+            </div>
+          )}
+        </div>
       );
+    }
+    case "block": {
+      return renderBlock(a);
     }
     case "frame": {
       return renderFrame(a, interactive, onPatch, gallery);
