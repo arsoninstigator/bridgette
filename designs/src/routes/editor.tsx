@@ -1599,6 +1599,9 @@ function LibraryPanel({
                 <span className="font-mono text-[10px] lowercase text-center text-muted-foreground leading-tight">{it.label}</span>
               </button>
             ))}
+            {set.id === "washi" && (
+              <CustomWashiTile onCreate={(extra) => onAdd("washi", extra, set.id)} />
+            )}
           </div>
         )}
       </div>
