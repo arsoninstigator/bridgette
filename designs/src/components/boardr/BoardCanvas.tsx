@@ -30,7 +30,7 @@ interface Props {
   onAssetContextMenu?: (id: string, clientX: number, clientY: number) => void;
   onDropAsset?: (kind: AssetKind, x: number, y: number, extra?: Partial<AssetBase>) => void;
   onStringClick?: (stringId: string) => void;
-  drawWashi?: { tapeColor?: string } | null;
+  drawWashi?: { tapeColor?: string; tapePattern?: string; tapeTextColor?: string; imageUrl?: string } | null;
 }
 
 export function BoardCanvas({
@@ -129,7 +129,16 @@ export function BoardCanvas({
       const mx = (x1 + x2) / 2;
       const my = (y1 + y2) / 2;
       setDrawPreview(null);
-      onDropAsset!("washi", mx, my, { width: Math.round(len), rotation: rot, tapeColor: drawWashi?.tapeColor });
+      onDropAsset!("washi", mx, my, {
+        width: Math.round(len),
+        rotation: rot,
+        tapeColor: drawWashi?.tapeColor,
+        tapePattern: drawWashi?.tapePattern,
+        tapeTextColor: drawWashi?.tapeTextColor,
+        imageUrl: drawWashi?.imageUrl,
+        tapeJagged: drawWashi?.tapePattern || drawWashi?.imageUrl ? false : undefined,
+        opacity: drawWashi?.tapePattern || drawWashi?.imageUrl ? 1 : undefined,
+      });
     }
     window.addEventListener("pointermove", onMove);
     window.addEventListener("pointerup", onUp);

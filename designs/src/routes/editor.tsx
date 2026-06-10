@@ -34,7 +34,7 @@ import {
   saveBoard,
 } from "../lib/boardr/storage";
 import type { AssetBase, AssetKind, Board, BoardKind, StringConn } from "../lib/boardr/types";
-import { makeAsset, nextZ } from "../lib/boardr/factories";
+import { makeAsset, nextZ, defaultBlockData } from "../lib/boardr/factories";
 import { BoardCanvas } from "../components/boardr/BoardCanvas";
 import { SettingsPanel } from "../components/boardr/SettingsPanel";
 import { ContextMenu, ContextMenuTrigger, ContextMenuContent, ContextMenuItem } from "../components/ui/context-menu";
@@ -257,7 +257,7 @@ function Editor({ board, setBoard }: { board: Board; setBoard: (b: Board) => voi
   }
   const [surfaceStyle, setSurfaceStyle] = useState<SurfaceStyle>({ border: 0, borderColor: "#3a2b1f", borderStyle: "solid", radius: 2 });
   const [assetMenu, setAssetMenu] = useState<AssetMenuState>(null);
-  const [drawWashi, setDrawWashi] = useState<{ tapeColor?: string } | null>(null);
+  const [drawWashi, setDrawWashi] = useState<{ tapeColor?: string; tapePattern?: string; tapeTextColor?: string; imageUrl?: string } | null>(null);
   const [settingsFocus, setSettingsFocus] = useState<"content" | "mechanics" | "tape" | "pin" | undefined>(undefined);
 
   function setSelectedId(id: string | null) {
@@ -599,7 +599,8 @@ function Editor({ board, setBoard }: { board: Board; setBoard: (b: Board) => voi
                   onToggleFav={toggleFav}
                   onAdd={(kind, extra, setId) => {
                     if (kind === "washi") {
-                      setDrawWashi({ tapeColor: (extra as { tapeColor?: string } | undefined)?.tapeColor });
+                      const e = (extra as Partial<AssetBase> | undefined) || {};
+                      setDrawWashi({ tapeColor: e.tapeColor, tapePattern: e.tapePattern, tapeTextColor: e.tapeTextColor, imageUrl: e.imageUrl });
                     } else {
                       addAsset(kind, undefined, undefined, extra);
                     }
@@ -1448,6 +1449,8 @@ const LIBRARY_SETS: LibrarySet[] = [
       { id: "washi-rose", label: "rose", kind: "washi", extra: { tapeColor: "rgba(244,114,182,0.7)" } },
       { id: "washi-mint", label: "mint", kind: "washi", extra: { tapeColor: "rgba(134,239,172,0.75)" } },
       { id: "washi-amber", label: "amber", kind: "washi", extra: { tapeColor: "rgba(251,191,36,0.75)" } },
+      { id: "washi-crime", label: "crime scene", kind: "washi", extra: { tapeColor: "#facc15", tapePattern: "CRIME SCENE DO NOT CROSS", tapeTextColor: "#0a0a0a", tapeJagged: false, opacity: 1 } },
+      { id: "washi-caution", label: "caution", kind: "washi", extra: { tapeColor: "#fde047", tapePattern: "CAUTION", tapeTextColor: "#0a0a0a", tapeJagged: false, opacity: 1 } },
     ],
   },
   {
@@ -1596,6 +1599,9 @@ function LibraryPanel({
                 <span className="font-mono text-[10px] lowercase text-center text-muted-foreground leading-tight">{it.label}</span>
               </button>
             ))}
+            {set.id === "washi" && (
+              <CustomWashiTile onCreate={(extra) => onAdd("washi", extra, set.id)} />
+            )}
           </div>
         )}
       </div>
@@ -1905,8 +1911,19 @@ function LibraryPreview({ kind, extra, large }: { kind: AssetKind; extra?: Parti
       );
     case "paper":
       return <div className="analog-shadow-sm" style={{ width: 46 * scale, height: 36 * scale, background: color || "#fbf7ec", clipPath: "polygon(0 8%, 6% 0, 96% 4%, 100% 8%, 96% 96%, 90% 100%, 8% 96%, 0% 92%)" }} />;
-    case "washi":
-      return <div style={{ width: 50 * scale, height: 12 * scale, background: tape || "rgba(180,160,210,0.85)", backgroundImage: "repeating-linear-gradient(45deg, rgba(255,255,255,0.25) 0 4px, transparent 4px 8px)", transform: "rotate(-10deg)" }} />;
+    case "washi": {
+      const pattern = (extra as Partial<AssetBase> | undefined)?.tapePattern;
+      const txtColor = (extra as Partial<AssetBase> | undefined)?.tapeTextColor || "#0a0a0a";
+      return (
+        <div style={{ position: "relative", width: 60 * scale, height: 14 * scale, background: tape || "rgba(180,160,210,0.85)", backgroundImage: pattern ? undefined : "repeating-linear-gradient(45deg, rgba(255,255,255,0.25) 0 4px, transparent 4px 8px)", transform: "rotate(-6deg)", overflow: "hidden" }}>
+          {pattern && (
+            <div style={{ position: "absolute", inset: 0, display: "flex", alignItems: "center", justifyContent: "center", color: txtColor, fontFamily: "ui-monospace, monospace", fontWeight: 800, fontSize: 6 * scale, letterSpacing: "0.08em", textTransform: "uppercase", whiteSpace: "nowrap" }}>
+              {pattern}
+            </div>
+          )}
+        </div>
+      );
+    }
     case "pin":
       return <div className="rounded-full" style={{ width: 20 * scale, height: 20 * scale, background: "radial-gradient(circle at 30% 30%, #ff8a8a, #c0212a 60%, #6e0a10)", boxShadow: "0 2px 4px rgba(0,0,0,0.4)" }} />;
     case "shape":
@@ -1921,6 +1938,14 @@ function LibraryPreview({ kind, extra, large }: { kind: AssetKind; extra?: Parti
           <div className="absolute" style={{ inset: 4, background: "linear-gradient(135deg,#f5efe5,#e8e0d2)" }} />
         </div>
       );
+    case "block": {
+      const bt = (extra as Partial<AssetBase> | undefined)?.blockType || "table";
+      return (
+        <div className="rounded-sm analog-shadow-sm grid place-items-center font-mono text-[8px] lowercase text-stone-700" style={{ width: 46 * scale, height: 34 * scale, background: "#fbf7ec", padding: 4 }}>
+          {bt}
+        </div>
+      );
+    }
   }
 }
 
@@ -2203,6 +2228,95 @@ function SubheadingGroup({
   );
 }
 
+function BlockMini({ label }: { label: string }) {
+  return (
+    <div className="rounded-sm grid place-items-center font-mono text-[9px] lowercase text-stone-700" style={{ width: 56, height: 28, background: "#fbf7ec", border: "1px solid #c9b99a" }}>
+      {label}
+    </div>
+  );
+}
+
+function CustomWashiTile({ onCreate }: { onCreate: (extra: Partial<AssetBase>) => void }) {
+  const [open, setOpen] = useState(false);
+  const [color, setColor] = useState("#facc15");
+  const [text, setText] = useState("");
+  const [textColor, setTextColor] = useState("#0a0a0a");
+  const [imageUrl, setImageUrl] = useState("");
+  const fileRef = useRef<HTMLInputElement | null>(null);
+
+  function onFile(e: React.ChangeEvent<HTMLInputElement>) {
+    const f = e.target.files?.[0];
+    if (!f) return;
+    const fr = new FileReader();
+    fr.onload = () => setImageUrl(String(fr.result || ""));
+    fr.readAsDataURL(f);
+    e.target.value = "";
+  }
+
+  function create() {
+    const extra: Partial<AssetBase> = {
+      tapeColor: color,
+      tapePattern: text || undefined,
+      tapeTextColor: textColor,
+      imageUrl: imageUrl || undefined,
+      tapeJagged: text || imageUrl ? false : undefined,
+      opacity: text || imageUrl ? 1 : undefined,
+    };
+    onCreate(extra);
+    setOpen(false);
+    setText(""); setImageUrl("");
+  }
+
+  return (
+    <>
+      <button
+        onClick={() => setOpen(true)}
+        className="flex flex-col items-center gap-2 rounded-md border border-dashed border-amber-700/50 bg-amber-50/40 px-2 py-3 hover:bg-amber-50/70 col-span-2"
+        title="custom tape"
+      >
+        <div className="h-12 grid place-items-center font-mono text-[10px] lowercase text-amber-900">+ custom tape (image or pattern)</div>
+      </button>
+      {open && (
+        <div className="fixed inset-0 z-50 bg-black/60 grid place-items-center" onClick={() => setOpen(false)}>
+          <div onClick={(e) => e.stopPropagation()} className="w-[420px] max-w-[90vw] rounded-md bg-card border border-border p-4 space-y-3">
+            <div className="font-display lowercase text-lg">custom washi tape</div>
+            <div>
+              <div className="font-mono text-[10px] lowercase text-muted-foreground mb-1">tape color</div>
+              <div className="flex items-center gap-2">
+                <input type="color" value={/^#[0-9a-fA-F]{6}$/.test(color) ? color : "#facc15"} onChange={(e) => setColor(e.target.value)} className="h-8 w-10 rounded border border-border bg-transparent" />
+                <input value={color} onChange={(e) => setColor(e.target.value)} className="flex-1 rounded border border-input bg-background px-2 py-1 font-mono text-[11px]" placeholder="#hex or rgba(…)" />
+              </div>
+            </div>
+            <div>
+              <div className="font-mono text-[10px] lowercase text-muted-foreground mb-1">repeating text (optional)</div>
+              <input value={text} onChange={(e) => setText(e.target.value)} placeholder="e.g. fragile · do not bend" className="w-full rounded border border-input bg-background px-2 py-1 font-mono text-[11px]" />
+              {text && (
+                <div className="mt-2 flex items-center gap-2">
+                  <span className="font-mono text-[10px] text-muted-foreground">text color</span>
+                  <input type="color" value={textColor} onChange={(e) => setTextColor(e.target.value)} className="h-7 w-9 rounded border border-border" />
+                </div>
+              )}
+            </div>
+            <div>
+              <div className="font-mono text-[10px] lowercase text-muted-foreground mb-1">or pattern image (tiles horizontally)</div>
+              <div className="flex items-center gap-2">
+                <button onClick={() => fileRef.current?.click()} className="rounded border border-input bg-background px-2.5 py-1.5 font-mono text-[10px] uppercase tracking-wider hover:bg-accent">upload</button>
+                <input value={imageUrl} onChange={(e) => setImageUrl(e.target.value)} placeholder="https://…" className="flex-1 rounded border border-input bg-background px-2 py-1 font-mono text-[11px]" />
+                <input ref={fileRef} type="file" accept="image/*" onChange={onFile} className="hidden" />
+              </div>
+              {imageUrl && <div className="mt-2 h-8 rounded border border-input" style={{ backgroundImage: `url(${imageUrl})`, backgroundSize: "auto 100%", backgroundRepeat: "repeat-x" }} />}
+            </div>
+            <div className="flex justify-end gap-2 pt-1">
+              <button onClick={() => setOpen(false)} className="rounded border border-input px-3 py-1.5 font-mono text-[11px] lowercase">cancel</button>
+              <button onClick={create} className="rounded bg-stone-900 text-stone-50 px-3 py-1.5 font-mono text-[11px] lowercase">draw tape</button>
+            </div>
+          </div>
+        </div>
+      )}
+    </>
+  );
+}
+
 function StubBlockTile({ label }: { label: string }) {
   return (
     <div
@@ -2263,9 +2377,21 @@ function BlocksPanel({ onAdd }: { onAdd: AddFn }) {
         ))}
       </SubheadingGroup>
       <SubheadingGroup title="data & ui" defaultOpen={false}>
-        {["table", "chips", "tags", "accordion", "tabs"].map((b) => (
-          <StubBlockTile key={b} label={b} />
-        ))}
+        <DraggableItem kind="block" label="table" onAdd={onAdd} extra={{ blockType: "table", blockData: defaultBlockData("table"), width: 280, height: 160 }}>
+          <BlockMini label="table" />
+        </DraggableItem>
+        <DraggableItem kind="block" label="chips" onAdd={onAdd} extra={{ blockType: "chips", blockData: defaultBlockData("chips"), width: 240, height: 90 }}>
+          <BlockMini label="chips" />
+        </DraggableItem>
+        <DraggableItem kind="block" label="tags" onAdd={onAdd} extra={{ blockType: "tags", blockData: defaultBlockData("tags"), width: 240, height: 90 }}>
+          <BlockMini label="tags" />
+        </DraggableItem>
+        <DraggableItem kind="block" label="accordion" onAdd={onAdd} extra={{ blockType: "accordion", blockData: defaultBlockData("accordion"), width: 280, height: 160 }}>
+          <BlockMini label="accordion" />
+        </DraggableItem>
+        <DraggableItem kind="block" label="tabs" onAdd={onAdd} extra={{ blockType: "tabs", blockData: defaultBlockData("tabs"), width: 280, height: 160 }}>
+          <BlockMini label="tabs" />
+        </DraggableItem>
       </SubheadingGroup>
     </div>
   );

@@ -183,6 +183,8 @@ function defaultSize(a: AssetBase): { w: number; h: number } {
       return { w: a.width ?? 320, h: a.height ?? 40 };
     case "frame":
       return { w: a.width ?? 220, h: a.height ?? 260 };
+    case "block":
+      return { w: a.width ?? 280, h: a.height ?? 180 };
   }
 }
 
@@ -543,26 +545,66 @@ function renderAssetBody(
     case "washi": {
       const w = a.width ?? 200;
       const jagged = a.tapeJagged !== false; // default jagged on
-      // jagged V-shape edges: torn-tape look from the reference image
       const clip = jagged
         ? "polygon(0 18%, 3% 0, 6% 20%, 9% 0, 12% 20%, 15% 0, 18% 20%, 21% 0, 24% 20%, 27% 0, 30% 20%, 33% 0, 36% 20%, 39% 0, 42% 20%, 45% 0, 48% 20%, 51% 0, 54% 20%, 57% 0, 60% 20%, 63% 0, 66% 20%, 69% 0, 72% 20%, 75% 0, 78% 20%, 81% 0, 84% 20%, 87% 0, 90% 20%, 93% 0, 96% 20%, 99% 0, 100% 18%, 100% 82%, 99% 100%, 96% 80%, 93% 100%, 90% 80%, 87% 100%, 84% 80%, 81% 100%, 78% 80%, 75% 100%, 72% 80%, 69% 100%, 66% 80%, 63% 100%, 60% 80%, 57% 100%, 54% 80%, 51% 100%, 48% 80%, 45% 100%, 42% 80%, 39% 100%, 36% 80%, 33% 100%, 30% 80%, 27% 100%, 24% 80%, 21% 100%, 18% 80%, 15% 100%, 12% 80%, 9% 100%, 6% 80%, 3% 100%, 0 82%)"
         : undefined;
+      const h = 28;
+      const hasImage = !!a.imageUrl;
+      const hasPattern = !!a.tapePattern;
+      const textColor = a.tapeTextColor || "#1a1a1a";
+      // For pattern text, build a repeated string filling the width.
+      const patternRepeats = hasPattern
+        ? Math.max(2, Math.ceil(w / Math.max(40, (a.tapePattern!.length * 7))))
+        : 0;
+      const patternText = hasPattern
+        ? Array.from({ length: patternRepeats }, () => a.tapePattern).join(" \u2022 ")
+        : "";
       return (
         <div
           style={{
+            position: "relative",
             width: w,
-            height: 28,
+            height: h,
             background: a.tapeColor || "rgba(180,160,210,0.7)",
-            backgroundImage:
-              "repeating-linear-gradient(45deg, rgba(255,255,255,0.18) 0 6px, transparent 6px 12px)",
+            backgroundImage: hasImage
+              ? `url(${a.imageUrl})`
+              : "repeating-linear-gradient(45deg, rgba(255,255,255,0.18) 0 6px, transparent 6px 12px)",
+            backgroundSize: hasImage ? "auto 100%" : undefined,
+            backgroundRepeat: hasImage ? "repeat-x" : undefined,
             boxShadow: jagged
               ? "0 2px 4px rgba(0,0,0,0.15)"
               : "0 2px 6px rgba(0,0,0,0.18), inset 0 0 0 1px rgba(255,255,255,0.25)",
             opacity: a.opacity ?? 0.92,
             clipPath: clip,
+            overflow: "hidden",
           }}
-        />
+        >
+          {hasPattern && (
+            <div
+              style={{
+                position: "absolute",
+                inset: 0,
+                display: "flex",
+                alignItems: "center",
+                justifyContent: "center",
+                color: textColor,
+                fontFamily: "ui-monospace, SFMono-Regular, Menlo, monospace",
+                fontWeight: 800,
+                fontSize: 11,
+                letterSpacing: "0.08em",
+                textTransform: "uppercase",
+                whiteSpace: "nowrap",
+                pointerEvents: "none",
+              }}
+            >
+              {patternText}
+            </div>
+          )}
+        </div>
       );
+    }
+    case "block": {
+      return renderBlock(a);
     }
     case "frame": {
       return renderFrame(a, interactive, onPatch, gallery);
@@ -645,6 +687,120 @@ function renderAssetBody(
       );
     }
   }
+}
+
+function parseBlockData<T = unknown>(raw?: string): T | null {
+  if (!raw) return null;
+  try { return JSON.parse(raw) as T; } catch { return null; }
+}
+
+function renderBlock(a: AssetBase): React.ReactNode {
+  const w = a.width ?? 280;
+  const h = a.height ?? 180;
+  const t = a.blockType || "table";
+  const wrap: React.CSSProperties = {
+    width: w,
+    minHeight: h,
+    background: "#fbf7ec",
+    borderRadius: 3,
+    padding: 10,
+    boxShadow: "0 1px 2px rgba(40,25,10,0.18), 0 6px 14px rgba(40,25,10,0.10)",
+    fontFamily: "ui-monospace, SFMono-Regular, Menlo, monospace",
+    color: "#1f1a14",
+  };
+  if (t === "table") {
+    const d = parseBlockData<{ headers: string[]; rows: string[][] }>(a.blockData) || { headers: [], rows: [] };
+    return (
+      <div style={wrap}>
+        <table style={{ width: "100%", borderCollapse: "collapse", fontSize: 11 }}>
+          <thead>
+            <tr>
+              {d.headers.map((h, i) => (
+                <th key={i} style={{ textAlign: "left", borderBottom: "1px solid #1f1a14", padding: "4px 6px", textTransform: "lowercase", letterSpacing: "0.06em" }}>{h}</th>
+              ))}
+            </tr>
+          </thead>
+          <tbody>
+            {d.rows.map((row, ri) => (
+              <tr key={ri}>
+                {row.map((c, ci) => (
+                  <td key={ci} style={{ borderBottom: "1px dashed #c9b99a", padding: "4px 6px" }}>{c}</td>
+                ))}
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      </div>
+    );
+  }
+  if (t === "chips" || t === "tags") {
+    const d = parseBlockData<{ items: string[] }>(a.blockData) || { items: [] };
+    const isTag = t === "tags";
+    return (
+      <div style={{ ...wrap, display: "flex", flexWrap: "wrap", gap: 6, alignContent: "flex-start" }}>
+        {d.items.map((it, i) => (
+          <span
+            key={i}
+            style={{
+              fontSize: 11,
+              padding: isTag ? "3px 8px" : "4px 10px",
+              borderRadius: isTag ? 2 : 999,
+              background: isTag ? "transparent" : "#1f1a14",
+              color: isTag ? "#1f1a14" : "#fbf7ec",
+              border: isTag ? "1px dashed #1f1a14" : "none",
+              textTransform: "lowercase",
+              letterSpacing: "0.04em",
+            }}
+          >
+            {it}
+          </span>
+        ))}
+      </div>
+    );
+  }
+  if (t === "accordion") {
+    const d = parseBlockData<{ items: { q: string; a: string }[] }>(a.blockData) || { items: [] };
+    return (
+      <div style={wrap}>
+        {d.items.map((it, i) => (
+          <div key={i} style={{ borderBottom: "1px solid #c9b99a", padding: "6px 0" }}>
+            <div style={{ fontSize: 11, fontWeight: 700, display: "flex", justifyContent: "space-between" }}>
+              <span style={{ textTransform: "lowercase" }}>{it.q}</span>
+              <span>+</span>
+            </div>
+            <div style={{ fontSize: 11, marginTop: 4, color: "#4b4337" }}>{it.a}</div>
+          </div>
+        ))}
+      </div>
+    );
+  }
+  if (t === "tabs") {
+    const d = parseBlockData<{ items: { label: string; body: string }[] }>(a.blockData) || { items: [] };
+    const active = d.items[0];
+    return (
+      <div style={wrap}>
+        <div style={{ display: "flex", gap: 4, borderBottom: "1px solid #1f1a14", marginBottom: 8 }}>
+          {d.items.map((it, i) => (
+            <div
+              key={i}
+              style={{
+                fontSize: 11,
+                padding: "4px 8px",
+                background: i === 0 ? "#1f1a14" : "transparent",
+                color: i === 0 ? "#fbf7ec" : "#1f1a14",
+                borderRadius: "2px 2px 0 0",
+                textTransform: "lowercase",
+              }}
+            >
+              {it.label}
+            </div>
+          ))}
+        </div>
+        <div style={{ fontSize: 11, color: "#4b4337" }}>{active?.body}</div>
+      </div>
+    );
+  }
+  return <div style={wrap} />;
 }
 
 function renderFrame(
