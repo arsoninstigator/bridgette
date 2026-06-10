@@ -1908,8 +1908,19 @@ function LibraryPreview({ kind, extra, large }: { kind: AssetKind; extra?: Parti
       );
     case "paper":
       return <div className="analog-shadow-sm" style={{ width: 46 * scale, height: 36 * scale, background: color || "#fbf7ec", clipPath: "polygon(0 8%, 6% 0, 96% 4%, 100% 8%, 96% 96%, 90% 100%, 8% 96%, 0% 92%)" }} />;
-    case "washi":
-      return <div style={{ width: 50 * scale, height: 12 * scale, background: tape || "rgba(180,160,210,0.85)", backgroundImage: "repeating-linear-gradient(45deg, rgba(255,255,255,0.25) 0 4px, transparent 4px 8px)", transform: "rotate(-10deg)" }} />;
+    case "washi": {
+      const pattern = (extra as Partial<AssetBase> | undefined)?.tapePattern;
+      const txtColor = (extra as Partial<AssetBase> | undefined)?.tapeTextColor || "#0a0a0a";
+      return (
+        <div style={{ position: "relative", width: 60 * scale, height: 14 * scale, background: tape || "rgba(180,160,210,0.85)", backgroundImage: pattern ? undefined : "repeating-linear-gradient(45deg, rgba(255,255,255,0.25) 0 4px, transparent 4px 8px)", transform: "rotate(-6deg)", overflow: "hidden" }}>
+          {pattern && (
+            <div style={{ position: "absolute", inset: 0, display: "flex", alignItems: "center", justifyContent: "center", color: txtColor, fontFamily: "ui-monospace, monospace", fontWeight: 800, fontSize: 6 * scale, letterSpacing: "0.08em", textTransform: "uppercase", whiteSpace: "nowrap" }}>
+              {pattern}
+            </div>
+          )}
+        </div>
+      );
+    }
     case "pin":
       return <div className="rounded-full" style={{ width: 20 * scale, height: 20 * scale, background: "radial-gradient(circle at 30% 30%, #ff8a8a, #c0212a 60%, #6e0a10)", boxShadow: "0 2px 4px rgba(0,0,0,0.4)" }} />;
     case "shape":
