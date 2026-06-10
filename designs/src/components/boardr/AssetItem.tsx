@@ -689,6 +689,120 @@ function renderAssetBody(
   }
 }
 
+function parseBlockData<T = unknown>(raw?: string): T | null {
+  if (!raw) return null;
+  try { return JSON.parse(raw) as T; } catch { return null; }
+}
+
+function renderBlock(a: AssetBase): React.ReactNode {
+  const w = a.width ?? 280;
+  const h = a.height ?? 180;
+  const t = a.blockType || "table";
+  const wrap: React.CSSProperties = {
+    width: w,
+    minHeight: h,
+    background: "#fbf7ec",
+    borderRadius: 3,
+    padding: 10,
+    boxShadow: "0 1px 2px rgba(40,25,10,0.18), 0 6px 14px rgba(40,25,10,0.10)",
+    fontFamily: "ui-monospace, SFMono-Regular, Menlo, monospace",
+    color: "#1f1a14",
+  };
+  if (t === "table") {
+    const d = parseBlockData<{ headers: string[]; rows: string[][] }>(a.blockData) || { headers: [], rows: [] };
+    return (
+      <div style={wrap}>
+        <table style={{ width: "100%", borderCollapse: "collapse", fontSize: 11 }}>
+          <thead>
+            <tr>
+              {d.headers.map((h, i) => (
+                <th key={i} style={{ textAlign: "left", borderBottom: "1px solid #1f1a14", padding: "4px 6px", textTransform: "lowercase", letterSpacing: "0.06em" }}>{h}</th>
+              ))}
+            </tr>
+          </thead>
+          <tbody>
+            {d.rows.map((row, ri) => (
+              <tr key={ri}>
+                {row.map((c, ci) => (
+                  <td key={ci} style={{ borderBottom: "1px dashed #c9b99a", padding: "4px 6px" }}>{c}</td>
+                ))}
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      </div>
+    );
+  }
+  if (t === "chips" || t === "tags") {
+    const d = parseBlockData<{ items: string[] }>(a.blockData) || { items: [] };
+    const isTag = t === "tags";
+    return (
+      <div style={{ ...wrap, display: "flex", flexWrap: "wrap", gap: 6, alignContent: "flex-start" }}>
+        {d.items.map((it, i) => (
+          <span
+            key={i}
+            style={{
+              fontSize: 11,
+              padding: isTag ? "3px 8px" : "4px 10px",
+              borderRadius: isTag ? 2 : 999,
+              background: isTag ? "transparent" : "#1f1a14",
+              color: isTag ? "#1f1a14" : "#fbf7ec",
+              border: isTag ? "1px dashed #1f1a14" : "none",
+              textTransform: "lowercase",
+              letterSpacing: "0.04em",
+            }}
+          >
+            {it}
+          </span>
+        ))}
+      </div>
+    );
+  }
+  if (t === "accordion") {
+    const d = parseBlockData<{ items: { q: string; a: string }[] }>(a.blockData) || { items: [] };
+    return (
+      <div style={wrap}>
+        {d.items.map((it, i) => (
+          <div key={i} style={{ borderBottom: "1px solid #c9b99a", padding: "6px 0" }}>
+            <div style={{ fontSize: 11, fontWeight: 700, display: "flex", justifyContent: "space-between" }}>
+              <span style={{ textTransform: "lowercase" }}>{it.q}</span>
+              <span>+</span>
+            </div>
+            <div style={{ fontSize: 11, marginTop: 4, color: "#4b4337" }}>{it.a}</div>
+          </div>
+        ))}
+      </div>
+    );
+  }
+  if (t === "tabs") {
+    const d = parseBlockData<{ items: { label: string; body: string }[] }>(a.blockData) || { items: [] };
+    const active = d.items[0];
+    return (
+      <div style={wrap}>
+        <div style={{ display: "flex", gap: 4, borderBottom: "1px solid #1f1a14", marginBottom: 8 }}>
+          {d.items.map((it, i) => (
+            <div
+              key={i}
+              style={{
+                fontSize: 11,
+                padding: "4px 8px",
+                background: i === 0 ? "#1f1a14" : "transparent",
+                color: i === 0 ? "#fbf7ec" : "#1f1a14",
+                borderRadius: "2px 2px 0 0",
+                textTransform: "lowercase",
+              }}
+            >
+              {it.label}
+            </div>
+          ))}
+        </div>
+        <div style={{ fontSize: 11, color: "#4b4337" }}>{active?.body}</div>
+      </div>
+    );
+  }
+  return <div style={wrap} />;
+}
+
 function renderFrame(
   a: AssetBase,
   interactive?: boolean,
