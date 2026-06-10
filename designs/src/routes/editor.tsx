@@ -2285,9 +2285,21 @@ function BlocksPanel({ onAdd }: { onAdd: AddFn }) {
         ))}
       </SubheadingGroup>
       <SubheadingGroup title="data & ui" defaultOpen={false}>
-        {["table", "chips", "tags", "accordion", "tabs"].map((b) => (
-          <StubBlockTile key={b} label={b} />
-        ))}
+        <DraggableItem kind="block" label="table" onAdd={onAdd} extra={{ blockType: "table", blockData: defaultBlockData("table"), width: 280, height: 160 }}>
+          <BlockMini label="table" />
+        </DraggableItem>
+        <DraggableItem kind="block" label="chips" onAdd={onAdd} extra={{ blockType: "chips", blockData: defaultBlockData("chips"), width: 240, height: 90 }}>
+          <BlockMini label="chips" />
+        </DraggableItem>
+        <DraggableItem kind="block" label="tags" onAdd={onAdd} extra={{ blockType: "tags", blockData: defaultBlockData("tags"), width: 240, height: 90 }}>
+          <BlockMini label="tags" />
+        </DraggableItem>
+        <DraggableItem kind="block" label="accordion" onAdd={onAdd} extra={{ blockType: "accordion", blockData: defaultBlockData("accordion"), width: 280, height: 160 }}>
+          <BlockMini label="accordion" />
+        </DraggableItem>
+        <DraggableItem kind="block" label="tabs" onAdd={onAdd} extra={{ blockType: "tabs", blockData: defaultBlockData("tabs"), width: 280, height: 160 }}>
+          <BlockMini label="tabs" />
+        </DraggableItem>
       </SubheadingGroup>
     </div>
   );
