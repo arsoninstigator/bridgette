@@ -257,7 +257,7 @@ function Editor({ board, setBoard }: { board: Board; setBoard: (b: Board) => voi
   }
   const [surfaceStyle, setSurfaceStyle] = useState<SurfaceStyle>({ border: 0, borderColor: "#3a2b1f", borderStyle: "solid", radius: 2 });
   const [assetMenu, setAssetMenu] = useState<AssetMenuState>(null);
-  const [drawWashi, setDrawWashi] = useState<{ tapeColor?: string } | null>(null);
+  const [drawWashi, setDrawWashi] = useState<{ tapeColor?: string; tapePattern?: string; tapeTextColor?: string; imageUrl?: string } | null>(null);
   const [settingsFocus, setSettingsFocus] = useState<"content" | "mechanics" | "tape" | "pin" | undefined>(undefined);
 
   function setSelectedId(id: string | null) {
@@ -599,7 +599,8 @@ function Editor({ board, setBoard }: { board: Board; setBoard: (b: Board) => voi
                   onToggleFav={toggleFav}
                   onAdd={(kind, extra, setId) => {
                     if (kind === "washi") {
-                      setDrawWashi({ tapeColor: (extra as { tapeColor?: string } | undefined)?.tapeColor });
+                      const e = (extra as Partial<AssetBase> | undefined) || {};
+                      setDrawWashi({ tapeColor: e.tapeColor, tapePattern: e.tapePattern, tapeTextColor: e.tapeTextColor, imageUrl: e.imageUrl });
                     } else {
                       addAsset(kind, undefined, undefined, extra);
                     }
@@ -1448,6 +1449,8 @@ const LIBRARY_SETS: LibrarySet[] = [
       { id: "washi-rose", label: "rose", kind: "washi", extra: { tapeColor: "rgba(244,114,182,0.7)" } },
       { id: "washi-mint", label: "mint", kind: "washi", extra: { tapeColor: "rgba(134,239,172,0.75)" } },
       { id: "washi-amber", label: "amber", kind: "washi", extra: { tapeColor: "rgba(251,191,36,0.75)" } },
+      { id: "washi-crime", label: "crime scene", kind: "washi", extra: { tapeColor: "#facc15", tapePattern: "CRIME SCENE DO NOT CROSS", tapeTextColor: "#0a0a0a", tapeJagged: false, opacity: 1 } },
+      { id: "washi-caution", label: "caution", kind: "washi", extra: { tapeColor: "#fde047", tapePattern: "CAUTION", tapeTextColor: "#0a0a0a", tapeJagged: false, opacity: 1 } },
     ],
   },
   {
