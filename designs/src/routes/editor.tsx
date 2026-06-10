@@ -2236,6 +2236,87 @@ function BlockMini({ label }: { label: string }) {
   );
 }
 
+function CustomWashiTile({ onCreate }: { onCreate: (extra: Partial<AssetBase>) => void }) {
+  const [open, setOpen] = useState(false);
+  const [color, setColor] = useState("#facc15");
+  const [text, setText] = useState("");
+  const [textColor, setTextColor] = useState("#0a0a0a");
+  const [imageUrl, setImageUrl] = useState("");
+  const fileRef = useRef<HTMLInputElement | null>(null);
+
+  function onFile(e: React.ChangeEvent<HTMLInputElement>) {
+    const f = e.target.files?.[0];
+    if (!f) return;
+    const fr = new FileReader();
+    fr.onload = () => setImageUrl(String(fr.result || ""));
+    fr.readAsDataURL(f);
+    e.target.value = "";
+  }
+
+  function create() {
+    const extra: Partial<AssetBase> = {
+      tapeColor: color,
+      tapePattern: text || undefined,
+      tapeTextColor: textColor,
+      imageUrl: imageUrl || undefined,
+      tapeJagged: text || imageUrl ? false : undefined,
+      opacity: text || imageUrl ? 1 : undefined,
+    };
+    onCreate(extra);
+    setOpen(false);
+    setText(""); setImageUrl("");
+  }
+
+  return (
+    <>
+      <button
+        onClick={() => setOpen(true)}
+        className="flex flex-col items-center gap-2 rounded-md border border-dashed border-amber-700/50 bg-amber-50/40 px-2 py-3 hover:bg-amber-50/70 col-span-2"
+        title="custom tape"
+      >
+        <div className="h-12 grid place-items-center font-mono text-[10px] lowercase text-amber-900">+ custom tape (image or pattern)</div>
+      </button>
+      {open && (
+        <div className="fixed inset-0 z-50 bg-black/60 grid place-items-center" onClick={() => setOpen(false)}>
+          <div onClick={(e) => e.stopPropagation()} className="w-[420px] max-w-[90vw] rounded-md bg-card border border-border p-4 space-y-3">
+            <div className="font-display lowercase text-lg">custom washi tape</div>
+            <div>
+              <div className="font-mono text-[10px] lowercase text-muted-foreground mb-1">tape color</div>
+              <div className="flex items-center gap-2">
+                <input type="color" value={/^#[0-9a-fA-F]{6}$/.test(color) ? color : "#facc15"} onChange={(e) => setColor(e.target.value)} className="h-8 w-10 rounded border border-border bg-transparent" />
+                <input value={color} onChange={(e) => setColor(e.target.value)} className="flex-1 rounded border border-input bg-background px-2 py-1 font-mono text-[11px]" placeholder="#hex or rgba(…)" />
+              </div>
+            </div>
+            <div>
+              <div className="font-mono text-[10px] lowercase text-muted-foreground mb-1">repeating text (optional)</div>
+              <input value={text} onChange={(e) => setText(e.target.value)} placeholder="e.g. fragile · do not bend" className="w-full rounded border border-input bg-background px-2 py-1 font-mono text-[11px]" />
+              {text && (
+                <div className="mt-2 flex items-center gap-2">
+                  <span className="font-mono text-[10px] text-muted-foreground">text color</span>
+                  <input type="color" value={textColor} onChange={(e) => setTextColor(e.target.value)} className="h-7 w-9 rounded border border-border" />
+                </div>
+              )}
+            </div>
+            <div>
+              <div className="font-mono text-[10px] lowercase text-muted-foreground mb-1">or pattern image (tiles horizontally)</div>
+              <div className="flex items-center gap-2">
+                <button onClick={() => fileRef.current?.click()} className="rounded border border-input bg-background px-2.5 py-1.5 font-mono text-[10px] uppercase tracking-wider hover:bg-accent">upload</button>
+                <input value={imageUrl} onChange={(e) => setImageUrl(e.target.value)} placeholder="https://…" className="flex-1 rounded border border-input bg-background px-2 py-1 font-mono text-[11px]" />
+                <input ref={fileRef} type="file" accept="image/*" onChange={onFile} className="hidden" />
+              </div>
+              {imageUrl && <div className="mt-2 h-8 rounded border border-input" style={{ backgroundImage: `url(${imageUrl})`, backgroundSize: "auto 100%", backgroundRepeat: "repeat-x" }} />}
+            </div>
+            <div className="flex justify-end gap-2 pt-1">
+              <button onClick={() => setOpen(false)} className="rounded border border-input px-3 py-1.5 font-mono text-[11px] lowercase">cancel</button>
+              <button onClick={create} className="rounded bg-stone-900 text-stone-50 px-3 py-1.5 font-mono text-[11px] lowercase">draw tape</button>
+            </div>
+          </div>
+        </div>
+      )}
+    </>
+  );
+}
+
 function StubBlockTile({ label }: { label: string }) {
   return (
     <div
