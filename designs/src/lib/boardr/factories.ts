@@ -76,5 +76,24 @@ export function defaultBlockData(t: NonNullable<AssetBase["blockType"]>): string
           { label: "three", body: "third tab body." },
         ],
       });
+    case "text":
+      return JSON.stringify({ text: "a small paragraph of body text. edit me in the settings panel." });
+    case "heading":
+      return JSON.stringify({ text: "a bold heading", level: 2 });
+    case "image":
+      return JSON.stringify({ caption: "" });
+    case "button":
+      return JSON.stringify({ label: "click me", href: "#" });
+    case "buttonList":
+      return JSON.stringify({
+        items: [
+          { label: "primary", href: "#", variant: "solid" },
+          { label: "secondary", href: "#", variant: "ghost" },
+        ],
+      });
+    case "iconGrid":
+      return JSON.stringify({ items: ["★", "✿", "✚", "✦", "✸", "❀", "✺", "✱"] });
+    case "input":
+      return JSON.stringify({ label: "email", placeholder: "you@domain.com", cta: "subscribe" });
   }
 }

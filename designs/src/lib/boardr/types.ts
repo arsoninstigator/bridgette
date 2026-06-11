@@ -48,7 +48,19 @@ export interface AssetBase {
   tapeTextColor?: string; // color for tapePattern text
   opacity?: number; // 0..1, applied per-asset (e.g. tape translucency)
   // data & ui blocks
-  blockType?: "table" | "chips" | "tags" | "accordion" | "tabs";
+  blockType?:
+    | "table"
+    | "chips"
+    | "tags"
+    | "accordion"
+    | "tabs"
+    | "text"
+    | "heading"
+    | "image"
+    | "button"
+    | "buttonList"
+    | "iconGrid"
+    | "input";
   blockData?: string; // JSON payload for the block
   frameStyle?: "classic" | "ornate" | "polaroid" | "oval" | "scalloped" | "double"; // for kind: frame
   shape?: "rect" | "circle" | "triangle" | "diamond" | "star";

@@ -709,21 +709,23 @@ function renderBlock(a: AssetBase): React.ReactNode {
     color: "#1f1a14",
   };
   if (t === "table") {
-    const d = parseBlockData<{ headers: string[]; rows: string[][] }>(a.blockData) || { headers: [], rows: [] };
+    const raw = parseBlockData<{ headers?: string[]; rows?: string[][] }>(a.blockData) || {};
+    const headers = Array.isArray(raw.headers) ? raw.headers : [];
+    const rows = Array.isArray(raw.rows) ? raw.rows : [];
     return (
       <div style={wrap}>
         <table style={{ width: "100%", borderCollapse: "collapse", fontSize: 11 }}>
           <thead>
             <tr>
-              {d.headers.map((h, i) => (
-                <th key={i} style={{ textAlign: "left", borderBottom: "1px solid #1f1a14", padding: "4px 6px", textTransform: "lowercase", letterSpacing: "0.06em" }}>{h}</th>
+              {headers.map((hd, i) => (
+                <th key={i} style={{ textAlign: "left", borderBottom: "1px solid #1f1a14", padding: "4px 6px", textTransform: "lowercase", letterSpacing: "0.06em" }}>{hd}</th>
               ))}
             </tr>
           </thead>
           <tbody>
-            {d.rows.map((row, ri) => (
+            {rows.map((row, ri) => (
               <tr key={ri}>
-                {row.map((c, ci) => (
+                {(Array.isArray(row) ? row : []).map((c, ci) => (
                   <td key={ci} style={{ borderBottom: "1px dashed #c9b99a", padding: "4px 6px" }}>{c}</td>
                 ))}
               </tr>
@@ -734,11 +736,12 @@ function renderBlock(a: AssetBase): React.ReactNode {
     );
   }
   if (t === "chips" || t === "tags") {
-    const d = parseBlockData<{ items: string[] }>(a.blockData) || { items: [] };
+    const raw = parseBlockData<{ items?: string[] }>(a.blockData) || {};
+    const items = Array.isArray(raw.items) ? raw.items : [];
     const isTag = t === "tags";
     return (
       <div style={{ ...wrap, display: "flex", flexWrap: "wrap", gap: 6, alignContent: "flex-start" }}>
-        {d.items.map((it, i) => (
+        {items.map((it, i) => (
           <span
             key={i}
             style={{
@@ -759,28 +762,30 @@ function renderBlock(a: AssetBase): React.ReactNode {
     );
   }
   if (t === "accordion") {
-    const d = parseBlockData<{ items: { q: string; a: string }[] }>(a.blockData) || { items: [] };
+    const raw = parseBlockData<{ items?: { q: string; a: string }[] }>(a.blockData) || {};
+    const items = Array.isArray(raw.items) ? raw.items : [];
     return (
       <div style={wrap}>
-        {d.items.map((it, i) => (
+        {items.map((it, i) => (
           <div key={i} style={{ borderBottom: "1px solid #c9b99a", padding: "6px 0" }}>
             <div style={{ fontSize: 11, fontWeight: 700, display: "flex", justifyContent: "space-between" }}>
-              <span style={{ textTransform: "lowercase" }}>{it.q}</span>
+              <span style={{ textTransform: "lowercase" }}>{it?.q}</span>
               <span>+</span>
             </div>
-            <div style={{ fontSize: 11, marginTop: 4, color: "#4b4337" }}>{it.a}</div>
+            <div style={{ fontSize: 11, marginTop: 4, color: "#4b4337" }}>{it?.a}</div>
           </div>
         ))}
       </div>
     );
   }
   if (t === "tabs") {
-    const d = parseBlockData<{ items: { label: string; body: string }[] }>(a.blockData) || { items: [] };
-    const active = d.items[0];
+    const raw = parseBlockData<{ items?: { label: string; body: string }[] }>(a.blockData) || {};
+    const items = Array.isArray(raw.items) ? raw.items : [];
+    const active = items[0];
     return (
       <div style={wrap}>
         <div style={{ display: "flex", gap: 4, borderBottom: "1px solid #1f1a14", marginBottom: 8 }}>
-          {d.items.map((it, i) => (
+          {items.map((it, i) => (
             <div
               key={i}
               style={{
@@ -792,11 +797,168 @@ function renderBlock(a: AssetBase): React.ReactNode {
                 textTransform: "lowercase",
               }}
             >
-              {it.label}
+              {it?.label}
             </div>
           ))}
         </div>
         <div style={{ fontSize: 11, color: "#4b4337" }}>{active?.body}</div>
+      </div>
+    );
+  }
+  if (t === "text") {
+    const d = parseBlockData<{ text?: string }>(a.blockData) || {};
+    return (
+      <div style={{ ...wrap, fontFamily: "Georgia, serif", fontSize: 14, lineHeight: 1.55, color: "#1f1a14", whiteSpace: "pre-wrap" }}>
+        {d.text || ""}
+      </div>
+    );
+  }
+  if (t === "heading") {
+    const d = parseBlockData<{ text?: string; level?: number }>(a.blockData) || {};
+    const lvl = Math.min(6, Math.max(1, d.level || 2));
+    const sizes: Record<number, number> = { 1: 36, 2: 28, 3: 22, 4: 18, 5: 16, 6: 14 };
+    return (
+      <div style={{ ...wrap, fontFamily: "Georgia, serif", fontWeight: 800, fontSize: sizes[lvl], lineHeight: 1.1, letterSpacing: "-0.01em" }}>
+        {d.text || ""}
+      </div>
+    );
+  }
+  if (t === "image") {
+    const d = parseBlockData<{ caption?: string }>(a.blockData) || {};
+    return (
+      <div style={{ ...wrap, padding: 6 }}>
+        <div
+          style={{
+            width: w - 12,
+            height: h - (d.caption ? 36 : 12),
+            background: a.imageUrl
+              ? `center/cover no-repeat url(${a.imageUrl})`
+              : "linear-gradient(135deg,#f5efe5,#e8e0d2)",
+            border: "1px dashed #c9b99a",
+            display: "grid",
+            placeItems: "center",
+            color: "#9b8a73",
+            fontSize: 11,
+          }}
+        >
+          {!a.imageUrl && "image — set url in settings"}
+        </div>
+        {d.caption && (
+          <div style={{ marginTop: 6, fontSize: 11, color: "#4b4337", textAlign: "center" }}>{d.caption}</div>
+        )}
+      </div>
+    );
+  }
+  if (t === "button") {
+    const d = parseBlockData<{ label?: string; href?: string }>(a.blockData) || {};
+    return (
+      <div style={{ ...wrap, display: "grid", placeItems: "center", minHeight: 60 }}>
+        <span
+          style={{
+            background: "#1f1a14",
+            color: "#fbf7ec",
+            padding: "10px 22px",
+            borderRadius: 3,
+            fontSize: 13,
+            textTransform: "lowercase",
+            letterSpacing: "0.04em",
+            boxShadow: "0 1px 0 rgba(0,0,0,0.4), 0 4px 10px rgba(40,25,10,0.25)",
+          }}
+        >
+          {d.label || "button"}
+        </span>
+      </div>
+    );
+  }
+  if (t === "buttonList") {
+    const raw = parseBlockData<{ items?: { label: string; href?: string; variant?: string }[] }>(a.blockData) || {};
+    const items = Array.isArray(raw.items) ? raw.items : [];
+    return (
+      <div style={{ ...wrap, display: "flex", flexWrap: "wrap", gap: 8, alignItems: "center", justifyContent: "center", minHeight: 60 }}>
+        {items.map((it, i) => {
+          const ghost = it?.variant === "ghost";
+          return (
+            <span
+              key={i}
+              style={{
+                background: ghost ? "transparent" : "#1f1a14",
+                color: ghost ? "#1f1a14" : "#fbf7ec",
+                border: ghost ? "1px solid #1f1a14" : "none",
+                padding: "8px 16px",
+                borderRadius: 3,
+                fontSize: 12,
+                textTransform: "lowercase",
+              }}
+            >
+              {it?.label}
+            </span>
+          );
+        })}
+      </div>
+    );
+  }
+  if (t === "iconGrid") {
+    const raw = parseBlockData<{ items?: string[] }>(a.blockData) || {};
+    const items = Array.isArray(raw.items) ? raw.items : [];
+    return (
+      <div style={{ ...wrap, display: "grid", gridTemplateColumns: "repeat(4, 1fr)", gap: 8 }}>
+        {items.map((it, i) => (
+          <div
+            key={i}
+            style={{
+              aspectRatio: "1 / 1",
+              display: "grid",
+              placeItems: "center",
+              border: "1px dashed #c9b99a",
+              borderRadius: 3,
+              fontSize: 20,
+              color: "#1f1a14",
+            }}
+          >
+            {it}
+          </div>
+        ))}
+      </div>
+    );
+  }
+  if (t === "input") {
+    const d = parseBlockData<{ label?: string; placeholder?: string; cta?: string }>(a.blockData) || {};
+    return (
+      <div style={{ ...wrap, display: "flex", flexDirection: "column", gap: 6, justifyContent: "center" }}>
+        {d.label && (
+          <span style={{ fontSize: 10, textTransform: "uppercase", letterSpacing: "0.1em", color: "#4b4337" }}>
+            {d.label}
+          </span>
+        )}
+        <div style={{ display: "flex", gap: 6 }}>
+          <div
+            style={{
+              flex: 1,
+              background: "#fff",
+              border: "1px solid #1f1a14",
+              padding: "8px 10px",
+              fontSize: 12,
+              color: "#9b8a73",
+              borderRadius: 2,
+            }}
+          >
+            {d.placeholder || "type here…"}
+          </div>
+          {d.cta && (
+            <span
+              style={{
+                background: "#1f1a14",
+                color: "#fbf7ec",
+                padding: "8px 14px",
+                borderRadius: 2,
+                fontSize: 12,
+                textTransform: "lowercase",
+              }}
+            >
+              {d.cta}
+            </span>
+          )}
+        </div>
       </div>
     );
   }

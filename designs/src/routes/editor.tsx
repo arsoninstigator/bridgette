@@ -2330,12 +2330,29 @@ function StubBlockTile({ label }: { label: string }) {
 }
 
 function BlocksPanel({ onAdd }: { onAdd: AddFn }) {
+  const building: { label: string; bt: NonNullable<AssetBase["blockType"]>; w: number; h: number }[] = [
+    { label: "text", bt: "text", w: 280, h: 100 },
+    { label: "heading", bt: "heading", w: 320, h: 70 },
+    { label: "image", bt: "image", w: 260, h: 200 },
+    { label: "button", bt: "button", w: 180, h: 70 },
+    { label: "button list", bt: "buttonList", w: 280, h: 80 },
+    { label: "icon grid", bt: "iconGrid", w: 240, h: 240 },
+    { label: "input field", bt: "input", w: 280, h: 90 },
+  ];
   return (
     <div className="space-y-3">
       <p className="font-mono text-[10px] lowercase text-muted-foreground">prebuilt building pieces</p>
       <SubheadingGroup title="building blocks">
-        {["text", "heading", "image", "button", "button list", "icon", "icon grid", "input field"].map((b) => (
-          <StubBlockTile key={b} label={b} />
+        {building.map((b) => (
+          <DraggableItem
+            key={b.label}
+            kind="block"
+            label={b.label}
+            onAdd={onAdd}
+            extra={{ blockType: b.bt, blockData: defaultBlockData(b.bt), width: b.w, height: b.h }}
+          >
+            <BlockMini label={b.label} />
+          </DraggableItem>
         ))}
       </SubheadingGroup>
       <SubheadingGroup title="motion graphics">
