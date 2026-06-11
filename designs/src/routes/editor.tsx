@@ -2469,7 +2469,7 @@ function BlocksPanel({ onAdd }: { onAdd: AddFn }) {
             onAdd={onAdd}
             extra={{ blockType: b.bt, blockData: defaultBlockData(b.bt), width: b.w, height: b.h }}
           >
-            <BlockMini label={b.label} />
+            <BlockMini kind={b.bt} />
           </DraggableItem>
         ))}
       </SubheadingGroup>
@@ -2513,19 +2513,19 @@ function BlocksPanel({ onAdd }: { onAdd: AddFn }) {
       </SubheadingGroup>
       <SubheadingGroup title="data & ui" defaultOpen={false}>
         <DraggableItem kind="block" label="table" onAdd={onAdd} extra={{ blockType: "table", blockData: defaultBlockData("table"), width: 280, height: 160 }}>
-          <BlockMini label="table" />
+          <BlockMini kind="table" />
         </DraggableItem>
         <DraggableItem kind="block" label="chips" onAdd={onAdd} extra={{ blockType: "chips", blockData: defaultBlockData("chips"), width: 240, height: 90 }}>
-          <BlockMini label="chips" />
+          <BlockMini kind="chips" />
         </DraggableItem>
         <DraggableItem kind="block" label="tags" onAdd={onAdd} extra={{ blockType: "tags", blockData: defaultBlockData("tags"), width: 240, height: 90 }}>
-          <BlockMini label="tags" />
+          <BlockMini kind="tags" />
         </DraggableItem>
         <DraggableItem kind="block" label="accordion" onAdd={onAdd} extra={{ blockType: "accordion", blockData: defaultBlockData("accordion"), width: 280, height: 160 }}>
-          <BlockMini label="accordion" />
+          <BlockMini kind="accordion" />
         </DraggableItem>
         <DraggableItem kind="block" label="tabs" onAdd={onAdd} extra={{ blockType: "tabs", blockData: defaultBlockData("tabs"), width: 280, height: 160 }}>
-          <BlockMini label="tabs" />
+          <BlockMini kind="tabs" />
         </DraggableItem>
       </SubheadingGroup>
     </div>
