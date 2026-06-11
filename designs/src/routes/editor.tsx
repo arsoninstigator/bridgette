@@ -2228,12 +2228,130 @@ function SubheadingGroup({
   );
 }
 
-function BlockMini({ label }: { label: string }) {
-  return (
-    <div className="rounded-sm grid place-items-center font-mono text-[9px] lowercase text-stone-700" style={{ width: 56, height: 28, background: "#fbf7ec", border: "1px solid #c9b99a" }}>
-      {label}
-    </div>
-  );
+function BlockMini({ kind }: { kind: NonNullable<AssetBase["blockType"]> }) {
+  const W = 60, H = 30;
+  const box: React.CSSProperties = { width: W, height: H, background: "#fbf7ec", border: "1px solid #c9b99a", borderRadius: 2, overflow: "hidden" };
+  if (kind === "text") {
+    return (
+      <div style={{ ...box, padding: 4, display: "flex", flexDirection: "column", gap: 2 }}>
+        <div style={{ height: 2, background: "#1f1a14", width: "92%" }} />
+        <div style={{ height: 2, background: "#1f1a14", width: "78%" }} />
+        <div style={{ height: 2, background: "#1f1a14", width: "85%" }} />
+        <div style={{ height: 2, background: "#1f1a14", width: "60%" }} />
+      </div>
+    );
+  }
+  if (kind === "heading") {
+    return (
+      <div style={{ ...box, padding: 4, display: "flex", flexDirection: "column", justifyContent: "center", gap: 3 }}>
+        <div style={{ height: 6, background: "#1f1a14", width: "80%", borderRadius: 1 }} />
+        <div style={{ height: 2, background: "#9b8a73", width: "55%" }} />
+      </div>
+    );
+  }
+  if (kind === "image") {
+    return (
+      <div style={{ ...box, padding: 3 }}>
+        <div style={{ width: "100%", height: "100%", background: "linear-gradient(135deg,#e8e0d2,#c9b99a)", display: "grid", placeItems: "center", color: "#fbf7ec", fontSize: 10 }}>▦</div>
+      </div>
+    );
+  }
+  if (kind === "button") {
+    return (
+      <div style={{ ...box, display: "grid", placeItems: "center" }}>
+        <div style={{ background: "#1f1a14", color: "#fbf7ec", fontSize: 7, padding: "3px 8px", borderRadius: 2 }}>button</div>
+      </div>
+    );
+  }
+  if (kind === "buttonList") {
+    return (
+      <div style={{ ...box, display: "flex", gap: 3, alignItems: "center", justifyContent: "center" }}>
+        <div style={{ background: "#1f1a14", width: 20, height: 9, borderRadius: 2 }} />
+        <div style={{ border: "1px solid #1f1a14", width: 20, height: 9, borderRadius: 2 }} />
+      </div>
+    );
+  }
+  if (kind === "iconGrid") {
+    return (
+      <div style={{ ...box, display: "grid", gridTemplateColumns: "repeat(4, 1fr)", gap: 1, padding: 2 }}>
+        {Array.from({ length: 8 }).map((_, i) => (
+          <div key={i} style={{ background: "#1f1a14", opacity: 0.7, borderRadius: 1 }} />
+        ))}
+      </div>
+    );
+  }
+  if (kind === "input") {
+    return (
+      <div style={{ ...box, display: "flex", gap: 2, alignItems: "center", padding: 3 }}>
+        <div style={{ flex: 1, height: 10, background: "#fff", border: "1px solid #1f1a14", borderRadius: 1 }} />
+        <div style={{ background: "#1f1a14", width: 14, height: 10, borderRadius: 1 }} />
+      </div>
+    );
+  }
+  if (kind === "table") {
+    return (
+      <div style={{ ...box, padding: 3, display: "flex", flexDirection: "column", gap: 1 }}>
+        <div style={{ display: "flex", gap: 2, borderBottom: "1px solid #1f1a14", paddingBottom: 1 }}>
+          <div style={{ flex: 1, height: 2, background: "#1f1a14" }} />
+          <div style={{ flex: 1, height: 2, background: "#1f1a14" }} />
+          <div style={{ flex: 1, height: 2, background: "#1f1a14" }} />
+        </div>
+        {[0, 1, 2].map((i) => (
+          <div key={i} style={{ display: "flex", gap: 2 }}>
+            <div style={{ flex: 1, height: 1.5, background: "#9b8a73" }} />
+            <div style={{ flex: 1, height: 1.5, background: "#9b8a73" }} />
+            <div style={{ flex: 1, height: 1.5, background: "#9b8a73" }} />
+          </div>
+        ))}
+      </div>
+    );
+  }
+  if (kind === "chips") {
+    return (
+      <div style={{ ...box, display: "flex", flexWrap: "wrap", gap: 2, alignContent: "center", padding: 3 }}>
+        {[14, 18, 12].map((w, i) => (
+          <div key={i} style={{ background: "#1f1a14", width: w, height: 7, borderRadius: 999 }} />
+        ))}
+      </div>
+    );
+  }
+  if (kind === "tags") {
+    return (
+      <div style={{ ...box, display: "flex", flexWrap: "wrap", gap: 2, alignContent: "center", padding: 3 }}>
+        {[16, 20, 14].map((w, i) => (
+          <div key={i} style={{ border: "1px dashed #1f1a14", width: w, height: 7, borderRadius: 1 }} />
+        ))}
+      </div>
+    );
+  }
+  if (kind === "accordion") {
+    return (
+      <div style={{ ...box, padding: 3, display: "flex", flexDirection: "column", gap: 2 }}>
+        {[0, 1, 2].map((i) => (
+          <div key={i} style={{ display: "flex", justifyContent: "space-between", alignItems: "center", borderBottom: "1px solid #c9b99a", paddingBottom: 1 }}>
+            <div style={{ height: 2, width: 30, background: "#1f1a14" }} />
+            <div style={{ fontSize: 8, color: "#1f1a14", lineHeight: 1 }}>+</div>
+          </div>
+        ))}
+      </div>
+    );
+  }
+  if (kind === "tabs") {
+    return (
+      <div style={{ ...box, padding: 0, display: "flex", flexDirection: "column" }}>
+        <div style={{ display: "flex", gap: 1, padding: 2, borderBottom: "1px solid #1f1a14" }}>
+          <div style={{ background: "#1f1a14", width: 12, height: 5 }} />
+          <div style={{ background: "#9b8a73", width: 12, height: 5 }} />
+          <div style={{ background: "#9b8a73", width: 12, height: 5 }} />
+        </div>
+        <div style={{ flex: 1, padding: 2, display: "flex", flexDirection: "column", gap: 1.5 }}>
+          <div style={{ height: 1.5, background: "#9b8a73", width: "80%" }} />
+          <div style={{ height: 1.5, background: "#9b8a73", width: "60%" }} />
+        </div>
+      </div>
+    );
+  }
+  return <div style={box} />;
 }
 
 function CustomWashiTile({ onCreate }: { onCreate: (extra: Partial<AssetBase>) => void }) {
@@ -2351,7 +2469,7 @@ function BlocksPanel({ onAdd }: { onAdd: AddFn }) {
             onAdd={onAdd}
             extra={{ blockType: b.bt, blockData: defaultBlockData(b.bt), width: b.w, height: b.h }}
           >
-            <BlockMini label={b.label} />
+            <BlockMini kind={b.bt} />
           </DraggableItem>
         ))}
       </SubheadingGroup>
@@ -2395,19 +2513,19 @@ function BlocksPanel({ onAdd }: { onAdd: AddFn }) {
       </SubheadingGroup>
       <SubheadingGroup title="data & ui" defaultOpen={false}>
         <DraggableItem kind="block" label="table" onAdd={onAdd} extra={{ blockType: "table", blockData: defaultBlockData("table"), width: 280, height: 160 }}>
-          <BlockMini label="table" />
+          <BlockMini kind="table" />
         </DraggableItem>
         <DraggableItem kind="block" label="chips" onAdd={onAdd} extra={{ blockType: "chips", blockData: defaultBlockData("chips"), width: 240, height: 90 }}>
-          <BlockMini label="chips" />
+          <BlockMini kind="chips" />
         </DraggableItem>
         <DraggableItem kind="block" label="tags" onAdd={onAdd} extra={{ blockType: "tags", blockData: defaultBlockData("tags"), width: 240, height: 90 }}>
-          <BlockMini label="tags" />
+          <BlockMini kind="tags" />
         </DraggableItem>
         <DraggableItem kind="block" label="accordion" onAdd={onAdd} extra={{ blockType: "accordion", blockData: defaultBlockData("accordion"), width: 280, height: 160 }}>
-          <BlockMini label="accordion" />
+          <BlockMini kind="accordion" />
         </DraggableItem>
         <DraggableItem kind="block" label="tabs" onAdd={onAdd} extra={{ blockType: "tabs", blockData: defaultBlockData("tabs"), width: 280, height: 160 }}>
-          <BlockMini label="tabs" />
+          <BlockMini kind="tabs" />
         </DraggableItem>
       </SubheadingGroup>
     </div>
