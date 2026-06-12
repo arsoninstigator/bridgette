@@ -2507,8 +2507,24 @@ function BlocksPanel({ onAdd }: { onAdd: AddFn }) {
         <StubBlockTile label="ribbon spin" />
       </SubheadingGroup>
       <SubheadingGroup title="layouts" defaultOpen={false}>
-        {["hero", "two-up", "gallery", "list", "quote", "footer", "bento grid"].map((b) => (
-          <StubBlockTile key={b} label={b} />
+        {([
+          { label: "hero", v: "hero", w: 460, h: 240 },
+          { label: "two-up", v: "two-up", w: 440, h: 180 },
+          { label: "gallery", v: "gallery", w: 360, h: 280 },
+          { label: "list", v: "list", w: 320, h: 220 },
+          { label: "quote", v: "quote", w: 360, h: 180 },
+          { label: "footer", v: "footer", w: 460, h: 180 },
+          { label: "bento grid", v: "bento", w: 400, h: 260 },
+        ] as const).map((l) => (
+          <DraggableItem
+            key={l.label}
+            kind="block"
+            label={l.label}
+            onAdd={onAdd}
+            extra={{ blockType: "layout", blockData: JSON.stringify(defaultLayoutData(l.v)), width: l.w, height: l.h }}
+          >
+            <LayoutMini variant={l.v} />
+          </DraggableItem>
         ))}
       </SubheadingGroup>
       <SubheadingGroup title="data & ui" defaultOpen={false}>
