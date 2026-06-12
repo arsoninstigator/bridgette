@@ -60,7 +60,8 @@ export interface AssetBase {
     | "button"
     | "buttonList"
     | "iconGrid"
-    | "input";
+    | "input"
+    | "layout";
   blockData?: string; // JSON payload for the block
   frameStyle?: "classic" | "ornate" | "polaroid" | "oval" | "scalloped" | "double"; // for kind: frame
   shape?: "rect" | "circle" | "triangle" | "diamond" | "star";

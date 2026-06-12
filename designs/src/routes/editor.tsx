@@ -34,7 +34,7 @@ import {
   saveBoard,
 } from "../lib/boardr/storage";
 import type { AssetBase, AssetKind, Board, BoardKind, StringConn } from "../lib/boardr/types";
-import { makeAsset, nextZ, defaultBlockData } from "../lib/boardr/factories";
+import { makeAsset, nextZ, defaultBlockData, defaultLayoutData } from "../lib/boardr/factories";
 import { BoardCanvas } from "../components/boardr/BoardCanvas";
 import { SettingsPanel } from "../components/boardr/SettingsPanel";
 import { ContextMenu, ContextMenuTrigger, ContextMenuContent, ContextMenuItem } from "../components/ui/context-menu";
@@ -2354,6 +2354,88 @@ function BlockMini({ kind }: { kind: NonNullable<AssetBase["blockType"]> }) {
   return <div style={box} />;
 }
 
+function LayoutMini({ variant }: { variant: string }) {
+  const W = 60, H = 30;
+  const box: React.CSSProperties = { width: W, height: H, background: "#fbf7ec", border: "1px solid #c9b99a", borderRadius: 2, overflow: "hidden", padding: 3 };
+  if (variant === "hero") {
+    return (
+      <div style={{ ...box, display: "flex", flexDirection: "column", justifyContent: "center", gap: 2 }}>
+        <div style={{ height: 4, background: "#1f1a14", width: "70%", borderRadius: 1 }} />
+        <div style={{ height: 1.5, background: "#9b8a73", width: "55%" }} />
+        <div style={{ background: "#1f1a14", width: 14, height: 4, borderRadius: 1, marginTop: 1 }} />
+      </div>
+    );
+  }
+  if (variant === "two-up") {
+    return (
+      <div style={{ ...box, display: "flex", gap: 2 }}>
+        {[0, 1].map((i) => (
+          <div key={i} style={{ flex: 1, display: "flex", flexDirection: "column", gap: 1, justifyContent: "center" }}>
+            <div style={{ height: 2, background: "#1f1a14", width: "80%" }} />
+            <div style={{ height: 1, background: "#9b8a73", width: "90%" }} />
+            <div style={{ height: 1, background: "#9b8a73", width: "70%" }} />
+          </div>
+        ))}
+      </div>
+    );
+  }
+  if (variant === "gallery") {
+    return (
+      <div style={{ ...box, display: "grid", gridTemplateColumns: "repeat(3,1fr)", gridTemplateRows: "repeat(2,1fr)", gap: 1 }}>
+        {Array.from({ length: 6 }).map((_, i) => (
+          <div key={i} style={{ background: "linear-gradient(135deg,#e8e0d2,#c9b99a)" }} />
+        ))}
+      </div>
+    );
+  }
+  if (variant === "list") {
+    return (
+      <div style={{ ...box, display: "flex", flexDirection: "column", gap: 1.5, justifyContent: "center" }}>
+        {[0, 1, 2].map((i) => (
+          <div key={i} style={{ display: "flex", gap: 2, alignItems: "center" }}>
+            <div style={{ width: 4, height: 4, background: "#1f1a14", borderRadius: 1 }} />
+            <div style={{ flex: 1, height: 1.5, background: "#9b8a73" }} />
+          </div>
+        ))}
+      </div>
+    );
+  }
+  if (variant === "quote") {
+    return (
+      <div style={{ ...box, display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", gap: 1 }}>
+        <div style={{ fontSize: 10, lineHeight: 1, color: "#9b8a73", fontFamily: "Georgia, serif" }}>“</div>
+        <div style={{ height: 1.5, background: "#1f1a14", width: "70%" }} />
+        <div style={{ height: 1, background: "#9b8a73", width: "40%" }} />
+      </div>
+    );
+  }
+  if (variant === "footer") {
+    return (
+      <div style={{ ...box, display: "flex", flexDirection: "column", gap: 2, paddingTop: 4, borderTop: "2px solid #1f1a14", borderRadius: 0 }}>
+        <div style={{ display: "flex", gap: 2 }}>
+          <div style={{ width: 8, height: 4, background: "#1f1a14" }} />
+          {[0, 1, 2].map((i) => (
+            <div key={i} style={{ flex: 1, display: "flex", flexDirection: "column", gap: 1 }}>
+              <div style={{ height: 1, background: "#1f1a14", width: "80%" }} />
+              <div style={{ height: 1, background: "#9b8a73", width: "60%" }} />
+            </div>
+          ))}
+        </div>
+      </div>
+    );
+  }
+  if (variant === "bento") {
+    return (
+      <div style={{ ...box, display: "grid", gridTemplateColumns: "repeat(2,1fr)", gap: 1.5 }}>
+        {Array.from({ length: 4 }).map((_, i) => (
+          <div key={i} style={{ border: "1px solid #c9b99a", background: "#fff", borderRadius: 1 }} />
+        ))}
+      </div>
+    );
+  }
+  return <div style={box} />;
+}
+
 function CustomWashiTile({ onCreate }: { onCreate: (extra: Partial<AssetBase>) => void }) {
   const [open, setOpen] = useState(false);
   const [color, setColor] = useState("#facc15");
@@ -2507,8 +2589,24 @@ function BlocksPanel({ onAdd }: { onAdd: AddFn }) {
         <StubBlockTile label="ribbon spin" />
       </SubheadingGroup>
       <SubheadingGroup title="layouts" defaultOpen={false}>
-        {["hero", "two-up", "gallery", "list", "quote", "footer", "bento grid"].map((b) => (
-          <StubBlockTile key={b} label={b} />
+        {([
+          { label: "hero", v: "hero", w: 460, h: 240 },
+          { label: "two-up", v: "two-up", w: 440, h: 180 },
+          { label: "gallery", v: "gallery", w: 360, h: 280 },
+          { label: "list", v: "list", w: 320, h: 220 },
+          { label: "quote", v: "quote", w: 360, h: 180 },
+          { label: "footer", v: "footer", w: 460, h: 180 },
+          { label: "bento grid", v: "bento", w: 400, h: 260 },
+        ] as const).map((l) => (
+          <DraggableItem
+            key={l.label}
+            kind="block"
+            label={l.label}
+            onAdd={onAdd}
+            extra={{ blockType: "layout", blockData: JSON.stringify(defaultLayoutData(l.v)), width: l.w, height: l.h }}
+          >
+            <LayoutMini variant={l.v} />
+          </DraggableItem>
         ))}
       </SubheadingGroup>
       <SubheadingGroup title="data & ui" defaultOpen={false}>
