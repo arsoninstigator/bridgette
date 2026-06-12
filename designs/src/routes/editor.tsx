@@ -34,7 +34,7 @@ import {
   saveBoard,
 } from "../lib/boardr/storage";
 import type { AssetBase, AssetKind, Board, BoardKind, StringConn } from "../lib/boardr/types";
-import { makeAsset, nextZ, defaultBlockData } from "../lib/boardr/factories";
+import { makeAsset, nextZ, defaultBlockData, defaultLayoutData } from "../lib/boardr/factories";
 import { BoardCanvas } from "../components/boardr/BoardCanvas";
 import { SettingsPanel } from "../components/boardr/SettingsPanel";
 import { ContextMenu, ContextMenuTrigger, ContextMenuContent, ContextMenuItem } from "../components/ui/context-menu";
