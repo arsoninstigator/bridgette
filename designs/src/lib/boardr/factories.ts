@@ -95,5 +95,63 @@ export function defaultBlockData(t: NonNullable<AssetBase["blockType"]>): string
       return JSON.stringify({ items: ["★", "✿", "✚", "✦", "✸", "❀", "✺", "✱"] });
     case "input":
       return JSON.stringify({ label: "email", placeholder: "you@domain.com", cta: "subscribe" });
+    case "layout":
+      return JSON.stringify(defaultLayoutData("hero"));
+  }
+}
+
+export function defaultLayoutData(variant: string): Record<string, unknown> {
+  switch (variant) {
+    case "hero":
+      return {
+        variant,
+        eyebrow: "new release",
+        title: "a tactile scrapboard for the web",
+        body: "drag, pin, tape, and publish a corkboard page in minutes.",
+        cta: "get started",
+      };
+    case "two-up":
+      return {
+        variant,
+        left: { title: "left column", body: "a short paragraph describing the first idea." },
+        right: { title: "right column", body: "a short paragraph describing the second idea." },
+      };
+    case "gallery":
+      return { variant, items: ["", "", "", "", "", ""], caption: "gallery" };
+    case "list":
+      return {
+        variant,
+        title: "list of things",
+        items: ["first item with a short description", "second item, equally brief", "third item to round it out"],
+      };
+    case "quote":
+      return {
+        variant,
+        quote: "the medium is the message.",
+        author: "marshall mcluhan",
+      };
+    case "footer":
+      return {
+        variant,
+        brand: "boardr",
+        columns: [
+          { title: "product", items: ["features", "templates", "pricing"] },
+          { title: "company", items: ["about", "blog", "contact"] },
+          { title: "legal", items: ["terms", "privacy"] },
+        ],
+        copyright: "© 2026 boardr.",
+      };
+    case "bento":
+      return {
+        variant,
+        items: [
+          { title: "fast", body: "ships in seconds." },
+          { title: "tactile", body: "feels real." },
+          { title: "open", body: "publish anywhere." },
+          { title: "yours", body: "fully editable." },
+        ],
+      };
+    default:
+      return { variant: "hero", title: "layout" };
   }
 }
