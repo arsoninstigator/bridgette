@@ -962,6 +962,135 @@ function renderBlock(a: AssetBase): React.ReactNode {
       </div>
     );
   }
+  if (t === "layout") {
+    return renderLayout(a, wrap, w, h);
+  }
+  return <div style={wrap} />;
+}
+
+function renderLayout(a: AssetBase, wrap: React.CSSProperties, w: number, h: number): React.ReactNode {
+  const d = parseBlockData<Record<string, unknown>>(a.blockData) || {};
+  const variant = (d.variant as string) || "hero";
+  const pad: React.CSSProperties = { ...wrap, padding: 16, minHeight: h };
+  if (variant === "hero") {
+    const eyebrow = (d.eyebrow as string) || "";
+    const title = (d.title as string) || "headline";
+    const body = (d.body as string) || "";
+    const cta = (d.cta as string) || "";
+    return (
+      <div style={{ ...pad, display: "flex", flexDirection: "column", justifyContent: "center", gap: 8 }}>
+        {eyebrow && <div style={{ fontSize: 10, textTransform: "uppercase", letterSpacing: "0.18em", color: "#4b4337" }}>{eyebrow}</div>}
+        <div style={{ fontFamily: "Georgia, serif", fontWeight: 800, fontSize: Math.min(34, w / 10), lineHeight: 1.05, letterSpacing: "-0.01em" }}>{title}</div>
+        {body && <div style={{ fontSize: 13, lineHeight: 1.5, color: "#4b4337" }}>{body}</div>}
+        {cta && (
+          <div>
+            <span style={{ background: "#1f1a14", color: "#fbf7ec", padding: "8px 16px", borderRadius: 3, fontSize: 12, textTransform: "lowercase", display: "inline-block", marginTop: 4 }}>{cta}</span>
+          </div>
+        )}
+      </div>
+    );
+  }
+  if (variant === "two-up") {
+    const left = (d.left as { title?: string; body?: string }) || {};
+    const right = (d.right as { title?: string; body?: string }) || {};
+    const col: React.CSSProperties = { flex: 1, display: "flex", flexDirection: "column", gap: 6 };
+    return (
+      <div style={{ ...pad, display: "flex", gap: 16, alignItems: "flex-start" }}>
+        <div style={col}>
+          <div style={{ fontFamily: "Georgia, serif", fontWeight: 700, fontSize: 16 }}>{left.title}</div>
+          <div style={{ fontSize: 12, color: "#4b4337", lineHeight: 1.5 }}>{left.body}</div>
+        </div>
+        <div style={{ width: 1, alignSelf: "stretch", background: "#c9b99a" }} />
+        <div style={col}>
+          <div style={{ fontFamily: "Georgia, serif", fontWeight: 700, fontSize: 16 }}>{right.title}</div>
+          <div style={{ fontSize: 12, color: "#4b4337", lineHeight: 1.5 }}>{right.body}</div>
+        </div>
+      </div>
+    );
+  }
+  if (variant === "gallery") {
+    const items = Array.isArray(d.items) ? (d.items as string[]) : [];
+    const caption = (d.caption as string) || "";
+    return (
+      <div style={{ ...pad, display: "flex", flexDirection: "column", gap: 8 }}>
+        <div style={{ display: "grid", gridTemplateColumns: "repeat(3,1fr)", gap: 6, flex: 1 }}>
+          {items.map((u, i) => (
+            <div key={i} style={{
+              aspectRatio: "1/1",
+              background: u ? `center/cover no-repeat url(${u})` : "linear-gradient(135deg,#f5efe5,#e8e0d2)",
+              border: "1px dashed #c9b99a", borderRadius: 2,
+              display: "grid", placeItems: "center", color: "#9b8a73", fontSize: 14,
+            }}>{!u && "▦"}</div>
+          ))}
+        </div>
+        {caption && <div style={{ fontSize: 11, color: "#4b4337", textAlign: "center" }}>{caption}</div>}
+      </div>
+    );
+  }
+  if (variant === "list") {
+    const items = Array.isArray(d.items) ? (d.items as string[]) : [];
+    const title = (d.title as string) || "";
+    return (
+      <div style={{ ...pad, display: "flex", flexDirection: "column", gap: 8 }}>
+        {title && <div style={{ fontFamily: "Georgia, serif", fontWeight: 700, fontSize: 16 }}>{title}</div>}
+        <ul style={{ margin: 0, padding: 0, listStyle: "none", display: "flex", flexDirection: "column", gap: 6 }}>
+          {items.map((it, i) => (
+            <li key={i} style={{ display: "flex", gap: 8, alignItems: "flex-start", borderBottom: "1px dashed #c9b99a", paddingBottom: 6 }}>
+              <span style={{ fontFamily: "Georgia, serif", fontWeight: 800, color: "#1f1a14", minWidth: 18 }}>{String(i + 1).padStart(2, "0")}</span>
+              <span style={{ fontSize: 12, color: "#1f1a14", lineHeight: 1.5 }}>{it}</span>
+            </li>
+          ))}
+        </ul>
+      </div>
+    );
+  }
+  if (variant === "quote") {
+    const quote = (d.quote as string) || "";
+    const author = (d.author as string) || "";
+    return (
+      <div style={{ ...pad, display: "flex", flexDirection: "column", justifyContent: "center", gap: 10, textAlign: "center" }}>
+        <div style={{ fontSize: 28, lineHeight: 1, color: "#9b8a73", fontFamily: "Georgia, serif" }}>“</div>
+        <div style={{ fontFamily: "Georgia, serif", fontStyle: "italic", fontSize: 16, lineHeight: 1.4 }}>{quote}</div>
+        {author && <div style={{ fontSize: 11, textTransform: "uppercase", letterSpacing: "0.15em", color: "#4b4337" }}>— {author}</div>}
+      </div>
+    );
+  }
+  if (variant === "footer") {
+    const brand = (d.brand as string) || "";
+    const cols = Array.isArray(d.columns) ? (d.columns as { title?: string; items?: string[] }[]) : [];
+    const copyright = (d.copyright as string) || "";
+    return (
+      <div style={{ ...pad, display: "flex", flexDirection: "column", gap: 12, borderTop: "2px solid #1f1a14" }}>
+        <div style={{ display: "flex", gap: 14, alignItems: "flex-start", flexWrap: "wrap" }}>
+          {brand && <div style={{ fontFamily: "Georgia, serif", fontWeight: 800, fontSize: 18, flex: "0 0 auto", minWidth: 80 }}>{brand}</div>}
+          <div style={{ display: "flex", gap: 16, flex: 1, flexWrap: "wrap" }}>
+            {cols.map((c, i) => (
+              <div key={i} style={{ display: "flex", flexDirection: "column", gap: 4, minWidth: 70 }}>
+                <div style={{ fontSize: 10, textTransform: "uppercase", letterSpacing: "0.12em", color: "#4b4337" }}>{c?.title}</div>
+                {(Array.isArray(c?.items) ? c.items : []).map((it, j) => (
+                  <div key={j} style={{ fontSize: 11, color: "#1f1a14" }}>{it}</div>
+                ))}
+              </div>
+            ))}
+          </div>
+        </div>
+        {copyright && <div style={{ fontSize: 10, color: "#9b8a73", textTransform: "lowercase" }}>{copyright}</div>}
+      </div>
+    );
+  }
+  if (variant === "bento") {
+    const items = Array.isArray(d.items) ? (d.items as { title?: string; body?: string }[]) : [];
+    return (
+      <div style={{ ...pad, display: "grid", gridTemplateColumns: "repeat(2,1fr)", gap: 8 }}>
+        {items.map((it, i) => (
+          <div key={i} style={{ border: "1px solid #c9b99a", borderRadius: 3, padding: 10, background: "#fff", display: "flex", flexDirection: "column", gap: 4 }}>
+            <div style={{ fontFamily: "Georgia, serif", fontWeight: 700, fontSize: 14 }}>{it?.title}</div>
+            <div style={{ fontSize: 11, color: "#4b4337", lineHeight: 1.4 }}>{it?.body}</div>
+          </div>
+        ))}
+      </div>
+    );
+  }
   return <div style={wrap} />;
 }
 
