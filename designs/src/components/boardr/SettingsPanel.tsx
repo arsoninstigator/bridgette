@@ -10,7 +10,10 @@ interface Props {
 }
 
 export function SettingsPanel({ asset, onChange, onDelete, onClose, initialFocus }: Props) {
-  const [tab, setTab] = useState<"content" | "mechanics">(
+  const isBlock = asset.kind === "block";
+  const tabs = (isBlock ? ["content", "style", "mechanics"] : ["content", "mechanics"]) as const;
+  type TabId = (typeof tabs)[number];
+  const [tab, setTab] = useState<TabId>(
     initialFocus === "mechanics" || initialFocus === "tape" || initialFocus === "pin" ? "mechanics" : "content",
   );
 
@@ -32,8 +35,8 @@ export function SettingsPanel({ asset, onChange, onDelete, onClose, initialFocus
           ✕
         </button>
       </div>
-      <div className="grid grid-cols-2 border-b border-sidebar-border">
-        {(["content", "mechanics"] as const).map((t) => (
+      <div className={`grid border-b border-sidebar-border`} style={{ gridTemplateColumns: `repeat(${tabs.length}, minmax(0, 1fr))` }}>
+        {tabs.map((t) => (
           <button
             key={t}
             onClick={() => setTab(t)}
@@ -51,6 +54,8 @@ export function SettingsPanel({ asset, onChange, onDelete, onClose, initialFocus
       <div className="flex-1 overflow-y-auto p-4 space-y-4">
         {tab === "content" ? (
           <ContentTab asset={asset} onChange={onChange} />
+        ) : tab === "style" ? (
+          <BlockStyleTab asset={asset} onChange={onChange} />
         ) : (
           <MechanicsTab asset={asset} onChange={onChange} tapeRef={tapeRef} pinRef={pinRef} highlight={initialFocus} />
         )}
