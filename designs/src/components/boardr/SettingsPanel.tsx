@@ -614,34 +614,45 @@ function Toggle({ label, checked, onChange }: { label: string; checked: boolean;
   );
 }
 
-function BlockContent({ asset, onChange }: { asset: AssetBase; onChange: (p: Partial<AssetBase>) => void }) {
-  const t = asset.blockType || "table";
-  const types: NonNullable<AssetBase["blockType"]>[] = [
-    "table", "chips", "tags", "accordion", "tabs",
-    "text", "heading", "image", "button", "buttonList", "iconGrid", "input", "layout",
-  ];
-  return (
-    <>
-      <Field>
-        <Label>Block type</Label>
-        <div className="grid grid-cols-3 gap-1.5">
-          {types.map((bt) => (
-            <button
-              key={bt}
-              onClick={() => onChange({ blockType: bt })}
-              className={`rounded border px-2 py-1.5 font-mono text-[10px] lowercase ${
-                t === bt ? "border-stone-900 bg-accent/40" : "border-border hover:bg-black/5"
-              }`}
-            >
-              {bt}
-            </button>
-          ))}
-        </div>
-      </Field>
-      <BlockDataEditor asset={asset} onChange={onChange} />
-    </>
-  );
+const TEMPLATES_KEY = "boardr.blockTemplates";
+type SavedBlockTemplate = {
+  id: string;
+  name: string;
+  blockType: NonNullable<AssetBase["blockType"]>;
+  blockData?: string;
+  blockStyle?: AssetBase["blockStyle"];
+  width?: number;
+  height?: number;
+  savedAt: number;
+};
+function saveBlockAsTemplate(asset: AssetBase) {
+  if (asset.kind !== "block") return;
+  const suggested = (asset.blockType || "block") + " template";
+  const name = window.prompt("Template name", suggested);
+  if (!name) return;
+  let list: SavedBlockTemplate[] = [];
+  try {
+    list = JSON.parse(localStorage.getItem(TEMPLATES_KEY) || "[]");
+  } catch {
+    list = [];
+  }
+  list.push({
+    id: Math.random().toString(36).slice(2, 10),
+    name: name.trim(),
+    blockType: asset.blockType || "table",
+    blockData: asset.blockData,
+    blockStyle: asset.blockStyle,
+    width: asset.width,
+    height: asset.height,
+    savedAt: Date.now(),
+  });
+  localStorage.setItem(TEMPLATES_KEY, JSON.stringify(list));
 }
+
+function BlockContent({ asset, onChange }: { asset: AssetBase; onChange: (p: Partial<AssetBase>) => void }) {
+  return <BlockDataEditor asset={asset} onChange={onChange} />;
+}
+
 
 // ============ Block data editors (visual, no JSON) ============
 
