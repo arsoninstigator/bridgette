@@ -10,7 +10,12 @@ interface Props {
 }
 
 export function SettingsPanel({ asset, onChange, onDelete, onClose, initialFocus }: Props) {
-  const [tab, setTab] = useState<"content" | "mechanics">(
+  const isBlock = asset.kind === "block";
+  const tabs: ReadonlyArray<"content" | "style" | "mechanics"> = isBlock
+    ? (["content", "style", "mechanics"] as const)
+    : (["content", "mechanics"] as const);
+  type TabId = "content" | "style" | "mechanics";
+  const [tab, setTab] = useState<TabId>(
     initialFocus === "mechanics" || initialFocus === "tape" || initialFocus === "pin" ? "mechanics" : "content",
   );
 
@@ -32,8 +37,8 @@ export function SettingsPanel({ asset, onChange, onDelete, onClose, initialFocus
           ✕
         </button>
       </div>
-      <div className="grid grid-cols-2 border-b border-sidebar-border">
-        {(["content", "mechanics"] as const).map((t) => (
+      <div className={`grid border-b border-sidebar-border`} style={{ gridTemplateColumns: `repeat(${tabs.length}, minmax(0, 1fr))` }}>
+        {tabs.map((t) => (
           <button
             key={t}
             onClick={() => setTab(t)}
@@ -51,6 +56,8 @@ export function SettingsPanel({ asset, onChange, onDelete, onClose, initialFocus
       <div className="flex-1 overflow-y-auto p-4 space-y-4">
         {tab === "content" ? (
           <ContentTab asset={asset} onChange={onChange} />
+        ) : tab === "style" ? (
+          <BlockStyleTab asset={asset} onChange={onChange} />
         ) : (
           <MechanicsTab asset={asset} onChange={onChange} tapeRef={tapeRef} pinRef={pinRef} highlight={initialFocus} />
         )}
@@ -1012,6 +1019,132 @@ function LayoutEditor({ asset, onChange }: { asset: AssetBase; onChange: (p: Par
           </div>
           <button onClick={() => set({ items: [...(Array.isArray(d.items) ? (d.items as unknown[]) : []), { title: "", body: "" }] })} className={`${btnCls} mt-2 w-full`}>+ add cell</button>
         </Field>
+      )}
+    </>
+  );
+}
+
+// ============ Style tab (blocks only) ============
+
+function BlockStyleTab({ asset, onChange }: { asset: AssetBase; onChange: (p: Partial<AssetBase>) => void }) {
+  const s = asset.blockStyle || {};
+  const setS = (patch: Partial<NonNullable<AssetBase["blockStyle"]>>) =>
+    onChange({ blockStyle: { ...s, ...patch } });
+  const t = asset.blockType || "table";
+
+  return (
+    <>
+      <Field>
+        <Label>Padding ({s.padding ?? 10}px)</Label>
+        <input
+          type="range" min={0} max={32} value={s.padding ?? 10}
+          onChange={(e) => setS({ padding: parseInt(e.target.value, 10) })}
+          className="w-full"
+        />
+      </Field>
+      <Field>
+        <Label>Corner radius ({s.radius ?? 3}px)</Label>
+        <input
+          type="range" min={0} max={24} value={s.radius ?? 3}
+          onChange={(e) => setS({ radius: parseInt(e.target.value, 10) })}
+          className="w-full"
+        />
+      </Field>
+      <div className="grid grid-cols-2 gap-2">
+        <Field>
+          <Label>Background</Label>
+          <input type="color" value={s.bg ?? "#fbf7ec"} onChange={(e) => setS({ bg: e.target.value })} className="h-8 w-full rounded border border-input bg-background" />
+        </Field>
+        <Field>
+          <Label>Text</Label>
+          <input type="color" value={s.fg ?? "#1f1a14"} onChange={(e) => setS({ fg: e.target.value })} className="h-8 w-full rounded border border-input bg-background" />
+        </Field>
+      </div>
+      <Field>
+        <Label>Border</Label>
+        <div className="grid grid-cols-4 gap-1.5">
+          {(["none", "solid", "dashed", "dotted"] as const).map((b) => (
+            <button
+              key={b}
+              onClick={() => setS({ borderStyle: b })}
+              className={`rounded border px-2 py-1.5 font-mono text-[10px] lowercase ${
+                (s.borderStyle ?? "none") === b ? "border-stone-900 bg-accent/40" : "border-border hover:bg-black/5"
+              }`}
+            >
+              {b}
+            </button>
+          ))}
+        </div>
+      </Field>
+      {s.borderStyle && s.borderStyle !== "none" && (
+        <div className="grid grid-cols-2 gap-2">
+          <Field>
+            <Label>Border color</Label>
+            <input type="color" value={s.borderColor ?? "#1f1a14"} onChange={(e) => setS({ borderColor: e.target.value })} className="h-8 w-full rounded border border-input bg-background" />
+          </Field>
+          <Field>
+            <Label>Width ({s.borderWidth ?? 1}px)</Label>
+            <input type="range" min={1} max={6} value={s.borderWidth ?? 1} onChange={(e) => setS({ borderWidth: parseInt(e.target.value, 10) })} className="w-full" />
+          </Field>
+        </div>
+      )}
+      <Field>
+        <label className="flex items-center gap-2 font-mono text-[11px] lowercase text-foreground cursor-pointer">
+          <input
+            type="checkbox"
+            checked={s.shadow !== false}
+            onChange={(e) => setS({ shadow: e.target.checked })}
+          />
+          drop shadow
+        </label>
+      </Field>
+
+      {t === "table" && (
+        <>
+          <div className="h-px bg-sidebar-border my-1" />
+          <Field>
+            <Label>Row density</Label>
+            <div className="grid grid-cols-3 gap-1.5">
+              {(["compact", "cozy", "roomy"] as const).map((d) => (
+                <button
+                  key={d}
+                  onClick={() => setS({ tableDensity: d })}
+                  className={`rounded border px-2 py-1.5 font-mono text-[10px] lowercase ${
+                    (s.tableDensity ?? "cozy") === d ? "border-stone-900 bg-accent/40" : "border-border hover:bg-black/5"
+                  }`}
+                >
+                  {d}
+                </button>
+              ))}
+            </div>
+          </Field>
+          <Field>
+            <Label>Row dividers</Label>
+            <div className="grid grid-cols-3 gap-1.5">
+              {(["solid", "dashed", "none"] as const).map((d) => (
+                <button
+                  key={d}
+                  onClick={() => setS({ tableDividers: d })}
+                  className={`rounded border px-2 py-1.5 font-mono text-[10px] lowercase ${
+                    (s.tableDividers ?? "dashed") === d ? "border-stone-900 bg-accent/40" : "border-border hover:bg-black/5"
+                  }`}
+                >
+                  {d}
+                </button>
+              ))}
+            </div>
+          </Field>
+          <Field>
+            <label className="flex items-center gap-2 font-mono text-[11px] lowercase text-foreground cursor-pointer">
+              <input
+                type="checkbox"
+                checked={s.tableHeaderUnderline !== false}
+                onChange={(e) => setS({ tableHeaderUnderline: e.target.checked })}
+              />
+              header underline
+            </label>
+          </Field>
+        </>
       )}
     </>
   );

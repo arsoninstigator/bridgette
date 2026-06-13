@@ -63,6 +63,20 @@ export interface AssetBase {
     | "input"
     | "layout";
   blockData?: string; // JSON payload for the block
+  blockStyle?: {
+    padding?: number;
+    radius?: number;
+    bg?: string;
+    fg?: string;
+    borderStyle?: "none" | "solid" | "dashed" | "dotted";
+    borderColor?: string;
+    borderWidth?: number;
+    shadow?: boolean;
+    // table extras
+    tableDensity?: "compact" | "cozy" | "roomy";
+    tableDividers?: "solid" | "dashed" | "none";
+    tableHeaderUnderline?: boolean;
+  };
   frameStyle?: "classic" | "ornate" | "polaroid" | "oval" | "scalloped" | "double"; // for kind: frame
   shape?: "rect" | "circle" | "triangle" | "diamond" | "star";
   fill?: string;
