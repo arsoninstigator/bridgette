@@ -98,17 +98,114 @@ export function SiteHeader() {
   );
 }
 
+const FOOTER_LINKS = {
+  product: [
+    { to: "/features" as const, label: "features" },
+    { to: "/roadmap" as const, label: "roadmap" },
+    { to: "/compare" as const, label: "compare" },
+    { to: "/dashboard" as const, label: "dashboard" },
+  ],
+  resources: [
+    { to: "/assets" as const, label: "assets" },
+    { to: "/templates" as const, label: "templates" },
+  ],
+  company: [
+    { to: "/about" as const, label: "about" },
+    { to: "/philosophy" as const, label: "philosophy" },
+    { to: "/positioning" as const, label: "positioning" },
+  ],
+};
+
 export function SiteFooter() {
   return (
     <footer className="border-t border-border bg-secondary/40">
-      <div className="max-w-6xl mx-auto px-6 py-8 flex flex-wrap items-center justify-between gap-3">
-        <div className="flex items-center gap-2">
-          <span className="inline-block size-2.5 rounded-full bg-red-700 ring-2 ring-red-900/60" />
-          <span className="font-display text-base lowercase tracking-tight">zinegeist</span>
+      <div className="max-w-6xl mx-auto px-6 py-14 grid grid-cols-2 md:grid-cols-12 gap-8">
+        {/* Brand */}
+        <div className="col-span-2 md:col-span-4">
+          <div className="flex items-center gap-2">
+            <span className="inline-block size-2.5 rounded-full bg-red-700 ring-2 ring-red-900/60" />
+            <span className="font-display text-base lowercase tracking-tight">zinegeist</span>
+          </div>
+          <p className="mt-4 max-w-xs font-mono text-[11px] leading-relaxed text-muted-foreground lowercase">
+            a tactile spatial publishing platform for rabbit holes, archives,
+            investigations, and obsessive curation.
+          </p>
+          <p className="mt-4 font-mono text-[10px] uppercase tracking-[0.2em] text-muted-foreground/70">
+            saved locally · shared via /s/key
+          </p>
         </div>
-        <p className="font-mono text-[10px] uppercase tracking-[0.2em] text-muted-foreground">
-          saved locally · shared via /s/key · or sign in to publish to your account
-        </p>
+
+        {/* Product */}
+        <div className="col-span-1 md:col-span-2 md:col-start-6">
+          <h4 className="font-mono text-[10px] uppercase tracking-[0.2em] text-foreground">product</h4>
+          <ul className="mt-4 space-y-2.5">
+            {FOOTER_LINKS.product.map((l) => (
+              <li key={l.to}>
+                <Link
+                  to={l.to}
+                  className="font-mono text-[11px] lowercase tracking-wide text-muted-foreground hover:text-foreground transition-colors"
+                >
+                  {l.label}
+                </Link>
+              </li>
+            ))}
+          </ul>
+        </div>
+
+        {/* Resources */}
+        <div className="col-span-1 md:col-span-2">
+          <h4 className="font-mono text-[10px] uppercase tracking-[0.2em] text-foreground">resources</h4>
+          <ul className="mt-4 space-y-2.5">
+            {FOOTER_LINKS.resources.map((l) => (
+              <li key={l.to}>
+                <Link
+                  to={l.to}
+                  className="font-mono text-[11px] lowercase tracking-wide text-muted-foreground hover:text-foreground transition-colors"
+                >
+                  {l.label}
+                </Link>
+              </li>
+            ))}
+          </ul>
+        </div>
+
+        {/* Company */}
+        <div className="col-span-1 md:col-span-2">
+          <h4 className="font-mono text-[10px] uppercase tracking-[0.2em] text-foreground">company</h4>
+          <ul className="mt-4 space-y-2.5">
+            {FOOTER_LINKS.company.map((l) => (
+              <li key={l.to}>
+                <Link
+                  to={l.to}
+                  className="font-mono text-[11px] lowercase tracking-wide text-muted-foreground hover:text-foreground transition-colors"
+                >
+                  {l.label}
+                </Link>
+              </li>
+            ))}
+          </ul>
+        </div>
+      </div>
+
+      {/* Bottom bar */}
+      <div className="border-t border-border/60">
+        <div className="max-w-6xl mx-auto px-6 py-5 flex flex-wrap items-center justify-between gap-3">
+          <p className="font-mono text-[10px] uppercase tracking-[0.18em] text-muted-foreground/60">
+            © {new Date().getFullYear()} zinegeist
+          </p>
+          <div className="flex items-center gap-4">
+            <Link
+              to="/auth"
+              className="font-mono text-[10px] uppercase tracking-[0.18em] text-muted-foreground/60 hover:text-foreground transition-colors"
+            >
+              sign in
+            </Link>
+            <span className="text-muted-foreground/30">·</span>
+            <span className="font-mono text-[10px] uppercase tracking-[0.18em] text-muted-foreground/60">
+              made with obsession
+            </span>
+          </div>
+        </div>
       </div>
     </footer>
   );
