@@ -62,7 +62,15 @@ export function SettingsPanel({ asset, onChange, onDelete, onClose, initialFocus
           <MechanicsTab asset={asset} onChange={onChange} tapeRef={tapeRef} pinRef={pinRef} highlight={initialFocus} />
         )}
       </div>
-      <div className="p-3 border-t border-sidebar-border">
+      <div className="p-3 border-t border-sidebar-border space-y-2">
+        {isBlock && (
+          <button
+            onClick={() => saveBlockAsTemplate(asset)}
+            className="w-full rounded-md border border-input bg-background px-3 py-2 font-mono text-xs uppercase tracking-wider hover:bg-accent"
+          >
+            Save as template
+          </button>
+        )}
         <button
           onClick={onDelete}
           className="w-full rounded-md border border-destructive/40 px-3 py-2 font-mono text-xs uppercase tracking-wider text-destructive hover:bg-destructive/10"
