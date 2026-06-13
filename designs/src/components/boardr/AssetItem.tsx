@@ -698,27 +698,48 @@ function renderBlock(a: AssetBase): React.ReactNode {
   const w = a.width ?? 280;
   const h = a.height ?? 180;
   const t = a.blockType || "table";
+  const s = a.blockStyle || {};
+  const padding = s.padding ?? 10;
+  const radius = s.radius ?? 3;
+  const bg = s.bg ?? "#fbf7ec";
+  const fg = s.fg ?? "#1f1a14";
+  const bw = s.borderStyle && s.borderStyle !== "none" ? (s.borderWidth ?? 1) : 0;
+  const border =
+    s.borderStyle && s.borderStyle !== "none"
+      ? `${bw}px ${s.borderStyle} ${s.borderColor ?? "#1f1a14"}`
+      : "none";
+  const shadow =
+    s.shadow === false
+      ? "none"
+      : "0 1px 2px rgba(40,25,10,0.18), 0 6px 14px rgba(40,25,10,0.10)";
   const wrap: React.CSSProperties = {
     width: w,
     minHeight: h,
-    background: "#fbf7ec",
-    borderRadius: 3,
-    padding: 10,
-    boxShadow: "0 1px 2px rgba(40,25,10,0.18), 0 6px 14px rgba(40,25,10,0.10)",
+    background: bg,
+    borderRadius: radius,
+    padding,
+    border,
+    boxShadow: shadow,
     fontFamily: "ui-monospace, SFMono-Regular, Menlo, monospace",
-    color: "#1f1a14",
+    color: fg,
   };
   if (t === "table") {
     const raw = parseBlockData<{ headers?: string[]; rows?: string[][] }>(a.blockData) || {};
     const headers = Array.isArray(raw.headers) ? raw.headers : [];
     const rows = Array.isArray(raw.rows) ? raw.rows : [];
+    const density = s.tableDensity ?? "cozy";
+    const cellPadY = density === "compact" ? 2 : density === "roomy" ? 8 : 4;
+    const cellPadX = density === "compact" ? 4 : density === "roomy" ? 10 : 6;
+    const divider = s.tableDividers ?? "dashed";
+    const cellBorder = divider === "none" ? "none" : `1px ${divider} ${divider === "solid" ? "#1f1a14" : "#c9b99a"}`;
+    const headerUnderline = s.tableHeaderUnderline === false ? "none" : `1px solid ${fg}`;
     return (
       <div style={wrap}>
         <table style={{ width: "100%", borderCollapse: "collapse", fontSize: 11 }}>
           <thead>
             <tr>
               {headers.map((hd, i) => (
-                <th key={i} style={{ textAlign: "left", borderBottom: "1px solid #1f1a14", padding: "4px 6px", textTransform: "lowercase", letterSpacing: "0.06em" }}>{hd}</th>
+                <th key={i} style={{ textAlign: "left", borderBottom: headerUnderline, padding: `${cellPadY}px ${cellPadX}px`, textTransform: "lowercase", letterSpacing: "0.06em" }}>{hd}</th>
               ))}
             </tr>
           </thead>
@@ -726,7 +747,7 @@ function renderBlock(a: AssetBase): React.ReactNode {
             {rows.map((row, ri) => (
               <tr key={ri}>
                 {(Array.isArray(row) ? row : []).map((c, ci) => (
-                  <td key={ci} style={{ borderBottom: "1px dashed #c9b99a", padding: "4px 6px" }}>{c}</td>
+                  <td key={ci} style={{ borderBottom: cellBorder, padding: `${cellPadY}px ${cellPadX}px` }}>{c}</td>
                 ))}
               </tr>
             ))}
