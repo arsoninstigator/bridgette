@@ -11,8 +11,10 @@ interface Props {
 
 export function SettingsPanel({ asset, onChange, onDelete, onClose, initialFocus }: Props) {
   const isBlock = asset.kind === "block";
-  const tabs = (isBlock ? ["content", "style", "mechanics"] : ["content", "mechanics"]) as const;
-  type TabId = (typeof tabs)[number];
+  const tabs: ReadonlyArray<"content" | "style" | "mechanics"> = isBlock
+    ? (["content", "style", "mechanics"] as const)
+    : (["content", "mechanics"] as const);
+  type TabId = "content" | "style" | "mechanics";
   const [tab, setTab] = useState<TabId>(
     initialFocus === "mechanics" || initialFocus === "tape" || initialFocus === "pin" ? "mechanics" : "content",
   );
