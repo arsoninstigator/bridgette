@@ -171,7 +171,7 @@ export function AssetItem({
             title="drag to resize"
           />
         )}
-      </div>
+      </motion.div>
     </div>
   );
 }
