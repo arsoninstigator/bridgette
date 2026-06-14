@@ -117,12 +117,18 @@ export interface PageContent {
 }
 
 export interface SurfacePattern {
-  type: "grid" | "stripes" | "checker" | "dots";
+  type: "grid" | "stripes" | "checker" | "dots" | "bands";
   size: number; // px
   color1: string;
   color2: string; // background color
   thickness?: number; // px for grid/stripes
   angle?: number; // deg for stripes
+  // ----- "bands" multi-color stripe options -----
+  colors?: string[]; // ordered alternating colors (2..8)
+  stripeWidth?: number; // px width of each colored stripe
+  gap?: number; // px spacing between stripes (uses color2 as gap color)
+  direction?: "horizontal" | "vertical" | "diagonal" | "diagonal-reverse";
+  repeat?: number; // how many times the colors sequence repeats before looping (>=1)
 }
 
 export interface SurfaceOverlay {

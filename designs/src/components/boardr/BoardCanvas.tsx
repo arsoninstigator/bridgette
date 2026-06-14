@@ -345,6 +345,31 @@ function patternStyle(p: NonNullable<SurfaceOverlay["pattern"]>): React.CSSPrope
   const t = Math.max(1, p.thickness || 1);
   const c1 = p.color1;
   const c2 = p.color2;
+  if (p.type === "bands") {
+    const colors = (p.colors && p.colors.length > 0 ? p.colors : [c1, c2]);
+    const w = Math.max(1, p.stripeWidth ?? 24);
+    const gap = Math.max(0, p.gap ?? 0);
+    const repeat = Math.max(1, Math.floor(p.repeat ?? 1));
+    const dirDeg = p.direction === "horizontal" ? 0
+      : p.direction === "diagonal" ? 45
+      : p.direction === "diagonal-reverse" ? -45
+      : 90; // vertical default
+    const stops: string[] = [];
+    let off = 0;
+    for (let r = 0; r < repeat; r++) {
+      for (const col of colors) {
+        stops.push(`${col} ${off}px ${off + w}px`);
+        off += w;
+        if (gap > 0) {
+          stops.push(`${c2} ${off}px ${off + gap}px`);
+          off += gap;
+        }
+      }
+    }
+    return {
+      backgroundImage: `repeating-linear-gradient(${dirDeg}deg, ${stops.join(", ")})`,
+    };
+  }
   if (p.type === "stripes") {
     const angle = p.angle ?? 45;
     return {

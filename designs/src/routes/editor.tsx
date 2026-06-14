@@ -986,15 +986,27 @@ function PatternsBlock({
   const color1 = p?.color1 ?? "#1a1a1a";
   const color2 = p?.color2 ?? "#faf3f5";
   const angle = p?.angle ?? 45;
+  const bandColors = p?.colors ?? ["#f9a8d4", "#fce7f3"];
+  const stripeWidth = p?.stripeWidth ?? 24;
+  const gap = p?.gap ?? 0;
+  const direction = p?.direction ?? "vertical";
+  const repeat = p?.repeat ?? 1;
 
   function set(patch: Partial<NonNullable<typeof p>>) {
     setSurface({
       pattern: {
         type, size, thickness, color1, color2, angle,
+        colors: bandColors, stripeWidth, gap, direction, repeat,
         ...(p ?? {}),
         ...patch,
       },
     });
+  }
+
+  function setBandColor(i: number, hex: string) {
+    const next = [...bandColors];
+    next[i] = hex;
+    set({ colors: next });
   }
 
   return (
@@ -1016,8 +1028,8 @@ function PatternsBlock({
       </button>
       {open && (
         <div className="p-2 space-y-2">
-          <div className="grid grid-cols-4 gap-1">
-            {(["grid", "stripes", "checker", "dots"] as const).map((t) => (
+          <div className="grid grid-cols-5 gap-1">
+            {(["grid", "stripes", "bands", "checker", "dots"] as const).map((t) => (
               <button
                 key={t}
                 onClick={() => set({ type: t })}
@@ -1029,52 +1041,151 @@ function PatternsBlock({
               </button>
             ))}
           </div>
-          <div className="grid grid-cols-2 gap-2">
-            <div>
-              <div className="font-mono text-[9px] lowercase text-muted-foreground mb-1">line / dot</div>
-              <input
-                type="color" value={/^#[0-9a-f]{6}$/i.test(color1) ? color1 : "#000000"}
-                onChange={(e) => set({ color1: e.target.value })}
-                className="h-7 w-full rounded border border-border bg-transparent"
-              />
-            </div>
-            <div>
-              <div className="font-mono text-[9px] lowercase text-muted-foreground mb-1">background</div>
-              <input
-                type="color" value={/^#[0-9a-f]{6}$/i.test(color2) ? color2 : "#ffffff"}
-                onChange={(e) => set({ color2: e.target.value })}
-                className="h-7 w-full rounded border border-border bg-transparent"
-              />
-            </div>
-          </div>
-          <div>
-            <div className="font-mono text-[9px] lowercase text-muted-foreground mb-1">cell size · {size}px</div>
-            <input
-              type="range" min={4} max={120} value={size}
-              onChange={(e) => set({ size: Number(e.target.value) })}
-              className="w-full"
-            />
-          </div>
-          {(type === "grid" || type === "stripes" || type === "dots") && (
-            <div>
-              <div className="font-mono text-[9px] lowercase text-muted-foreground mb-1">thickness · {thickness}px</div>
-              <input
-                type="range" min={1} max={12} value={thickness}
-                onChange={(e) => set({ thickness: Number(e.target.value) })}
-                className="w-full"
-              />
-            </div>
+
+          {type === "bands" ? (
+            <>
+              <div>
+                <div className="font-mono text-[9px] lowercase text-muted-foreground mb-1">
+                  colors · {bandColors.length}
+                </div>
+                <div className="space-y-1">
+                  {bandColors.map((c, i) => (
+                    <div key={i} className="flex items-center gap-1">
+                      <input
+                        type="color"
+                        value={/^#[0-9a-f]{6}$/i.test(c) ? c : "#000000"}
+                        onChange={(e) => setBandColor(i, e.target.value)}
+                        className="h-6 w-10 rounded border border-border bg-transparent"
+                      />
+                      <input
+                        type="text"
+                        value={c}
+                        onChange={(e) => setBandColor(i, e.target.value)}
+                        className="flex-1 rounded border border-border bg-background px-2 py-0.5 font-mono text-[10px]"
+                      />
+                      {bandColors.length > 2 && (
+                        <button
+                          onClick={() => set({ colors: bandColors.filter((_, j) => j !== i) })}
+                          className="font-mono text-[10px] text-muted-foreground hover:text-destructive px-1"
+                        >×</button>
+                      )}
+                    </div>
+                  ))}
+                </div>
+                <div className="flex gap-1 mt-1">
+                  {bandColors.length < 8 && (
+                    <button
+                      onClick={() => set({ colors: [...bandColors, "#ffffff"] })}
+                      className="flex-1 rounded border border-border px-2 py-1 font-mono text-[10px] lowercase hover:bg-black/5"
+                    >+ color</button>
+                  )}
+                </div>
+              </div>
+              <div>
+                <div className="font-mono text-[9px] lowercase text-muted-foreground mb-1">direction</div>
+                <div className="grid grid-cols-4 gap-1">
+                  {([
+                    ["vertical", "vert"],
+                    ["horizontal", "horiz"],
+                    ["diagonal", "diag /"],
+                    ["diagonal-reverse", "diag \\"],
+                  ] as const).map(([d, label]) => (
+                    <button
+                      key={d}
+                      onClick={() => set({ direction: d })}
+                      className={`rounded border px-1 py-1 font-mono text-[10px] lowercase ${
+                        direction === d ? "border-stone-900 bg-accent/40" : "border-border hover:bg-black/5"
+                      }`}
+                    >{label}</button>
+                  ))}
+                </div>
+              </div>
+              <div>
+                <div className="font-mono text-[9px] lowercase text-muted-foreground mb-1">stripe width · {stripeWidth}px</div>
+                <input
+                  type="range" min={2} max={120} value={stripeWidth}
+                  onChange={(e) => set({ stripeWidth: Number(e.target.value) })}
+                  className="w-full"
+                />
+              </div>
+              <div>
+                <div className="font-mono text-[9px] lowercase text-muted-foreground mb-1">gap · {gap}px</div>
+                <input
+                  type="range" min={0} max={80} value={gap}
+                  onChange={(e) => set({ gap: Number(e.target.value) })}
+                  className="w-full"
+                />
+              </div>
+              <div>
+                <div className="font-mono text-[9px] lowercase text-muted-foreground mb-1">repeat sequence · {repeat}×</div>
+                <input
+                  type="range" min={1} max={8} value={repeat}
+                  onChange={(e) => set({ repeat: Number(e.target.value) })}
+                  className="w-full"
+                />
+              </div>
+              {gap > 0 && (
+                <div>
+                  <div className="font-mono text-[9px] lowercase text-muted-foreground mb-1">gap color</div>
+                  <input
+                    type="color" value={/^#[0-9a-f]{6}$/i.test(color2) ? color2 : "#ffffff"}
+                    onChange={(e) => set({ color2: e.target.value })}
+                    className="h-7 w-full rounded border border-border bg-transparent"
+                  />
+                </div>
+              )}
+            </>
+          ) : (
+            <>
+              <div className="grid grid-cols-2 gap-2">
+                <div>
+                  <div className="font-mono text-[9px] lowercase text-muted-foreground mb-1">line / dot</div>
+                  <input
+                    type="color" value={/^#[0-9a-f]{6}$/i.test(color1) ? color1 : "#000000"}
+                    onChange={(e) => set({ color1: e.target.value })}
+                    className="h-7 w-full rounded border border-border bg-transparent"
+                  />
+                </div>
+                <div>
+                  <div className="font-mono text-[9px] lowercase text-muted-foreground mb-1">background</div>
+                  <input
+                    type="color" value={/^#[0-9a-f]{6}$/i.test(color2) ? color2 : "#ffffff"}
+                    onChange={(e) => set({ color2: e.target.value })}
+                    className="h-7 w-full rounded border border-border bg-transparent"
+                  />
+                </div>
+              </div>
+              <div>
+                <div className="font-mono text-[9px] lowercase text-muted-foreground mb-1">cell size · {size}px</div>
+                <input
+                  type="range" min={4} max={120} value={size}
+                  onChange={(e) => set({ size: Number(e.target.value) })}
+                  className="w-full"
+                />
+              </div>
+              {(type === "grid" || type === "stripes" || type === "dots") && (
+                <div>
+                  <div className="font-mono text-[9px] lowercase text-muted-foreground mb-1">thickness · {thickness}px</div>
+                  <input
+                    type="range" min={1} max={12} value={thickness}
+                    onChange={(e) => set({ thickness: Number(e.target.value) })}
+                    className="w-full"
+                  />
+                </div>
+              )}
+              {type === "stripes" && (
+                <div>
+                  <div className="font-mono text-[9px] lowercase text-muted-foreground mb-1">angle · {angle}°</div>
+                  <input
+                    type="range" min={0} max={180} value={angle}
+                    onChange={(e) => set({ angle: Number(e.target.value) })}
+                    className="w-full"
+                  />
+                </div>
+              )}
+            </>
           )}
-          {type === "stripes" && (
-            <div>
-              <div className="font-mono text-[9px] lowercase text-muted-foreground mb-1">angle · {angle}°</div>
-              <input
-                type="range" min={0} max={180} value={angle}
-                onChange={(e) => set({ angle: Number(e.target.value) })}
-                className="w-full"
-              />
-            </div>
-          )}
+
           {!p && (
             <button
               onClick={() => set({})}
