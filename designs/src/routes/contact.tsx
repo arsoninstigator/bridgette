@@ -29,7 +29,7 @@ const CHANNELS = [
 ];
 
 function Contact() {
-  const [form, setForm] = useState({ name: "", email: "", topic: "feedback" as const, message: "" });
+  const [form, setForm] = useState<{ name: string; email: string; topic: "feedback" | "bug" | "collab" | "press" | "other"; message: string }>({ name: "", email: "", topic: "feedback", message: "" });
   const [errors, setErrors] = useState<Record<string, string>>({});
   const [sent, setSent] = useState(false);
 
