@@ -1,6 +1,25 @@
 import { useEffect, useRef, useState } from "react";
 import { Lock } from "lucide-react";
+import { motion } from "framer-motion";
 import type { AssetBase } from "../../lib/boardr/types";
+
+function animationProps(a: AssetBase) {
+  const d = a.animationDuration ?? 2;
+  switch (a.animation) {
+    case "fade":
+      return { initial: { opacity: 0 }, animate: { opacity: 1 }, transition: { duration: d } };
+    case "float":
+      return { animate: { y: [0, -4, 0] }, transition: { duration: d, repeat: Infinity, ease: "easeInOut" as const } };
+    case "pulse":
+      return { animate: { scale: [1, 1.04, 1] }, transition: { duration: d, repeat: Infinity, ease: "easeInOut" as const } };
+    case "wiggle":
+      return { animate: { rotate: [0, 1.5, -1.5, 0] }, transition: { duration: d, repeat: Infinity, ease: "easeInOut" as const } };
+    case "pop":
+      return { initial: { scale: 0.6, opacity: 0 }, animate: { scale: 1, opacity: 1 }, transition: { type: "spring" as const, stiffness: 260, damping: 18 } };
+    default:
+      return {};
+  }
+}
 import pushpinAsset from "@/assets/pushpin.svg.asset.json";
 import woodenClipAsset from "@/assets/wooden-clip.svg.asset.json";
 import {
