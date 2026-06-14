@@ -85,6 +85,9 @@ export interface AssetBase {
   iconSpeed?: number; // marquee speed (s per loop)
   iconBg?: string; // marquee background
   iconFg?: string; // marquee text color
+  // Optional motion (framer-motion) for assets
+  animation?: "none" | "fade" | "float" | "pulse" | "wiggle" | "pop";
+  animationDuration?: number; // seconds
 }
 
 export interface StringConn {
