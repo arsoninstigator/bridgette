@@ -19,6 +19,7 @@ type NavTo =
   | "/dashboard"
   | "/assets"
   | "/templates"
+  | "/contact"
   | "/auth";
 
 export function SiteHeader() {
