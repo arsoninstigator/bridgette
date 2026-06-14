@@ -133,7 +133,7 @@ export function AssetItem({
         selected ? "ring-2 ring-offset-2 ring-amber-700/60 rounded-sm" : "",
       ].join(" ")}
     >
-      <div className="relative">
+      <motion.div className="relative" {...animationProps(asset)}>
         {renderAssetBody(asset, showBack, interactive, onPatch, gallery)}
         {asset.tapeAttached && <AttachedTape color={asset.tapeAttachColor} />}
         {asset.clipAttached && <AttachedClip color={asset.clipColor} />}
