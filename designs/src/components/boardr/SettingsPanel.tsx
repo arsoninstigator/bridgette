@@ -594,6 +594,46 @@ function MechanicsTab({
           />
         </Field>
       )}
+
+      <Field>
+        <Label>Animation (optional)</Label>
+        <div className="grid grid-cols-3 gap-1">
+          {(["none", "fade", "float", "pulse", "wiggle", "pop"] as const).map((opt) => {
+            const active = (asset.animation ?? "none") === opt;
+            return (
+              <button
+                key={opt}
+                onClick={() => onChange({ animation: opt })}
+                className={[
+                  "px-2 py-1 font-mono text-[10px] uppercase tracking-wider border rounded-sm",
+                  active
+                    ? "bg-amber-700 text-stone-50 border-amber-800"
+                    : "bg-background border-stone-300 text-stone-600 hover:text-foreground",
+                ].join(" ")}
+              >
+                {opt}
+              </button>
+            );
+          })}
+        </div>
+        {asset.animation && asset.animation !== "none" && (
+          <div className="mt-2">
+            <Label>Duration ({(asset.animationDuration ?? 2).toFixed(1)}s)</Label>
+            <input
+              type="range"
+              min={0.3}
+              max={6}
+              step={0.1}
+              value={asset.animationDuration ?? 2}
+              onChange={(e) => onChange({ animationDuration: Number(e.target.value) })}
+              className="w-full"
+            />
+          </div>
+        )}
+        <p className="mt-1 font-mono text-[10px] text-muted-foreground">
+          Tiny motion via framer-motion. Applied on viewer side too.
+        </p>
+      </Field>
     </>
   );
 }

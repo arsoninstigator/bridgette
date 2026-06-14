@@ -17,6 +17,7 @@ import { Route as MarketplaceRouteImport } from './routes/marketplace'
 import { Route as FeaturesRouteImport } from './routes/features'
 import { Route as EditorRouteImport } from './routes/editor'
 import { Route as DashboardRouteImport } from './routes/dashboard'
+import { Route as ContactRouteImport } from './routes/contact'
 import { Route as CompareRouteImport } from './routes/compare'
 import { Route as AuthRouteImport } from './routes/auth'
 import { Route as AssetsRouteImport } from './routes/assets'
@@ -66,6 +67,11 @@ const DashboardRoute = DashboardRouteImport.update({
   path: '/dashboard',
   getParentRoute: () => rootRouteImport,
 } as any)
+const ContactRoute = ContactRouteImport.update({
+  id: '/contact',
+  path: '/contact',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const CompareRoute = CompareRouteImport.update({
   id: '/compare',
   path: '/compare',
@@ -113,6 +119,7 @@ export interface FileRoutesByFullPath {
   '/assets': typeof AssetsRoute
   '/auth': typeof AuthRoute
   '/compare': typeof CompareRoute
+  '/contact': typeof ContactRoute
   '/dashboard': typeof DashboardRoute
   '/editor': typeof EditorRoute
   '/features': typeof FeaturesRoute
@@ -131,6 +138,7 @@ export interface FileRoutesByTo {
   '/assets': typeof AssetsRoute
   '/auth': typeof AuthRoute
   '/compare': typeof CompareRoute
+  '/contact': typeof ContactRoute
   '/dashboard': typeof DashboardRoute
   '/editor': typeof EditorRoute
   '/features': typeof FeaturesRoute
@@ -150,6 +158,7 @@ export interface FileRoutesById {
   '/assets': typeof AssetsRoute
   '/auth': typeof AuthRoute
   '/compare': typeof CompareRoute
+  '/contact': typeof ContactRoute
   '/dashboard': typeof DashboardRoute
   '/editor': typeof EditorRoute
   '/features': typeof FeaturesRoute
@@ -170,6 +179,7 @@ export interface FileRouteTypes {
     | '/assets'
     | '/auth'
     | '/compare'
+    | '/contact'
     | '/dashboard'
     | '/editor'
     | '/features'
@@ -188,6 +198,7 @@ export interface FileRouteTypes {
     | '/assets'
     | '/auth'
     | '/compare'
+    | '/contact'
     | '/dashboard'
     | '/editor'
     | '/features'
@@ -206,6 +217,7 @@ export interface FileRouteTypes {
     | '/assets'
     | '/auth'
     | '/compare'
+    | '/contact'
     | '/dashboard'
     | '/editor'
     | '/features'
@@ -225,6 +237,7 @@ export interface RootRouteChildren {
   AssetsRoute: typeof AssetsRoute
   AuthRoute: typeof AuthRoute
   CompareRoute: typeof CompareRoute
+  ContactRoute: typeof ContactRoute
   DashboardRoute: typeof DashboardRoute
   EditorRoute: typeof EditorRoute
   FeaturesRoute: typeof FeaturesRoute
@@ -292,6 +305,13 @@ declare module '@tanstack/react-router' {
       path: '/dashboard'
       fullPath: '/dashboard'
       preLoaderRoute: typeof DashboardRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/contact': {
+      id: '/contact'
+      path: '/contact'
+      fullPath: '/contact'
+      preLoaderRoute: typeof ContactRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/compare': {
@@ -381,6 +401,7 @@ const rootRouteChildren: RootRouteChildren = {
   AssetsRoute: AssetsRoute,
   AuthRoute: AuthRoute,
   CompareRoute: CompareRoute,
+  ContactRoute: ContactRoute,
   DashboardRoute: DashboardRoute,
   EditorRoute: EditorRoute,
   FeaturesRoute: FeaturesRoute,

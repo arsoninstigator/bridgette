@@ -19,6 +19,7 @@ type NavTo =
   | "/dashboard"
   | "/assets"
   | "/templates"
+  | "/contact"
   | "/auth";
 
 export function SiteHeader() {
@@ -113,6 +114,7 @@ const FOOTER_LINKS = {
     { to: "/about" as const, label: "about" },
     { to: "/philosophy" as const, label: "philosophy" },
     { to: "/positioning" as const, label: "positioning" },
+    { to: "/contact" as const, label: "contact" },
   ],
 };
 
