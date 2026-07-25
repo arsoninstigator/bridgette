@@ -2644,6 +2644,62 @@ function StubBlockTile({ label }: { label: string }) {
   );
 }
 
+function KitsPanel() {
+  const [q, setQ] = useState("");
+  const filtered = useMemo(() => {
+    const s = q.trim().toLowerCase();
+    if (!s) return SEED_PACKS;
+    return SEED_PACKS.filter((p) =>
+      `${p.name} ${p.description} ${p.category} ${p.tags.join(" ")}`.toLowerCase().includes(s),
+    );
+  }, [q]);
+  return (
+    <div className="space-y-3">
+      <p className="text-xs text-muted-foreground lowercase">
+        curated aesthetic kits. browse the full library to install into your board.
+      </p>
+      <input
+        value={q}
+        onChange={(e) => setQ(e.target.value)}
+        placeholder="search kits…"
+        className="w-full text-xs px-2 py-1.5 rounded border border-border bg-background focus:outline-none focus:border-stone-500"
+      />
+      <div className="space-y-2">
+        {filtered.map((p) => (
+          <div key={p.id} className="rounded-md border border-border overflow-hidden bg-card">
+            <div className="h-10 grid grid-cols-4">
+              {p.swatch.map((c, i) => (<div key={i} style={{ background: c }} />))}
+            </div>
+            <div className="p-2.5">
+              <div className="flex items-center justify-between gap-2">
+                <h4 className="font-display text-sm lowercase leading-tight">{p.name}</h4>
+                <span className="font-mono text-[9px] uppercase tracking-wider text-muted-foreground shrink-0">{p.pack_type}</span>
+              </div>
+              <p className="mt-1 text-[11px] text-stone-600 line-clamp-2">{p.description}</p>
+              <div className="mt-1.5 flex flex-wrap gap-x-1.5 gap-y-0.5">
+                {p.tags.slice(0, 4).map((t) => (
+                  <span key={t} className="text-[10px] text-stone-500">#{t}</span>
+                ))}
+              </div>
+            </div>
+          </div>
+        ))}
+        {filtered.length === 0 && (
+          <p className="text-center text-xs text-muted-foreground py-6">no kits match.</p>
+        )}
+      </div>
+      <Link
+        to="/assets"
+        className="block text-center rounded-md border border-border bg-background px-3 py-2 font-mono text-[10px] uppercase tracking-widest hover:bg-stone-100"
+      >
+        browse full library →
+      </Link>
+    </div>
+  );
+}
+
+
+
 function BlocksPanel({ onAdd }: { onAdd: AddFn }) {
   const building: { label: string; bt: NonNullable<AssetBase["blockType"]>; w: number; h: number }[] = [
     { label: "text", bt: "text", w: 280, h: 100 },
