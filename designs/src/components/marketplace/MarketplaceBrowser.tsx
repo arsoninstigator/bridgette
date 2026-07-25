@@ -7,13 +7,15 @@ import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
 import { SEED_PACKS, SEED_CATEGORIES, type SeedPack } from "@/lib/marketplace/seed";
 
+type PackType = "assets" | "template" | "list" | "configurator";
+
 interface DbPack {
   id: string;
   name: string;
   description: string | null;
   category: string;
   tags: string[];
-  pack_type: "assets" | "template" | "list";
+  pack_type: PackType;
   item_count: number;
   owner_id: string;
   cover_url: string | null;
@@ -21,10 +23,11 @@ interface DbPack {
 
 interface Props {
   /** Restrict pack_type — undefined shows all */
-  packType?: "assets" | "template" | "list";
+  packType?: PackType;
   title: string;
   intro: string;
 }
+
 
 export function MarketplaceBrowser({ packType, title, intro }: Props) {
   const { user } = useAuth();
