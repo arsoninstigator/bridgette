@@ -6,6 +6,7 @@ import {
   Layers,
   Library,
   Blocks as BlocksIcon,
+  Package,
   PaintRoller,
   Paperclip,
   Shapes,
@@ -25,6 +26,7 @@ import {
   History,
   ChevronLeft,
 } from "lucide-react";
+import { SEED_PACKS } from "@/lib/marketplace/seed";
 import {
   createBoard,
   getBoard,
