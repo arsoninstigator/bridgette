@@ -14,6 +14,7 @@ import { Route as RoadmapRouteImport } from './routes/roadmap'
 import { Route as PositioningRouteImport } from './routes/positioning'
 import { Route as PhilosophyRouteImport } from './routes/philosophy'
 import { Route as MarketplaceRouteImport } from './routes/marketplace'
+import { Route as FigmaRouteImport } from './routes/figma'
 import { Route as FeaturesRouteImport } from './routes/features'
 import { Route as EditorRouteImport } from './routes/editor'
 import { Route as DashboardRouteImport } from './routes/dashboard'
@@ -50,6 +51,11 @@ const PhilosophyRoute = PhilosophyRouteImport.update({
 const MarketplaceRoute = MarketplaceRouteImport.update({
   id: '/marketplace',
   path: '/marketplace',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const FigmaRoute = FigmaRouteImport.update({
+  id: '/figma',
+  path: '/figma',
   getParentRoute: () => rootRouteImport,
 } as any)
 const FeaturesRoute = FeaturesRouteImport.update({
@@ -123,6 +129,7 @@ export interface FileRoutesByFullPath {
   '/dashboard': typeof DashboardRoute
   '/editor': typeof EditorRoute
   '/features': typeof FeaturesRoute
+  '/figma': typeof FigmaRoute
   '/marketplace': typeof MarketplaceRouteWithChildren
   '/philosophy': typeof PhilosophyRoute
   '/positioning': typeof PositioningRoute
@@ -142,6 +149,7 @@ export interface FileRoutesByTo {
   '/dashboard': typeof DashboardRoute
   '/editor': typeof EditorRoute
   '/features': typeof FeaturesRoute
+  '/figma': typeof FigmaRoute
   '/marketplace': typeof MarketplaceRouteWithChildren
   '/philosophy': typeof PhilosophyRoute
   '/positioning': typeof PositioningRoute
@@ -162,6 +170,7 @@ export interface FileRoutesById {
   '/dashboard': typeof DashboardRoute
   '/editor': typeof EditorRoute
   '/features': typeof FeaturesRoute
+  '/figma': typeof FigmaRoute
   '/marketplace': typeof MarketplaceRouteWithChildren
   '/philosophy': typeof PhilosophyRoute
   '/positioning': typeof PositioningRoute
@@ -183,6 +192,7 @@ export interface FileRouteTypes {
     | '/dashboard'
     | '/editor'
     | '/features'
+    | '/figma'
     | '/marketplace'
     | '/philosophy'
     | '/positioning'
@@ -202,6 +212,7 @@ export interface FileRouteTypes {
     | '/dashboard'
     | '/editor'
     | '/features'
+    | '/figma'
     | '/marketplace'
     | '/philosophy'
     | '/positioning'
@@ -221,6 +232,7 @@ export interface FileRouteTypes {
     | '/dashboard'
     | '/editor'
     | '/features'
+    | '/figma'
     | '/marketplace'
     | '/philosophy'
     | '/positioning'
@@ -241,6 +253,7 @@ export interface RootRouteChildren {
   DashboardRoute: typeof DashboardRoute
   EditorRoute: typeof EditorRoute
   FeaturesRoute: typeof FeaturesRoute
+  FigmaRoute: typeof FigmaRoute
   MarketplaceRoute: typeof MarketplaceRouteWithChildren
   PhilosophyRoute: typeof PhilosophyRoute
   PositioningRoute: typeof PositioningRoute
@@ -284,6 +297,13 @@ declare module '@tanstack/react-router' {
       path: '/marketplace'
       fullPath: '/marketplace'
       preLoaderRoute: typeof MarketplaceRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/figma': {
+      id: '/figma'
+      path: '/figma'
+      fullPath: '/figma'
+      preLoaderRoute: typeof FigmaRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/features': {
@@ -405,6 +425,7 @@ const rootRouteChildren: RootRouteChildren = {
   DashboardRoute: DashboardRoute,
   EditorRoute: EditorRoute,
   FeaturesRoute: FeaturesRoute,
+  FigmaRoute: FigmaRoute,
   MarketplaceRoute: MarketplaceRouteWithChildren,
   PhilosophyRoute: PhilosophyRoute,
   PositioningRoute: PositioningRoute,

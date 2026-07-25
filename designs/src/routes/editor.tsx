@@ -6,6 +6,7 @@ import {
   Layers,
   Library,
   Blocks as BlocksIcon,
+  Package,
   PaintRoller,
   Paperclip,
   Shapes,
@@ -25,6 +26,7 @@ import {
   History,
   ChevronLeft,
 } from "lucide-react";
+import { SEED_PACKS } from "@/lib/marketplace/seed";
 import {
   createBoard,
   getBoard,
@@ -50,7 +52,7 @@ export const Route = createFileRoute("/editor")({
   component: EditorRoute,
 });
 
-type PanelKey = "select" | "layers" | "library" | "blocks" | "styles" | "assets" | "shape" | "string";
+type PanelKey = "select" | "layers" | "library" | "blocks" | "kits" | "styles" | "assets" | "shape" | "string";
 
 function EditorRoute() {
   const { id, k } = Route.useSearch();
@@ -534,11 +536,12 @@ function Editor({ board, setBoard }: { board: Board; setBoard: (b: Board) => voi
       <div className="flex-1 flex overflow-hidden">
         {/* Icon sidebar */}
         {!previewMode && (
-          <nav className="w-[88px] shrink-0 bg-editor-canvas border-r border-border/60 py-4 flex flex-col gap-2 overflow-y-auto">
+          <nav className="w-[72px] shrink-0 bg-editor-canvas border-r border-border/60 py-2 flex flex-col gap-0.5 overflow-y-auto no-scrollbar">
             <IconBtn icon={MousePointer2} label="select" k="select" active={activePanel} onClick={setActivePanel} />
             <IconBtn icon={Layers} label="layers" k="layers" active={activePanel} onClick={setActivePanel} />
             <IconBtn icon={Library} label="library" k="library" active={activePanel} onClick={setActivePanel} />
             <IconBtn icon={BlocksIcon} label="blocks" k="blocks" active={activePanel} onClick={setActivePanel} />
+            <IconBtn icon={Package} label="kits" k="kits" active={activePanel} onClick={setActivePanel} />
             <IconBtn icon={PaintRoller} label="styles" k="styles" active={activePanel} onClick={setActivePanel} />
             <IconBtn icon={Paperclip} label="assets" k="assets" active={activePanel} onClick={setActivePanel} />
             <IconBtn icon={Shapes} label="shape" k="shape" active={activePanel} onClick={setActivePanel} />
@@ -548,7 +551,7 @@ function Editor({ board, setBoard }: { board: Board; setBoard: (b: Board) => voi
 
         {/* Slide-out panel */}
         {!previewMode && activePanel && (
-          <aside className="w-[300px] shrink-0 bg-card/95 backdrop-blur-sm border-r border-border/60 overflow-y-auto z-10">
+          <aside className="w-[300px] shrink-0 bg-card/95 backdrop-blur-sm border-r border-border/60 overflow-y-auto no-scrollbar z-10">
             <PanelHeader
               title={activePanel === "select" ? "surface" : activePanel}
               onClose={() => setActivePanel(null)}
@@ -609,6 +612,7 @@ function Editor({ board, setBoard }: { board: Board; setBoard: (b: Board) => voi
                 />
               )}
               {activePanel === "blocks" && <BlocksPanel onAdd={addAsset} />}
+              {activePanel === "kits" && <KitsPanel />}
               {activePanel === "styles" && <StylesPanel boardId={board.id} />}
               {activePanel === "assets" && <AssetsPanel />}
               {activePanel === "shape" && <ShapePanel onAdd={addAsset} />}
@@ -1825,7 +1829,7 @@ function RightMetaPanel({
 }) {
   const baseUrl = board.publishedKey ? `/s/${board.publishedKey}` : null;
   return (
-    <aside className="w-[300px] shrink-0 bg-card/95 backdrop-blur-sm border-l border-border/60 overflow-y-auto z-10">
+    <aside className="w-[300px] shrink-0 bg-card/95 backdrop-blur-sm border-l border-border/60 overflow-y-auto no-scrollbar z-10">
       <div className="flex items-center justify-between px-4 py-3 border-b border-border/60">
         <h2 className="font-display text-base lowercase">{which}</h2>
         <button onClick={onClose} className="p-1 rounded hover:bg-black/5"><X size={14} /></button>
@@ -2639,6 +2643,62 @@ function StubBlockTile({ label }: { label: string }) {
     </div>
   );
 }
+
+function KitsPanel() {
+  const [q, setQ] = useState("");
+  const filtered = useMemo(() => {
+    const s = q.trim().toLowerCase();
+    if (!s) return SEED_PACKS;
+    return SEED_PACKS.filter((p) =>
+      `${p.name} ${p.description} ${p.category} ${p.tags.join(" ")}`.toLowerCase().includes(s),
+    );
+  }, [q]);
+  return (
+    <div className="space-y-3">
+      <p className="text-xs text-muted-foreground lowercase">
+        curated aesthetic kits. browse the full library to install into your board.
+      </p>
+      <input
+        value={q}
+        onChange={(e) => setQ(e.target.value)}
+        placeholder="search kits…"
+        className="w-full text-xs px-2 py-1.5 rounded border border-border bg-background focus:outline-none focus:border-stone-500"
+      />
+      <div className="space-y-2">
+        {filtered.map((p) => (
+          <div key={p.id} className="rounded-md border border-border overflow-hidden bg-card">
+            <div className="h-10 grid grid-cols-4">
+              {p.swatch.map((c, i) => (<div key={i} style={{ background: c }} />))}
+            </div>
+            <div className="p-2.5">
+              <div className="flex items-center justify-between gap-2">
+                <h4 className="font-display text-sm lowercase leading-tight">{p.name}</h4>
+                <span className="font-mono text-[9px] uppercase tracking-wider text-muted-foreground shrink-0">{p.pack_type}</span>
+              </div>
+              <p className="mt-1 text-[11px] text-stone-600 line-clamp-2">{p.description}</p>
+              <div className="mt-1.5 flex flex-wrap gap-x-1.5 gap-y-0.5">
+                {p.tags.slice(0, 4).map((t) => (
+                  <span key={t} className="text-[10px] text-stone-500">#{t}</span>
+                ))}
+              </div>
+            </div>
+          </div>
+        ))}
+        {filtered.length === 0 && (
+          <p className="text-center text-xs text-muted-foreground py-6">no kits match.</p>
+        )}
+      </div>
+      <Link
+        to="/assets"
+        className="block text-center rounded-md border border-border bg-background px-3 py-2 font-mono text-[10px] uppercase tracking-widest hover:bg-stone-100"
+      >
+        browse full library →
+      </Link>
+    </div>
+  );
+}
+
+
 
 function BlocksPanel({ onAdd }: { onAdd: AddFn }) {
   const building: { label: string; bt: NonNullable<AssetBase["blockType"]>; w: number; h: number }[] = [
