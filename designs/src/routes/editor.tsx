@@ -52,7 +52,7 @@ export const Route = createFileRoute("/editor")({
   component: EditorRoute,
 });
 
-type PanelKey = "select" | "layers" | "library" | "blocks" | "styles" | "assets" | "shape" | "string";
+type PanelKey = "select" | "layers" | "library" | "blocks" | "kits" | "styles" | "assets" | "shape" | "string";
 
 function EditorRoute() {
   const { id, k } = Route.useSearch();
@@ -536,11 +536,12 @@ function Editor({ board, setBoard }: { board: Board; setBoard: (b: Board) => voi
       <div className="flex-1 flex overflow-hidden">
         {/* Icon sidebar */}
         {!previewMode && (
-          <nav className="w-[88px] shrink-0 bg-editor-canvas border-r border-border/60 py-4 flex flex-col gap-2 overflow-y-auto">
+          <nav className="w-[72px] shrink-0 bg-editor-canvas border-r border-border/60 py-2 flex flex-col gap-0.5 overflow-y-auto no-scrollbar">
             <IconBtn icon={MousePointer2} label="select" k="select" active={activePanel} onClick={setActivePanel} />
             <IconBtn icon={Layers} label="layers" k="layers" active={activePanel} onClick={setActivePanel} />
             <IconBtn icon={Library} label="library" k="library" active={activePanel} onClick={setActivePanel} />
             <IconBtn icon={BlocksIcon} label="blocks" k="blocks" active={activePanel} onClick={setActivePanel} />
+            <IconBtn icon={Package} label="kits" k="kits" active={activePanel} onClick={setActivePanel} />
             <IconBtn icon={PaintRoller} label="styles" k="styles" active={activePanel} onClick={setActivePanel} />
             <IconBtn icon={Paperclip} label="assets" k="assets" active={activePanel} onClick={setActivePanel} />
             <IconBtn icon={Shapes} label="shape" k="shape" active={activePanel} onClick={setActivePanel} />
@@ -550,7 +551,7 @@ function Editor({ board, setBoard }: { board: Board; setBoard: (b: Board) => voi
 
         {/* Slide-out panel */}
         {!previewMode && activePanel && (
-          <aside className="w-[300px] shrink-0 bg-card/95 backdrop-blur-sm border-r border-border/60 overflow-y-auto z-10">
+          <aside className="w-[300px] shrink-0 bg-card/95 backdrop-blur-sm border-r border-border/60 overflow-y-auto no-scrollbar z-10">
             <PanelHeader
               title={activePanel === "select" ? "surface" : activePanel}
               onClose={() => setActivePanel(null)}
@@ -611,6 +612,7 @@ function Editor({ board, setBoard }: { board: Board; setBoard: (b: Board) => voi
                 />
               )}
               {activePanel === "blocks" && <BlocksPanel onAdd={addAsset} />}
+              {activePanel === "kits" && <KitsPanel />}
               {activePanel === "styles" && <StylesPanel boardId={board.id} />}
               {activePanel === "assets" && <AssetsPanel />}
               {activePanel === "shape" && <ShapePanel onAdd={addAsset} />}
@@ -1827,7 +1829,7 @@ function RightMetaPanel({
 }) {
   const baseUrl = board.publishedKey ? `/s/${board.publishedKey}` : null;
   return (
-    <aside className="w-[300px] shrink-0 bg-card/95 backdrop-blur-sm border-l border-border/60 overflow-y-auto z-10">
+    <aside className="w-[300px] shrink-0 bg-card/95 backdrop-blur-sm border-l border-border/60 overflow-y-auto no-scrollbar z-10">
       <div className="flex items-center justify-between px-4 py-3 border-b border-border/60">
         <h2 className="font-display text-base lowercase">{which}</h2>
         <button onClick={onClose} className="p-1 rounded hover:bg-black/5"><X size={14} /></button>
