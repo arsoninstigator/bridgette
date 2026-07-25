@@ -4,11 +4,12 @@ export interface SeedPack {
   description: string;
   category: string;
   tags: string[];
-  pack_type: "assets" | "template" | "list";
+  pack_type: "assets" | "template" | "list" | "configurator";
   item_count: number;
   curator: string;
   swatch: string[]; // hex colors representing the pack
 }
+
 
 export const SEED_PACKS: SeedPack[] = [
   {
