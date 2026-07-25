@@ -187,13 +187,14 @@ function PackCard({ pack }: { pack: SeedPack }) {
   );
 }
 
-function UploadDialog({ onClose, defaultType }: { onClose: () => void; defaultType: "assets" | "template" | "list" }) {
+function UploadDialog({ onClose, defaultType }: { onClose: () => void; defaultType: PackType }) {
   const { user } = useAuth();
   const [name, setName] = useState("");
   const [description, setDescription] = useState("");
   const [tags, setTags] = useState("");
   const [category, setCategory] = useState("mixed");
-  const [packType, setPackType] = useState<"assets" | "template" | "list">(defaultType);
+  const [packType, setPackType] = useState<PackType>(defaultType);
+
   const [busy, setBusy] = useState(false);
   const [err, setErr] = useState<string | null>(null);
 
