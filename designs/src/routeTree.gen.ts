@@ -12,6 +12,7 @@ import { Route as rootRouteImport } from './routes/__root'
 import { Route as TemplatesRouteImport } from './routes/templates'
 import { Route as RoadmapRouteImport } from './routes/roadmap'
 import { Route as PositioningRouteImport } from './routes/positioning'
+import { Route as PorterRouteImport } from './routes/porter'
 import { Route as PhilosophyRouteImport } from './routes/philosophy'
 import { Route as MarketplaceRouteImport } from './routes/marketplace'
 import { Route as FigmaRouteImport } from './routes/figma'
@@ -24,7 +25,11 @@ import { Route as AuthRouteImport } from './routes/auth'
 import { Route as AssetsRouteImport } from './routes/assets'
 import { Route as AboutRouteImport } from './routes/about'
 import { Route as IndexRouteImport } from './routes/index'
+import { Route as PorterIndexRouteImport } from './routes/porter.index'
 import { Route as SKeyRouteImport } from './routes/s.$key'
+import { Route as PorterLabRouteImport } from './routes/porter.lab'
+import { Route as PorterFeaturesRouteImport } from './routes/porter.features'
+import { Route as PorterAboutRouteImport } from './routes/porter.about'
 import { Route as MarketplaceUiRouteImport } from './routes/marketplace.ui'
 import { Route as SKeyPageRouteImport } from './routes/s.$key.$page'
 
@@ -41,6 +46,11 @@ const RoadmapRoute = RoadmapRouteImport.update({
 const PositioningRoute = PositioningRouteImport.update({
   id: '/positioning',
   path: '/positioning',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const PorterRoute = PorterRouteImport.update({
+  id: '/porter',
+  path: '/porter',
   getParentRoute: () => rootRouteImport,
 } as any)
 const PhilosophyRoute = PhilosophyRouteImport.update({
@@ -103,10 +113,30 @@ const IndexRoute = IndexRouteImport.update({
   path: '/',
   getParentRoute: () => rootRouteImport,
 } as any)
+const PorterIndexRoute = PorterIndexRouteImport.update({
+  id: '/',
+  path: '/',
+  getParentRoute: () => PorterRoute,
+} as any)
 const SKeyRoute = SKeyRouteImport.update({
   id: '/s/$key',
   path: '/s/$key',
   getParentRoute: () => rootRouteImport,
+} as any)
+const PorterLabRoute = PorterLabRouteImport.update({
+  id: '/lab',
+  path: '/lab',
+  getParentRoute: () => PorterRoute,
+} as any)
+const PorterFeaturesRoute = PorterFeaturesRouteImport.update({
+  id: '/features',
+  path: '/features',
+  getParentRoute: () => PorterRoute,
+} as any)
+const PorterAboutRoute = PorterAboutRouteImport.update({
+  id: '/about',
+  path: '/about',
+  getParentRoute: () => PorterRoute,
 } as any)
 const MarketplaceUiRoute = MarketplaceUiRouteImport.update({
   id: '/ui',
@@ -132,11 +162,16 @@ export interface FileRoutesByFullPath {
   '/figma': typeof FigmaRoute
   '/marketplace': typeof MarketplaceRouteWithChildren
   '/philosophy': typeof PhilosophyRoute
+  '/porter': typeof PorterRouteWithChildren
   '/positioning': typeof PositioningRoute
   '/roadmap': typeof RoadmapRoute
   '/templates': typeof TemplatesRoute
   '/marketplace/ui': typeof MarketplaceUiRoute
+  '/porter/about': typeof PorterAboutRoute
+  '/porter/features': typeof PorterFeaturesRoute
+  '/porter/lab': typeof PorterLabRoute
   '/s/$key': typeof SKeyRouteWithChildren
+  '/porter/': typeof PorterIndexRoute
   '/s/$key/$page': typeof SKeyPageRoute
 }
 export interface FileRoutesByTo {
@@ -156,7 +191,11 @@ export interface FileRoutesByTo {
   '/roadmap': typeof RoadmapRoute
   '/templates': typeof TemplatesRoute
   '/marketplace/ui': typeof MarketplaceUiRoute
+  '/porter/about': typeof PorterAboutRoute
+  '/porter/features': typeof PorterFeaturesRoute
+  '/porter/lab': typeof PorterLabRoute
   '/s/$key': typeof SKeyRouteWithChildren
+  '/porter': typeof PorterIndexRoute
   '/s/$key/$page': typeof SKeyPageRoute
 }
 export interface FileRoutesById {
@@ -173,11 +212,16 @@ export interface FileRoutesById {
   '/figma': typeof FigmaRoute
   '/marketplace': typeof MarketplaceRouteWithChildren
   '/philosophy': typeof PhilosophyRoute
+  '/porter': typeof PorterRouteWithChildren
   '/positioning': typeof PositioningRoute
   '/roadmap': typeof RoadmapRoute
   '/templates': typeof TemplatesRoute
   '/marketplace/ui': typeof MarketplaceUiRoute
+  '/porter/about': typeof PorterAboutRoute
+  '/porter/features': typeof PorterFeaturesRoute
+  '/porter/lab': typeof PorterLabRoute
   '/s/$key': typeof SKeyRouteWithChildren
+  '/porter/': typeof PorterIndexRoute
   '/s/$key/$page': typeof SKeyPageRoute
 }
 export interface FileRouteTypes {
@@ -195,11 +239,16 @@ export interface FileRouteTypes {
     | '/figma'
     | '/marketplace'
     | '/philosophy'
+    | '/porter'
     | '/positioning'
     | '/roadmap'
     | '/templates'
     | '/marketplace/ui'
+    | '/porter/about'
+    | '/porter/features'
+    | '/porter/lab'
     | '/s/$key'
+    | '/porter/'
     | '/s/$key/$page'
   fileRoutesByTo: FileRoutesByTo
   to:
@@ -219,7 +268,11 @@ export interface FileRouteTypes {
     | '/roadmap'
     | '/templates'
     | '/marketplace/ui'
+    | '/porter/about'
+    | '/porter/features'
+    | '/porter/lab'
     | '/s/$key'
+    | '/porter'
     | '/s/$key/$page'
   id:
     | '__root__'
@@ -235,11 +288,16 @@ export interface FileRouteTypes {
     | '/figma'
     | '/marketplace'
     | '/philosophy'
+    | '/porter'
     | '/positioning'
     | '/roadmap'
     | '/templates'
     | '/marketplace/ui'
+    | '/porter/about'
+    | '/porter/features'
+    | '/porter/lab'
     | '/s/$key'
+    | '/porter/'
     | '/s/$key/$page'
   fileRoutesById: FileRoutesById
 }
@@ -256,6 +314,7 @@ export interface RootRouteChildren {
   FigmaRoute: typeof FigmaRoute
   MarketplaceRoute: typeof MarketplaceRouteWithChildren
   PhilosophyRoute: typeof PhilosophyRoute
+  PorterRoute: typeof PorterRouteWithChildren
   PositioningRoute: typeof PositioningRoute
   RoadmapRoute: typeof RoadmapRoute
   TemplatesRoute: typeof TemplatesRoute
@@ -283,6 +342,13 @@ declare module '@tanstack/react-router' {
       path: '/positioning'
       fullPath: '/positioning'
       preLoaderRoute: typeof PositioningRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/porter': {
+      id: '/porter'
+      path: '/porter'
+      fullPath: '/porter'
+      preLoaderRoute: typeof PorterRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/philosophy': {
@@ -369,12 +435,40 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof IndexRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/porter/': {
+      id: '/porter/'
+      path: '/'
+      fullPath: '/porter/'
+      preLoaderRoute: typeof PorterIndexRouteImport
+      parentRoute: typeof PorterRoute
+    }
     '/s/$key': {
       id: '/s/$key'
       path: '/s/$key'
       fullPath: '/s/$key'
       preLoaderRoute: typeof SKeyRouteImport
       parentRoute: typeof rootRouteImport
+    }
+    '/porter/lab': {
+      id: '/porter/lab'
+      path: '/lab'
+      fullPath: '/porter/lab'
+      preLoaderRoute: typeof PorterLabRouteImport
+      parentRoute: typeof PorterRoute
+    }
+    '/porter/features': {
+      id: '/porter/features'
+      path: '/features'
+      fullPath: '/porter/features'
+      preLoaderRoute: typeof PorterFeaturesRouteImport
+      parentRoute: typeof PorterRoute
+    }
+    '/porter/about': {
+      id: '/porter/about'
+      path: '/about'
+      fullPath: '/porter/about'
+      preLoaderRoute: typeof PorterAboutRouteImport
+      parentRoute: typeof PorterRoute
     }
     '/marketplace/ui': {
       id: '/marketplace/ui'
@@ -405,6 +499,23 @@ const MarketplaceRouteWithChildren = MarketplaceRoute._addFileChildren(
   MarketplaceRouteChildren,
 )
 
+interface PorterRouteChildren {
+  PorterAboutRoute: typeof PorterAboutRoute
+  PorterFeaturesRoute: typeof PorterFeaturesRoute
+  PorterLabRoute: typeof PorterLabRoute
+  PorterIndexRoute: typeof PorterIndexRoute
+}
+
+const PorterRouteChildren: PorterRouteChildren = {
+  PorterAboutRoute: PorterAboutRoute,
+  PorterFeaturesRoute: PorterFeaturesRoute,
+  PorterLabRoute: PorterLabRoute,
+  PorterIndexRoute: PorterIndexRoute,
+}
+
+const PorterRouteWithChildren =
+  PorterRoute._addFileChildren(PorterRouteChildren)
+
 interface SKeyRouteChildren {
   SKeyPageRoute: typeof SKeyPageRoute
 }
@@ -428,6 +539,7 @@ const rootRouteChildren: RootRouteChildren = {
   FigmaRoute: FigmaRoute,
   MarketplaceRoute: MarketplaceRouteWithChildren,
   PhilosophyRoute: PhilosophyRoute,
+  PorterRoute: PorterRouteWithChildren,
   PositioningRoute: PositioningRoute,
   RoadmapRoute: RoadmapRoute,
   TemplatesRoute: TemplatesRoute,
@@ -436,13 +548,3 @@ const rootRouteChildren: RootRouteChildren = {
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
   ._addFileTypes<FileRouteTypes>()
-
-import type { getRouter } from './router.tsx'
-import type { startInstance } from './start.ts'
-declare module '@tanstack/react-start' {
-  interface Register {
-    ssr: true
-    router: Awaited<ReturnType<typeof getRouter>>
-    config: Awaited<ReturnType<typeof startInstance.getOptions>>
-  }
-}
