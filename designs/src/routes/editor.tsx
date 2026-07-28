@@ -832,9 +832,28 @@ function Editor({ board, setBoard }: { board: Board; setBoard: (b: Board) => voi
               )}
             </div>
           </div>
-          {stringMode && (
+          {stringMode && !hangingDraft && (
             <div className="absolute top-4 left-1/2 -translate-x-1/2 rounded-md bg-stone-900/85 text-stone-50 px-3 py-2 font-mono text-[10px] lowercase tracking-wider">
-              string mode — click a pinned asset, then another to connect (pin-to-pin only) · click a string to remove it
+              string mode — click a pinned asset, then another to connect · right-click any string for options
+            </div>
+          )}
+          {hangingDraft && (
+            <div className="absolute top-4 left-1/2 -translate-x-1/2 rounded-md bg-stone-900/90 text-stone-50 px-3 py-2 font-mono text-[10px] lowercase tracking-wider flex items-center gap-3">
+              hanging — click canvas points to anchor the string ({hangingDraft.points.length} set)
+              <button
+                onClick={commitHangingDraft}
+                disabled={hangingDraft.points.length < 2}
+                className="ml-2 rounded-full bg-emerald-500 hover:bg-emerald-400 disabled:bg-stone-500/40 text-white size-6 grid place-items-center"
+                title="finish string"
+              >
+                ✓
+              </button>
+              <button
+                onClick={() => setHangingDraft(null)}
+                className="rounded bg-stone-50/15 hover:bg-stone-50/25 px-2 py-0.5"
+              >
+                cancel
+              </button>
             </div>
           )}
           {drawWashi && (
