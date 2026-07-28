@@ -664,6 +664,13 @@ function Editor({ board, setBoard }: { board: Board; setBoard: (b: Board) => voi
                   setStringColor={setStringColor}
                   hangingMode={hangingMode}
                   setHangingMode={setHangingMode}
+                  thickness={stringThickness}
+                  setThickness={setStringThickness}
+                  sag={stringSag}
+                  setSag={setStringSag}
+                  hangingDraftActive={!!hangingDraft}
+                  startHangingDraft={() => setHangingDraft({ points: [] })}
+                  cancelHangingDraft={() => setHangingDraft(null)}
                 />
               )}
             </div>
