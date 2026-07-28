@@ -576,7 +576,7 @@ function Editor({ board, setBoard }: { board: Board; setBoard: (b: Board) => voi
       <div className="flex-1 flex overflow-hidden">
         {/* Icon sidebar */}
         {!previewMode && (
-          <nav className="w-[72px] shrink-0 bg-editor-canvas border-r border-border/60 py-2 flex flex-col gap-0.5 overflow-y-auto no-scrollbar">
+          <nav className="w-[64px] shrink-0 bg-editor-canvas border-r border-border/60 py-1 flex flex-col gap-0 no-scrollbar overflow-hidden">
             <IconBtn icon={MousePointer2} label="select" k="select" active={activePanel} onClick={setActivePanel} />
             <IconBtn icon={Layers} label="layers" k="layers" active={activePanel} onClick={setActivePanel} />
             <IconBtn icon={Library} label="library" k="library" active={activePanel} onClick={setActivePanel} />
