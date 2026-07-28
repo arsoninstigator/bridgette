@@ -92,10 +92,16 @@ export interface AssetBase {
 
 export interface StringConn {
   id: string;
-  from: string; // asset id
-  to: string;
+  // pin-to-pin mode: both ids present
+  from?: string; // asset id
+  to?: string;
+  // free-hanging bunting mode: an ordered list of anchor points on the canvas
+  points?: { x: number; y: number }[];
   color?: string;
   hanging?: boolean; // sags as a clothesline (heavier droop, thicker)
+  thickness?: number; // px stroke width override (1..10)
+  sag?: number; // 0..1 sag factor (fraction of segment length). default 0.18 hanging, 0.04 taut
+  hungIds?: string[]; // asset ids clipped to this string
 }
 
 export interface PageMeta {
