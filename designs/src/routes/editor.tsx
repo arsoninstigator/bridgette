@@ -1936,7 +1936,7 @@ function RightMetaPanel({
             {board.strings.length === 0 && <p className="text-[10px] text-muted-foreground/80">use the string tool to connect pinned assets.</p>}
             {board.strings.map((s) => (
               <div key={s.id} className="rounded border border-border bg-card/60 px-2 py-1.5 text-[10px]">
-                {s.from.slice(0, 5)} ↔ {s.to.slice(0, 5)}
+                {s.from ? `${s.from.slice(0, 5)} ↔ ${s.to?.slice(0, 5) ?? ""}` : `bunting · ${s.points?.length ?? 0} pts`}
               </div>
             ))}
           </div>
