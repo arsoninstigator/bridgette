@@ -472,6 +472,8 @@ function Editor({ board, setBoard }: { board: Board; setBoard: (b: Board) => voi
       to: id,
       color: stringColor,
       hanging: hangingMode || undefined,
+      thickness: stringThickness,
+      sag: stringSag,
     };
     const exists = board.strings.some(
       (s) => (s.from === conn.from && s.to === conn.to) || (s.from === conn.to && s.to === conn.from),
@@ -482,6 +484,40 @@ function Editor({ board, setBoard }: { board: Board; setBoard: (b: Board) => voi
 
   function deleteString(sid: string) {
     update({ strings: board.strings.filter((s) => s.id !== sid) });
+  }
+  function updateString(sid: string, patch: Partial<StringConn>) {
+    update({ strings: board.strings.map((s) => (s.id === sid ? { ...s, ...patch } : s)) });
+  }
+  function commitHangingDraft() {
+    if (!hangingDraft || hangingDraft.points.length < 2) { setHangingDraft(null); return; }
+    const conn: StringConn = {
+      id: Math.random().toString(36).slice(2, 9),
+      points: hangingDraft.points,
+      color: stringColor,
+      hanging: true,
+      thickness: stringThickness,
+      sag: stringSag,
+    };
+    update({ strings: [...board.strings, conn] });
+    setHangingDraft(null);
+  }
+  function hangPolaroidOnString(sid: string) {
+    const s = board.strings.find((x) => x.id === sid);
+    if (!s) return;
+    // pick a point along the string to place the polaroid.
+    let anchor: { x: number; y: number } | null = null;
+    if (s.points && s.points.length >= 2) {
+      const p0 = s.points[0];
+      const p1 = s.points[1];
+      anchor = { x: (p0.x + p1.x) / 2, y: (p0.y + p1.y) / 2 + 40 };
+    } else if (s.from && s.to) {
+      const a = board.assets.find((x) => x.id === s.from);
+      const b = board.assets.find((x) => x.id === s.to);
+      if (a && b) anchor = { x: (a.x + b.x) / 2, y: (a.y + b.y) / 2 + 60 };
+    }
+    if (!anchor) return;
+    addAsset("polaroid", anchor.x, anchor.y, { clipAttached: true, pinEnabled: false });
+    updateString(sid, { hungIds: [...(s.hungIds || []), "pending"] });
   }
 
   async function publish() {
