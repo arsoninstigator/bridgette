@@ -30,7 +30,10 @@ interface Props {
   onAssetContextMenu?: (id: string, clientX: number, clientY: number) => void;
   onDropAsset?: (kind: AssetKind, x: number, y: number, extra?: Partial<AssetBase>) => void;
   onStringClick?: (stringId: string) => void;
+  onStringContextMenu?: (stringId: string, clientX: number, clientY: number) => void;
   drawWashi?: { tapeColor?: string; tapePattern?: string; tapeTextColor?: string; imageUrl?: string } | null;
+  drawHanging?: { points: { x: number; y: number }[]; color?: string; thickness?: number; sag?: number } | null;
+  onHangingPoint?: (x: number, y: number) => void;
 }
 
 export function BoardCanvas({
