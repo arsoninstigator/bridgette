@@ -156,8 +156,19 @@ export function BoardCanvas({
       ref={ref}
       onPointerDown={(e) => {
         if (drawWashi) return startWashiDraw(e);
+        if (drawHanging && onHangingPoint) {
+          const rect = ref.current!.getBoundingClientRect();
+          onHangingPoint(e.clientX - rect.left, e.clientY - rect.top);
+          return;
+        }
         onSelect?.(null);
       }}
+      onPointerMove={(e) => {
+        if (!drawHanging) return;
+        const rect = ref.current!.getBoundingClientRect();
+        setHoverPoint({ x: e.clientX - rect.left, y: e.clientY - rect.top });
+      }}
+      onPointerLeave={() => setHoverPoint(null)}
       onDragOver={(e) => {
         if (!onDropAsset) return;
         e.preventDefault();
