@@ -250,42 +250,74 @@ export function BoardCanvas({
         className="absolute inset-0"
         style={{ width: "100%", height: "100%", pointerEvents: "none", zIndex: 9000 }}
       >
+        {/* twine texture — a subtle repeating filament to give strings fiber */}
+        <defs>
+          <pattern id="twine-fibers" width="6" height="6" patternUnits="userSpaceOnUse" patternTransform="rotate(45)">
+            <line x1="0" y1="0" x2="0" y2="6" stroke="rgba(0,0,0,0.18)" strokeWidth="0.6" />
+            <line x1="3" y1="0" x2="3" y2="6" stroke="rgba(255,255,255,0.12)" strokeWidth="0.5" />
+          </pattern>
+        </defs>
         {strings.map((s) => {
-          const a = assets.find((x) => x.id === s.from);
-          const b = assets.find((x) => x.id === s.to);
-          if (!a || !b) return null;
-          const pa = pinPoint(a);
-          const pb = pinPoint(b);
-          const mx = (pa.x + pb.x) / 2;
-          const sag = s.hanging ? Math.max(40, Math.hypot(pb.x - pa.x, pb.y - pa.y) * 0.18) : 16;
-          const my = (pa.y + pb.y) / 2 + sag;
-          const d = `M ${pa.x} ${pa.y} Q ${mx} ${my} ${pb.x} ${pb.y}`;
-          const stroke = s.color || (s.hanging ? "#3a2a1a" : "#a8231a");
-          const width = s.hanging ? 3 : 2.4;
+          const path = buildStringPath(s, assets);
+          if (!path) return null;
+          const { d, points } = path;
+          const stroke = s.color || (s.hanging ? "#8a6a3a" : "#a8231a");
+          const width = s.thickness ?? (s.hanging ? 3.5 : 2.6);
           return (
-            <g key={s.id} style={{ pointerEvents: onStringClick ? "auto" : "none" }}>
-              {onStringClick && (
+            <g key={s.id} style={{ pointerEvents: (onStringClick || onStringContextMenu) ? "auto" : "none" }}>
+              {(onStringClick || onStringContextMenu) && (
                 <path
                   d={d}
                   stroke="transparent"
-                  strokeWidth={14}
+                  strokeWidth={Math.max(14, width + 10)}
                   fill="none"
                   style={{ cursor: "pointer" }}
                   onPointerDown={(e) => e.stopPropagation()}
-                  onClick={(e) => {
+                  onClick={(e) => { e.stopPropagation(); onStringClick?.(s.id); }}
+                  onContextMenu={(e) => {
+                    if (!onStringContextMenu) return;
+                    e.preventDefault();
                     e.stopPropagation();
-                    onStringClick(s.id);
+                    onStringContextMenu(s.id, e.clientX, e.clientY);
                   }}
                 />
               )}
+              {/* base rope — darker underlayer */}
               <path
                 d={d}
-                stroke={stroke}
+                stroke={darken(stroke, 0.35)}
+                strokeWidth={width}
+                strokeLinecap="round"
+                fill="none"
+                opacity={0.95}
+                style={{ filter: "drop-shadow(0 1px 1px rgba(0,0,0,0.45))", pointerEvents: "none" }}
+              />
+              {/* highlight thread — lighter, offset slightly for twist */}
+              <path
+                d={d}
+                stroke={lighten(stroke, 0.25)}
+                strokeWidth={Math.max(0.6, width * 0.35)}
+                strokeLinecap="round"
+                strokeDasharray={`${Math.max(1.5, width * 0.6)} ${Math.max(2, width * 0.9)}`}
+                fill="none"
+                opacity={0.55}
+                style={{ pointerEvents: "none" }}
+              />
+              {/* fiber texture overlay clipped to the rope */}
+              <path
+                d={d}
+                stroke="url(#twine-fibers)"
                 strokeWidth={width}
                 fill="none"
-                opacity={0.92}
-                style={{ filter: "drop-shadow(0 1px 1px rgba(0,0,0,0.35))", pointerEvents: "none" }}
+                opacity={0.35}
+                style={{ pointerEvents: "none", mixBlendMode: "multiply" }}
               />
+              {/* anchor knots at each bunting point */}
+              {s.points && points.map((p, i) => (
+                <circle key={i} cx={p.x} cy={p.y} r={Math.max(3, width * 1.1)}
+                  fill={darken(stroke, 0.4)} opacity={0.85}
+                  style={{ pointerEvents: "none" }} />
+              ))}
             </g>
           );
         })}
@@ -301,7 +333,21 @@ export function BoardCanvas({
             />
           );
         })()}
+        {drawHanging && drawHanging.points.length > 0 && (() => {
+          const pts = [...drawHanging.points, ...(hoverPoint ? [hoverPoint] : [])];
+          const d = buildBuntingPath(pts, drawHanging.sag ?? 0.18);
+          return (
+            <g>
+              <path d={d} stroke={drawHanging.color || "#8a6a3a"} strokeWidth={drawHanging.thickness ?? 3.5}
+                fill="none" strokeLinecap="round" opacity={0.85} strokeDasharray="6 4" />
+              {drawHanging.points.map((p, i) => (
+                <circle key={i} cx={p.x} cy={p.y} r={5} fill="#3a2a1a" opacity={0.9} />
+              ))}
+            </g>
+          );
+        })()}
       </svg>
+
 
       {/* pin overlay layer — drawn on top of the string layer so strings appear
           to wrap around / pass under the pin head */}
