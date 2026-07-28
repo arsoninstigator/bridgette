@@ -313,7 +313,7 @@ export function BoardCanvas({
                 style={{ pointerEvents: "none", mixBlendMode: "multiply" }}
               />
               {/* anchor knots at each bunting point */}
-              {s.points && points.map((p, i) => (
+              {s.points && points.map((p: { x: number; y: number }, i: number) => (
                 <circle key={i} cx={p.x} cy={p.y} r={Math.max(3, width * 1.1)}
                   fill={darken(stroke, 0.4)} opacity={0.85}
                   style={{ pointerEvents: "none" }} />
