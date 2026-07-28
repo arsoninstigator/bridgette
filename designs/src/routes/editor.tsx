@@ -1694,6 +1694,20 @@ const LIBRARY_SETS: LibrarySet[] = [
   },
   { id: "scrapbook", label: "scrapbooking", available: false, blurb: "pressed flowers, ticket stubs, ephemera.", items: [] },
   { id: "charms", label: "charms", available: false, blurb: "small enamel bits, beads, talismans.", items: [] },
+  {
+    id: "metal-wall-grid",
+    label: "metal wall grid",
+    available: true,
+    blurb: "industrial wire grid + s-hooks for hanging polaroids, cards, and tags.",
+    items: [
+      { id: "mwg-panel-lg", label: "grid panel (large)", kind: "shape", extra: { shape: "rect", width: 320, height: 220, fill: "#4b5563" } },
+      { id: "mwg-panel-sq", label: "grid panel (square)", kind: "shape", extra: { shape: "rect", width: 220, height: 220, fill: "#4b5563" } },
+      { id: "mwg-panel-tall", label: "grid panel (tall)", kind: "shape", extra: { shape: "rect", width: 180, height: 320, fill: "#4b5563" } },
+      { id: "mwg-shook", label: "s-hook", kind: "shape", extra: { shape: "rect", width: 14, height: 40, fill: "#9ca3af" } },
+      { id: "mwg-clip-mini", label: "mini bulldog clip", kind: "shape", extra: { shape: "rect", width: 22, height: 16, fill: "#111827" } },
+      { id: "mwg-tag", label: "hang tag", kind: "paper", extra: { width: 90, color: "#f5f5f4" } },
+    ],
+  },
 ];
 
 const SETS_BY_ID = Object.fromEntries(LIBRARY_SETS.map((s) => [s.id, s]));
