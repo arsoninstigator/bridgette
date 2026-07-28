@@ -924,6 +924,22 @@ function Editor({ board, setBoard }: { board: Board; setBoard: (b: Board) => voi
         <PublishDialog board={board} onClose={() => setShowPublish(false)} onPublish={publish} />
       )}
 
+      {stringMenu && !previewMode && (() => {
+        const s = board.strings.find((x) => x.id === stringMenu.id);
+        if (!s) return null;
+        return (
+          <StringContextMenu
+            state={stringMenu}
+            conn={s}
+            onClose={() => setStringMenu(null)}
+            onChange={(patch) => updateString(stringMenu.id, patch)}
+            onHangPolaroid={() => { hangPolaroidOnString(stringMenu.id); setStringMenu(null); }}
+            onDelete={() => { deleteString(stringMenu.id); setStringMenu(null); }}
+          />
+        );
+      })()}
+
+
       {assetMenu && !previewMode && (
         <AssetContextMenu
           state={assetMenu}
