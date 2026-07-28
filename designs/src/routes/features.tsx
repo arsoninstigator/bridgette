@@ -44,14 +44,25 @@ const GROUPS = [
   },
   {
     title: "strings & hanging mode",
-    blurb: "thread, sag, clip, hang.",
+    blurb: "thread, sag, clip, hang — murderboard meets clothesline.",
     items: [
-      "click the string icon in the sidebar for two tabs: connect, and edit string",
-      "edit string — pick string color, toggle hanging mode for sagging quadratic curves",
-      "in hanging mode, strings drape with real droop and thicker rope",
-      "right-click any asset → add wooden clip — pin it to a hanging string",
-      "multiple polaroids hung from a single string via clips, gallery-style",
-      "strings still attach pin-to-pin in classic conspiracy-board mode",
+      "textured jute-rope rendering with knot anchors, inspired by real cork-and-thread boards",
+      "sidebar tabs: connect (pin-to-pin), edit (defaults for new strings), hanging (free bunting)",
+      "right-click any string on the canvas → change color, thickness slider, droopiness slider",
+      "hanging mode: click anywhere to lay a multi-point bunting garland corner-to-corner-to-corner",
+      "right-click a hanging string → \"hang things up\" to clip polaroids to it",
+      "add wooden clip to any asset — the exact original svg, transparent so it reads on any surface",
+      "sag / gravity controls per string, from taut wire to heavy clothesline",
+    ],
+  },
+  {
+    title: "kits & configurators",
+    blurb: "opinionated presets — the good parts of a psd, none of the layer hell.",
+    items: [
+      "kits tab in the sidebar — case file, redacted, archivalcore, vintage ephemera, paperwork, signage, visual diary, forensic evidence, analog studio, junk drawer, confetti, blobs, trinkets, zine, charms",
+      "metal wall grid — industrial wire panels + s-hooks + mini bulldog clips for hanging polaroids and tags",
+      "accessories configurator — enamel pins, die-cut stickers, iron-on patches, appliqués, button pins",
+      "socialcore configurator — punch cards, tear-away flyers, tickets, boarding passes",
     ],
   },
   {

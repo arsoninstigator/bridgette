@@ -101,6 +101,10 @@ function Editor({ board, setBoard }: { board: Board; setBoard: (b: Board) => voi
   const [stringFromId, setStringFromId] = useState<string | null>(null);
   const [stringColor, setStringColor] = useState<string>("#a8231a");
   const [hangingMode, setHangingMode] = useState<boolean>(false);
+  const [stringThickness, setStringThickness] = useState<number>(3);
+  const [stringSag, setStringSag] = useState<number>(0.18);
+  const [hangingDraft, setHangingDraft] = useState<{ points: { x: number; y: number }[] } | null>(null);
+  const [stringMenu, setStringMenu] = useState<{ x: number; y: number; id: string } | null>(null);
   const [showPublish, setShowPublish] = useState(false);
   const [activePanel, setActivePanel] = useState<PanelKey | null>("library");
   const [previewMode, setPreviewMode] = useState(false);
@@ -468,6 +472,8 @@ function Editor({ board, setBoard }: { board: Board; setBoard: (b: Board) => voi
       to: id,
       color: stringColor,
       hanging: hangingMode || undefined,
+      thickness: stringThickness,
+      sag: stringSag,
     };
     const exists = board.strings.some(
       (s) => (s.from === conn.from && s.to === conn.to) || (s.from === conn.to && s.to === conn.from),
@@ -478,6 +484,40 @@ function Editor({ board, setBoard }: { board: Board; setBoard: (b: Board) => voi
 
   function deleteString(sid: string) {
     update({ strings: board.strings.filter((s) => s.id !== sid) });
+  }
+  function updateString(sid: string, patch: Partial<StringConn>) {
+    update({ strings: board.strings.map((s) => (s.id === sid ? { ...s, ...patch } : s)) });
+  }
+  function commitHangingDraft() {
+    if (!hangingDraft || hangingDraft.points.length < 2) { setHangingDraft(null); return; }
+    const conn: StringConn = {
+      id: Math.random().toString(36).slice(2, 9),
+      points: hangingDraft.points,
+      color: stringColor,
+      hanging: true,
+      thickness: stringThickness,
+      sag: stringSag,
+    };
+    update({ strings: [...board.strings, conn] });
+    setHangingDraft(null);
+  }
+  function hangPolaroidOnString(sid: string) {
+    const s = board.strings.find((x) => x.id === sid);
+    if (!s) return;
+    // pick a point along the string to place the polaroid.
+    let anchor: { x: number; y: number } | null = null;
+    if (s.points && s.points.length >= 2) {
+      const p0 = s.points[0];
+      const p1 = s.points[1];
+      anchor = { x: (p0.x + p1.x) / 2, y: (p0.y + p1.y) / 2 + 40 };
+    } else if (s.from && s.to) {
+      const a = board.assets.find((x) => x.id === s.from);
+      const b = board.assets.find((x) => x.id === s.to);
+      if (a && b) anchor = { x: (a.x + b.x) / 2, y: (a.y + b.y) / 2 + 60 };
+    }
+    if (!anchor) return;
+    addAsset("polaroid", anchor.x, anchor.y, { clipAttached: true, pinEnabled: false });
+    updateString(sid, { hungIds: [...(s.hungIds || []), "pending"] });
   }
 
   async function publish() {
@@ -536,7 +576,7 @@ function Editor({ board, setBoard }: { board: Board; setBoard: (b: Board) => voi
       <div className="flex-1 flex overflow-hidden">
         {/* Icon sidebar */}
         {!previewMode && (
-          <nav className="w-[72px] shrink-0 bg-editor-canvas border-r border-border/60 py-2 flex flex-col gap-0.5 overflow-y-auto no-scrollbar">
+          <nav className="w-[64px] shrink-0 bg-editor-canvas border-r border-border/60 py-1 flex flex-col gap-0 no-scrollbar overflow-hidden">
             <IconBtn icon={MousePointer2} label="select" k="select" active={activePanel} onClick={setActivePanel} />
             <IconBtn icon={Layers} label="layers" k="layers" active={activePanel} onClick={setActivePanel} />
             <IconBtn icon={Library} label="library" k="library" active={activePanel} onClick={setActivePanel} />
@@ -624,6 +664,13 @@ function Editor({ board, setBoard }: { board: Board; setBoard: (b: Board) => voi
                   setStringColor={setStringColor}
                   hangingMode={hangingMode}
                   setHangingMode={setHangingMode}
+                  thickness={stringThickness}
+                  setThickness={setStringThickness}
+                  sag={stringSag}
+                  setSag={setStringSag}
+                  hangingDraftActive={!!hangingDraft}
+                  startHangingDraft={() => setHangingDraft({ points: [] })}
+                  cancelHangingDraft={() => setHangingDraft(null)}
                 />
               )}
             </div>
@@ -737,8 +784,11 @@ function Editor({ board, setBoard }: { board: Board; setBoard: (b: Board) => voi
                   setAssetMenu({ x, y, ids });
                 }}
                 onDropAsset={(kind, x, y, extra) => addAsset(kind, x, y, extra)}
-                onStringClick={stringMode ? deleteString : undefined}
+                onStringClick={undefined}
+                onStringContextMenu={(id, x, y) => setStringMenu({ id, x, y })}
                 drawWashi={drawWashi}
+                drawHanging={hangingDraft ? { points: hangingDraft.points, color: stringColor, thickness: stringThickness, sag: stringSag } : null}
+                onHangingPoint={(x, y) => setHangingDraft((d) => ({ points: [...(d?.points || []), { x, y }] }))}
               />
 
               {/* floating frame label */}
@@ -789,9 +839,28 @@ function Editor({ board, setBoard }: { board: Board; setBoard: (b: Board) => voi
               )}
             </div>
           </div>
-          {stringMode && (
+          {stringMode && !hangingDraft && (
             <div className="absolute top-4 left-1/2 -translate-x-1/2 rounded-md bg-stone-900/85 text-stone-50 px-3 py-2 font-mono text-[10px] lowercase tracking-wider">
-              string mode — click a pinned asset, then another to connect (pin-to-pin only) · click a string to remove it
+              string mode — click a pinned asset, then another to connect · right-click any string for options
+            </div>
+          )}
+          {hangingDraft && (
+            <div className="absolute top-4 left-1/2 -translate-x-1/2 rounded-md bg-stone-900/90 text-stone-50 px-3 py-2 font-mono text-[10px] lowercase tracking-wider flex items-center gap-3">
+              hanging — click canvas points to anchor the string ({hangingDraft.points.length} set)
+              <button
+                onClick={commitHangingDraft}
+                disabled={hangingDraft.points.length < 2}
+                className="ml-2 rounded-full bg-emerald-500 hover:bg-emerald-400 disabled:bg-stone-500/40 text-white size-6 grid place-items-center"
+                title="finish string"
+              >
+                ✓
+              </button>
+              <button
+                onClick={() => setHangingDraft(null)}
+                className="rounded bg-stone-50/15 hover:bg-stone-50/25 px-2 py-0.5"
+              >
+                cancel
+              </button>
             </div>
           )}
           {drawWashi && (
@@ -861,6 +930,22 @@ function Editor({ board, setBoard }: { board: Board; setBoard: (b: Board) => voi
       {showPublish && (
         <PublishDialog board={board} onClose={() => setShowPublish(false)} onPublish={publish} />
       )}
+
+      {stringMenu && !previewMode && (() => {
+        const s = board.strings.find((x) => x.id === stringMenu.id);
+        if (!s) return null;
+        return (
+          <StringContextMenu
+            state={stringMenu}
+            conn={s}
+            onClose={() => setStringMenu(null)}
+            onChange={(patch) => updateString(stringMenu.id, patch)}
+            onHangPolaroid={() => { hangPolaroidOnString(stringMenu.id); setStringMenu(null); }}
+            onDelete={() => { deleteString(stringMenu.id); setStringMenu(null); }}
+          />
+        );
+      })()}
+
 
       {assetMenu && !previewMode && (
         <AssetContextMenu
@@ -1609,6 +1694,20 @@ const LIBRARY_SETS: LibrarySet[] = [
   },
   { id: "scrapbook", label: "scrapbooking", available: false, blurb: "pressed flowers, ticket stubs, ephemera.", items: [] },
   { id: "charms", label: "charms", available: false, blurb: "small enamel bits, beads, talismans.", items: [] },
+  {
+    id: "metal-wall-grid",
+    label: "metal wall grid",
+    available: true,
+    blurb: "industrial wire grid + s-hooks for hanging polaroids, cards, and tags.",
+    items: [
+      { id: "mwg-panel-lg", label: "grid panel (large)", kind: "shape", extra: { shape: "rect", width: 320, height: 220, fill: "#4b5563" } },
+      { id: "mwg-panel-sq", label: "grid panel (square)", kind: "shape", extra: { shape: "rect", width: 220, height: 220, fill: "#4b5563" } },
+      { id: "mwg-panel-tall", label: "grid panel (tall)", kind: "shape", extra: { shape: "rect", width: 180, height: 320, fill: "#4b5563" } },
+      { id: "mwg-shook", label: "s-hook", kind: "shape", extra: { shape: "rect", width: 14, height: 40, fill: "#9ca3af" } },
+      { id: "mwg-clip-mini", label: "mini bulldog clip", kind: "shape", extra: { shape: "rect", width: 22, height: 16, fill: "#111827" } },
+      { id: "mwg-tag", label: "hang tag", kind: "paper", extra: { width: 90, color: "#f5f5f4" } },
+    ],
+  },
 ];
 
 const SETS_BY_ID = Object.fromEntries(LIBRARY_SETS.map((s) => [s.id, s]));
@@ -1936,7 +2035,7 @@ function RightMetaPanel({
             {board.strings.length === 0 && <p className="text-[10px] text-muted-foreground/80">use the string tool to connect pinned assets.</p>}
             {board.strings.map((s) => (
               <div key={s.id} className="rounded border border-border bg-card/60 px-2 py-1.5 text-[10px]">
-                {s.from.slice(0, 5)} ↔ {s.to.slice(0, 5)}
+                {s.from ? `${s.from.slice(0, 5)} ↔ ${s.to?.slice(0, 5) ?? ""}` : `bunting · ${s.points?.length ?? 0} pts`}
               </div>
             ))}
           </div>
@@ -2962,6 +3061,13 @@ function StringPanel({
   setStringColor,
   hangingMode,
   setHangingMode,
+  thickness,
+  setThickness,
+  sag,
+  setSag,
+  hangingDraftActive,
+  startHangingDraft,
+  cancelHangingDraft,
 }: {
   stringFromId: string | null;
   onClear: () => void;
@@ -2969,30 +3075,28 @@ function StringPanel({
   setStringColor: (c: string) => void;
   hangingMode: boolean;
   setHangingMode: (v: boolean) => void;
+  thickness: number;
+  setThickness: (n: number) => void;
+  sag: number;
+  setSag: (n: number) => void;
+  hangingDraftActive: boolean;
+  startHangingDraft: () => void;
+  cancelHangingDraft: () => void;
 }) {
-  const [tab, setTab] = useState<"connect" | "edit">("connect");
-  const swatches = ["#a8231a", "#3a2a1a", "#1e6bbf", "#1d8a4f", "#c9a84c", "#e8e4dd", "#0d0d0d"];
+  const [tab, setTab] = useState<"connect" | "edit" | "hanging">("connect");
+  const swatches = ["#8a6a3a", "#a8231a", "#3a2a1a", "#1e6bbf", "#1d8a4f", "#c9a84c", "#e8e4dd", "#0d0d0d"];
   return (
     <div className="space-y-3">
-      <div className="grid grid-cols-2 rounded-md border border-border overflow-hidden font-mono text-[11px] lowercase">
-        <button
-          onClick={() => setTab("connect")}
-          className={`py-1.5 ${tab === "connect" ? "bg-stone-900 text-stone-50" : "bg-card hover:bg-black/5"}`}
-        >
-          connect
-        </button>
-        <button
-          onClick={() => setTab("edit")}
-          className={`py-1.5 ${tab === "edit" ? "bg-stone-900 text-stone-50" : "bg-card hover:bg-black/5"}`}
-        >
-          edit string
-        </button>
+      <div className="grid grid-cols-3 rounded-md border border-border overflow-hidden font-mono text-[10px] lowercase">
+        <button onClick={() => setTab("connect")} className={`py-1.5 ${tab === "connect" ? "bg-stone-900 text-stone-50" : "bg-card hover:bg-black/5"}`}>connect</button>
+        <button onClick={() => setTab("edit")} className={`py-1.5 ${tab === "edit" ? "bg-stone-900 text-stone-50" : "bg-card hover:bg-black/5"}`}>edit</button>
+        <button onClick={() => setTab("hanging")} className={`py-1.5 ${tab === "hanging" ? "bg-stone-900 text-stone-50" : "bg-card hover:bg-black/5"}`}>hanging</button>
       </div>
 
       {tab === "connect" && (
         <>
           <p className="font-mono text-[11px] lowercase text-muted-foreground">
-            click a pinned asset, then click another to connect them — murderboard style, or clothesline if hanging mode is on.
+            click a pinned asset, then click another to connect them — murderboard style.
           </p>
           <div className="rounded-md bg-accent/30 px-3 py-2 font-mono text-[10px] lowercase">
             {stringFromId ? `anchor: ${stringFromId.slice(0, 6)}…` : "no anchor yet"}
@@ -3003,7 +3107,7 @@ function StringPanel({
             </button>
           )}
           <p className="font-mono text-[10px] lowercase text-muted-foreground/80">
-            only assets with "pin enabled" can be connected. toggle that in the asset settings panel.
+            right-click any drawn string on the canvas to change its color, thickness, or droop.
           </p>
         </>
       )}
@@ -3027,32 +3131,122 @@ function StringPanel({
                 value={stringColor}
                 onChange={(e) => setStringColor(e.target.value)}
                 className="size-6 rounded border border-stone-700/30 cursor-pointer bg-transparent"
-                title="custom"
               />
             </div>
           </div>
+          <div>
+            <div className="font-mono text-[10px] lowercase text-muted-foreground mb-1">thickness · {thickness}px</div>
+            <input type="range" min={1} max={10} step={0.5} value={thickness} onChange={(e) => setThickness(Number(e.target.value))} className="w-full" />
+          </div>
+          <div>
+            <div className="font-mono text-[10px] lowercase text-muted-foreground mb-1">droop · {sag.toFixed(2)}</div>
+            <input type="range" min={0} max={0.6} step={0.01} value={sag} onChange={(e) => setSag(Number(e.target.value))} className="w-full" />
+            <div className="flex justify-between text-[9px] font-mono text-muted-foreground mt-0.5"><span>tight</span><span>heavy</span></div>
+          </div>
           <label className="flex items-start gap-2 cursor-pointer rounded-md border border-border bg-card/40 px-3 py-2">
-            <input
-              type="checkbox"
-              checked={hangingMode}
-              onChange={(e) => setHangingMode(e.target.checked)}
-              className="mt-0.5"
-            />
+            <input type="checkbox" checked={hangingMode} onChange={(e) => setHangingMode(e.target.checked)} className="mt-0.5" />
             <span className="font-mono text-[11px] lowercase">
-              hanging mode
+              hanging feel for new connects
               <span className="block text-[10px] text-muted-foreground normal-case">
-                new strings sag like a clothesline. right-click any polaroid and pick "add wooden clip" to hang it from the line.
+                gives new pin-to-pin strings a clothesline droop by default.
               </span>
             </span>
           </label>
           <p className="font-mono text-[10px] lowercase text-muted-foreground/80">
-            color & hanging apply to the next string you draw — existing strings keep their original style.
+            settings apply to the next string. right-click an existing string on the board to tweak it.
+          </p>
+        </>
+      )}
+
+      {tab === "hanging" && (
+        <>
+          <p className="font-mono text-[11px] lowercase text-muted-foreground">
+            free-hanging bunting — click points on the canvas to lay a string across corners, edges, or the middle. add as many turns as you like, then confirm.
+          </p>
+          {!hangingDraftActive ? (
+            <button onClick={startHangingDraft} className="w-full rounded-md bg-stone-900 text-stone-50 py-2 font-mono text-[11px] lowercase hover:bg-stone-800">
+              start hanging a string
+            </button>
+          ) : (
+            <button onClick={cancelHangingDraft} className="w-full rounded-md border border-border py-2 font-mono text-[11px] lowercase hover:bg-black/5">
+              cancel current string
+            </button>
+          )}
+          <p className="font-mono text-[10px] lowercase text-muted-foreground/80">
+            once strung up, right-click the string → "hang things up" to clip polaroids to it.
           </p>
         </>
       )}
     </div>
   );
 }
+
+function StringContextMenu({
+  state, conn, onClose, onChange, onHangPolaroid, onDelete,
+}: {
+  state: { x: number; y: number; id: string };
+  conn: StringConn;
+  onClose: () => void;
+  onChange: (patch: Partial<StringConn>) => void;
+  onHangPolaroid: () => void;
+  onDelete: () => void;
+}) {
+  const [openHang, setOpenHang] = useState(false);
+  const swatches = ["#8a6a3a", "#a8231a", "#3a2a1a", "#1e6bbf", "#1d8a4f", "#c9a84c", "#0d0d0d"];
+  return (
+    <div className="fixed inset-0 z-40" onClick={onClose}>
+      <div
+        className="absolute bg-card border border-border rounded-md shadow-lg p-3 w-64 font-mono text-[11px] lowercase space-y-2"
+        style={{ top: state.y, left: state.x }}
+        onClick={(e) => e.stopPropagation()}
+      >
+        <div className="text-[10px] text-muted-foreground">string · {conn.points ? `${conn.points.length} pts` : "pin↔pin"}</div>
+        <div>
+          <div className="text-[10px] text-muted-foreground mb-1">color</div>
+          <div className="flex flex-wrap items-center gap-1.5">
+            {swatches.map((c) => (
+              <button key={c} onClick={() => onChange({ color: c })}
+                className={`size-5 rounded-full border ${conn.color === c ? "ring-2 ring-stone-900 ring-offset-1" : "border-stone-700/30"}`}
+                style={{ background: c }} />
+            ))}
+            <input type="color" value={conn.color || "#8a6a3a"} onChange={(e) => onChange({ color: e.target.value })}
+              className="size-5 rounded border border-stone-700/30 cursor-pointer bg-transparent" />
+          </div>
+        </div>
+        <div>
+          <div className="text-[10px] text-muted-foreground mb-1">thickness · {(conn.thickness ?? 3).toFixed(1)}px</div>
+          <input type="range" min={1} max={10} step={0.5} value={conn.thickness ?? 3}
+            onChange={(e) => onChange({ thickness: Number(e.target.value) })} className="w-full" />
+        </div>
+        <div>
+          <div className="text-[10px] text-muted-foreground mb-1">droop · {(conn.sag ?? 0.18).toFixed(2)}</div>
+          <input type="range" min={0} max={0.6} step={0.01} value={conn.sag ?? 0.18}
+            onChange={(e) => onChange({ sag: Number(e.target.value) })} className="w-full" />
+        </div>
+        <div className="border-t border-border pt-2">
+          <button onClick={() => setOpenHang((v) => !v)}
+            className="w-full flex items-center justify-between rounded hover:bg-black/5 px-2 py-1">
+            <span>hang things up</span><span className="text-muted-foreground">{openHang ? "▾" : "▸"}</span>
+          </button>
+          {openHang && (
+            <div className="pl-2 pt-1 space-y-1">
+              <button onClick={onHangPolaroid} className="w-full text-left rounded hover:bg-black/5 px-2 py-1">
+                + polaroid (clipped)
+              </button>
+              <button disabled className="w-full text-left rounded px-2 py-1 text-muted-foreground/60 cursor-not-allowed">
+                + bunting flags (soon)
+              </button>
+            </div>
+          )}
+        </div>
+        <button onClick={onDelete} className="w-full text-left rounded hover:bg-rose-500/10 text-rose-600 px-2 py-1 border-t border-border pt-2">
+          delete string
+        </button>
+      </div>
+    </div>
+  );
+}
+
 
 function PublishDialog({ board, onClose, onPublish }: { board: Board; onClose: () => void; onPublish: () => void }) {
   const origin = typeof window !== "undefined" ? window.location.origin : "";
