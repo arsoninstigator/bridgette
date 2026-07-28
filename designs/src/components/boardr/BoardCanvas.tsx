@@ -404,6 +404,63 @@ function pinPoint(a: AssetBase): { x: number; y: number } {
   return { x: a.x + rx, y: a.y + ry };
 }
 
+function buildStringPath(
+  s: StringConn,
+  assets: AssetBase[],
+): { d: string; points: { x: number; y: number }[] } | null {
+  if (s.points && s.points.length >= 2) {
+    return { d: buildBuntingPath(s.points, s.sag ?? 0.18), points: s.points };
+  }
+  if (s.from && s.to) {
+    const a = assets.find((x) => x.id === s.from);
+    const b = assets.find((x) => x.id === s.to);
+    if (!a || !b) return null;
+    const pa = pinPoint(a);
+    const pb = pinPoint(b);
+    const dist = Math.hypot(pb.x - pa.x, pb.y - pa.y);
+    const sagFactor = s.sag ?? (s.hanging ? 0.18 : 0.03);
+    const sag = s.hanging ? Math.max(30, dist * sagFactor) : Math.max(6, dist * sagFactor);
+    const mx = (pa.x + pb.x) / 2;
+    const my = (pa.y + pb.y) / 2 + sag;
+    return { d: `M ${pa.x} ${pa.y} Q ${mx} ${my} ${pb.x} ${pb.y}`, points: [pa, pb] };
+  }
+  return null;
+}
+
+function buildBuntingPath(pts: { x: number; y: number }[], sagFactor: number): string {
+  if (pts.length < 2) return "";
+  const segs: string[] = [`M ${pts[0].x} ${pts[0].y}`];
+  for (let i = 1; i < pts.length; i++) {
+    const a = pts[i - 1];
+    const b = pts[i];
+    const dist = Math.hypot(b.x - a.x, b.y - a.y);
+    const sag = Math.max(20, dist * sagFactor);
+    const mx = (a.x + b.x) / 2;
+    const my = (a.y + b.y) / 2 + sag;
+    segs.push(`Q ${mx} ${my} ${b.x} ${b.y}`);
+  }
+  return segs.join(" ");
+}
+
+function hexToRgb(hex: string): { r: number; g: number; b: number } | null {
+  const m = /^#?([a-f\d]{6})$/i.exec(hex);
+  if (!m) return null;
+  const n = parseInt(m[1], 16);
+  return { r: (n >> 16) & 255, g: (n >> 8) & 255, b: n & 255 };
+}
+function darken(hex: string, k: number): string {
+  const c = hexToRgb(hex);
+  if (!c) return hex;
+  const f = (v: number) => Math.max(0, Math.min(255, Math.round(v * (1 - k))));
+  return `rgb(${f(c.r)}, ${f(c.g)}, ${f(c.b)})`;
+}
+function lighten(hex: string, k: number): string {
+  const c = hexToRgb(hex);
+  if (!c) return hex;
+  const f = (v: number) => Math.max(0, Math.min(255, Math.round(v + (255 - v) * k)));
+  return `rgb(${f(c.r)}, ${f(c.g)}, ${f(c.b)})`;
+}
+
 function patternStyle(p: NonNullable<SurfaceOverlay["pattern"]>): React.CSSProperties {
   const size = Math.max(4, p.size || 24);
   const t = Math.max(1, p.thickness || 1);
