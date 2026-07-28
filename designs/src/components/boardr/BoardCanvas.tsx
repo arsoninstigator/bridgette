@@ -186,7 +186,7 @@ export function BoardCanvas({
         const rect = (e.currentTarget as HTMLElement).getBoundingClientRect();
         onDropAsset(kind, e.clientX - rect.left, e.clientY - rect.top, extra);
       }}
-      className={`relative flex-1 overflow-hidden ${surface?.baseColor || surface?.imageUrl ? "" : BG[kind]} ${drawWashi ? "cursor-crosshair" : ""}`}
+      className={`relative flex-1 overflow-hidden ${surface?.baseColor || surface?.imageUrl ? "" : BG[kind]} ${drawWashi || drawHanging ? "cursor-crosshair" : ""}`}
       style={
         surface?.baseColor || surface?.imageUrl
           ? {
