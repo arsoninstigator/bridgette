@@ -440,27 +440,11 @@ export function ConfiguratorMain({ title = "figma / psd configurator", subtitle 
           <h3 className="font-display text-lg lowercase">upload .psd</h3>
           <p className="text-[11px] text-stone-600">photoshop — full layer tree with blend modes & effects.</p>
           {activeSource === "psd" && source?.type === "psd" && <p className="text-[10px] font-mono text-emerald-700">active · {source.fileName}</p>}
-          <input ref={psdRef} type="file" accept=".psd,image/vnd.adobe.photoshop" className="hidden"
+          <input ref={psdRef} type="file" accept=".psd,.zip,image/vnd.adobe.photoshop,application/zip" className="hidden"
                  onChange={(e) => { const f = e.target.files?.[0]; if (f) importFile(f, "psd"); }} />
-        </button>
-
-        <button type="button" onClick={() => aiRef.current?.click()}
-                className={`${cardBase} ${activeSource === "ai" ? cardActive : cardIdle}`}>
-          <p className="font-mono text-[10px] uppercase tracking-widest text-muted-foreground">source · ai</p>
-          <h3 className="font-display text-lg lowercase">upload .ai</h3>
-          <p className="text-[11px] text-stone-600">illustrator — layer names & artboards extracted from the file directory.</p>
-          {activeSource === "ai" && source?.type === "ai" && <p className="text-[10px] font-mono text-emerald-700">active · {source.fileName}</p>}
-          <input ref={aiRef} type="file" accept=".ai,application/postscript,application/illustrator" className="hidden"
+          <input ref={aiRef} type="file" accept=".ai,.zip,application/postscript,application/illustrator,application/zip" className="hidden"
                  onChange={(e) => { const f = e.target.files?.[0]; if (f) importFile(f, "ai"); }} />
-        </button>
-
-        <button type="button" onClick={() => epsRef.current?.click()}
-                className={`${cardBase} ${activeSource === "eps" ? cardActive : cardIdle}`}>
-          <p className="font-mono text-[10px] uppercase tracking-widest text-muted-foreground">source · eps</p>
-          <h3 className="font-display text-lg lowercase">upload .eps</h3>
-          <p className="text-[11px] text-stone-600">encapsulated postscript — title & layer comments parsed.</p>
-          {activeSource === "eps" && source?.type === "eps" && <p className="text-[10px] font-mono text-emerald-700">active · {source.fileName}</p>}
-          <input ref={epsRef} type="file" accept=".eps,application/postscript" className="hidden"
+          <input ref={epsRef} type="file" accept=".eps,.zip,application/postscript,application/zip" className="hidden"
                  onChange={(e) => { const f = e.target.files?.[0]; if (f) importFile(f, "eps"); }} />
         </button>
       </div>
