@@ -1,0 +1,100 @@
+import { createFileRoute, Link } from "@tanstack/react-router";
+
+export const Route = createFileRoute("/porter/purpose")({
+  head: () => ({
+    meta: [
+      { title: "porter · purpose — who porter is for" },
+      { name: "description", content: "porter is for the freelancer, the illustrator, the merch studio, the type designer — anyone who ships design files but keeps rebuilding the same 'change this bit' handoff. porter turns that handoff into a configurator." },
+      { property: "og:title", content: "porter · purpose" },
+      { property: "og:description", content: "who porter is for — freelancers, illustrators, merch studios, type designers, brand kits." },
+    ],
+  }),
+  component: PurposePage,
+});
+
+const USES = [
+  {
+    who: "the freelance illustrator",
+    scene: "you sell a name-plate print on etsy in 40 name variants.",
+    without: "you keep a photoshop file with 40 smart-object swaps, or you redraw each order by hand.",
+    with: "one .psd → porter. the customer types their name, picks the palette you already approved, downloads print-ready art. nothing else in the file is editable.",
+  },
+  {
+    who: "the merch / apparel studio",
+    scene: "you drop a tee design and every reseller wants their own colorway.",
+    without: "you email .ai files, they open them in canva, canva mangles the pantone, you fix it.",
+    with: "porter parses the .ai, you mark the two shirt fills as customizable and the wordmark as locked. resellers get a page, not a file.",
+  },
+  {
+    who: "the wedding / event stationery designer",
+    scene: "same invite, 200 couples, 200 different names, venues, dates.",
+    without: "google-doc name lists and a spreadsheet-to-indesign macro that breaks every third batch.",
+    with: "porter unlocks only the guest name, the venue line, and the rsvp url. everything else — kerning, foil placement, the little sprig — stays exactly as you drew it.",
+  },
+  {
+    who: "the type / lettering designer",
+    scene: "you sell custom monogram commissions.",
+    without: "back-and-forth on 'can you make the C a little taller', which is a whole new file.",
+    with: "you expose stroke weight and letter spacing sliders on the customer side; the ligatures and the ornament stay locked.",
+  },
+  {
+    who: "the brand / identity studio",
+    scene: "you ship a logo kit and the client immediately puts it on a coral background you never approved.",
+    without: "a 40-page pdf guideline nobody reads.",
+    with: "porter turns the master file into a configurator — background colors are constrained to the six the brand ships, the mark can't stretch, the lockup padding is locked. the guideline enforces itself.",
+  },
+  {
+    who: "the packaging / label designer",
+    scene: "a small-batch food brand needs 12 flavor variants of the same jar wrap.",
+    without: "12 versions of the same illustrator file, each one drifting from the last.",
+    with: "the flavor name and the color band are customizable, the illustration and the nutrition panel are locked. the client edits, porter exports print-ready pdfs.",
+  },
+];
+
+function PurposePage() {
+  return (
+    <div className="max-w-4xl mx-auto px-6 py-14">
+      <p className="font-mono text-[11px] uppercase tracking-[0.24em] text-stone-500">purpose</p>
+      <h1 className="mt-3 font-display text-4xl lowercase text-stone-900">porter is for the designer who has already shipped the file.</h1>
+      <p className="mt-4 font-body text-stone-700 leading-relaxed">
+        every case below already exists in your work: the same file, sent again and again, with one tiny thing changed each
+        time. porter is the layer between your file and that "one tiny thing" — so the tiny thing is the only thing the
+        customer can touch, and the rest of your craft stays exactly as you drew it.
+      </p>
+
+      <div className="mt-10 space-y-6">
+        {USES.map((u) => (
+          <article key={u.who} className="rounded-lg border border-stone-300/80 bg-white/70 p-6">
+            <h2 className="font-display text-xl lowercase text-stone-900">{u.who}</h2>
+            <p className="mt-1 font-mono text-[11px] uppercase tracking-[0.16em] text-stone-500">{u.scene}</p>
+            <div className="mt-4 grid md:grid-cols-2 gap-4 text-[14px] font-body">
+              <div className="rounded border border-stone-300 bg-stone-50/70 p-3">
+                <p className="font-mono text-[10px] uppercase tracking-[0.2em] text-stone-500">without porter</p>
+                <p className="mt-1 text-stone-700 leading-relaxed">{u.without}</p>
+              </div>
+              <div className="rounded border border-stone-900/70 bg-stone-900 text-stone-50 p-3">
+                <p className="font-mono text-[10px] uppercase tracking-[0.2em] text-stone-400">with porter</p>
+                <p className="mt-1 leading-relaxed">{u.with}</p>
+              </div>
+            </div>
+          </article>
+        ))}
+      </div>
+
+      <div className="mt-14 flex items-center gap-4">
+        <Link
+          to="/porter/lab"
+          className="rounded-full border border-stone-900 bg-stone-900 px-5 py-2 font-mono text-[11px] uppercase tracking-[0.18em] text-white hover:bg-stone-700"
+        >
+          open the lab
+        </Link>
+        <Link
+          to="/porter/features"
+          className="rounded-full border border-stone-400 bg-white/60 px-5 py-2 font-mono text-[11px] uppercase tracking-[0.18em] hover:bg-white"
+        >
+          see the features
+        </Link>
+      </div>
+    </div>
+  );
+}
