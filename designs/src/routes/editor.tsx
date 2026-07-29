@@ -3172,7 +3172,7 @@ function StringPanel({
       {tab === "hanging" && (
         <>
           <p className="font-mono text-[11px] lowercase text-muted-foreground">
-            free-hanging bunting — click points on the canvas to lay a string across corners, edges, or the middle. add as many turns as you like, then confirm.
+            free-hanging bunting — click along the frame edges to anchor the string. the droop between anchors calculates itself.
           </p>
           {!hangingDraftActive ? (
             <button onClick={startHangingDraft} className="w-full rounded-md bg-stone-900 text-stone-50 py-2 font-mono text-[11px] lowercase hover:bg-stone-800">
