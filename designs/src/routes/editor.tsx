@@ -788,7 +788,18 @@ function Editor({ board, setBoard }: { board: Board; setBoard: (b: Board) => voi
                 onStringContextMenu={(id, x, y) => setStringMenu({ id, x, y })}
                 drawWashi={drawWashi}
                 drawHanging={hangingDraft ? { points: hangingDraft.points, color: stringColor, thickness: stringThickness, sag: stringSag } : null}
-                onHangingPoint={(x, y) => setHangingDraft((d) => ({ points: [...(d?.points || []), { x, y }] }))}
+                onHangingPoint={(x, y) => {
+                  // snap to the nearest frame edge so bunting always hangs from a wall
+                  const w = frameSize.w, h = frameSize.h;
+                  const d = { l: x, r: w - x, t: y, b: h - y };
+                  const min = Math.min(d.l, d.r, d.t, d.b);
+                  const snapped =
+                    min === d.l ? { x: 0, y: Math.max(0, Math.min(h, y)) } :
+                    min === d.r ? { x: w, y: Math.max(0, Math.min(h, y)) } :
+                    min === d.t ? { x: Math.max(0, Math.min(w, x)), y: 0 } :
+                                  { x: Math.max(0, Math.min(w, x)), y: h };
+                  setHangingDraft((dr) => ({ points: [...(dr?.points || []), snapped] }));
+                }}
               />
 
               {/* floating frame label */}
