@@ -788,7 +788,18 @@ function Editor({ board, setBoard }: { board: Board; setBoard: (b: Board) => voi
                 onStringContextMenu={(id, x, y) => setStringMenu({ id, x, y })}
                 drawWashi={drawWashi}
                 drawHanging={hangingDraft ? { points: hangingDraft.points, color: stringColor, thickness: stringThickness, sag: stringSag } : null}
-                onHangingPoint={(x, y) => setHangingDraft((d) => ({ points: [...(d?.points || []), { x, y }] }))}
+                onHangingPoint={(x, y) => {
+                  // snap to the nearest frame edge so bunting always hangs from a wall
+                  const w = frameSize.w, h = frameSize.h;
+                  const d = { l: x, r: w - x, t: y, b: h - y };
+                  const min = Math.min(d.l, d.r, d.t, d.b);
+                  const snapped =
+                    min === d.l ? { x: 0, y: Math.max(0, Math.min(h, y)) } :
+                    min === d.r ? { x: w, y: Math.max(0, Math.min(h, y)) } :
+                    min === d.t ? { x: Math.max(0, Math.min(w, x)), y: 0 } :
+                                  { x: Math.max(0, Math.min(w, x)), y: h };
+                  setHangingDraft((dr) => ({ points: [...(dr?.points || []), snapped] }));
+                }}
               />
 
               {/* floating frame label */}
@@ -846,7 +857,7 @@ function Editor({ board, setBoard }: { board: Board; setBoard: (b: Board) => voi
           )}
           {hangingDraft && (
             <div className="absolute top-4 left-1/2 -translate-x-1/2 rounded-md bg-stone-900/90 text-stone-50 px-3 py-2 font-mono text-[10px] lowercase tracking-wider flex items-center gap-3">
-              hanging — click canvas points to anchor the string ({hangingDraft.points.length} set)
+              hanging — click the frame edges to anchor the string; droop calculates itself ({hangingDraft.points.length} set)
               <button
                 onClick={commitHangingDraft}
                 disabled={hangingDraft.points.length < 2}
@@ -3161,7 +3172,7 @@ function StringPanel({
       {tab === "hanging" && (
         <>
           <p className="font-mono text-[11px] lowercase text-muted-foreground">
-            free-hanging bunting — click points on the canvas to lay a string across corners, edges, or the middle. add as many turns as you like, then confirm.
+            free-hanging bunting — click along the frame edges to anchor the string. the droop between anchors calculates itself.
           </p>
           {!hangingDraftActive ? (
             <button onClick={startHangingDraft} className="w-full rounded-md bg-stone-900 text-stone-50 py-2 font-mono text-[11px] lowercase hover:bg-stone-800">

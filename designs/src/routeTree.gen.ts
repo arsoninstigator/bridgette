@@ -27,6 +27,7 @@ import { Route as AboutRouteImport } from './routes/about'
 import { Route as IndexRouteImport } from './routes/index'
 import { Route as PorterIndexRouteImport } from './routes/porter.index'
 import { Route as SKeyRouteImport } from './routes/s.$key'
+import { Route as PorterPurposeRouteImport } from './routes/porter.purpose'
 import { Route as PorterLabRouteImport } from './routes/porter.lab'
 import { Route as PorterFeaturesRouteImport } from './routes/porter.features'
 import { Route as PorterAboutRouteImport } from './routes/porter.about'
@@ -123,6 +124,11 @@ const SKeyRoute = SKeyRouteImport.update({
   path: '/s/$key',
   getParentRoute: () => rootRouteImport,
 } as any)
+const PorterPurposeRoute = PorterPurposeRouteImport.update({
+  id: '/purpose',
+  path: '/purpose',
+  getParentRoute: () => PorterRoute,
+} as any)
 const PorterLabRoute = PorterLabRouteImport.update({
   id: '/lab',
   path: '/lab',
@@ -170,6 +176,7 @@ export interface FileRoutesByFullPath {
   '/porter/about': typeof PorterAboutRoute
   '/porter/features': typeof PorterFeaturesRoute
   '/porter/lab': typeof PorterLabRoute
+  '/porter/purpose': typeof PorterPurposeRoute
   '/s/$key': typeof SKeyRouteWithChildren
   '/porter/': typeof PorterIndexRoute
   '/s/$key/$page': typeof SKeyPageRoute
@@ -194,6 +201,7 @@ export interface FileRoutesByTo {
   '/porter/about': typeof PorterAboutRoute
   '/porter/features': typeof PorterFeaturesRoute
   '/porter/lab': typeof PorterLabRoute
+  '/porter/purpose': typeof PorterPurposeRoute
   '/s/$key': typeof SKeyRouteWithChildren
   '/porter': typeof PorterIndexRoute
   '/s/$key/$page': typeof SKeyPageRoute
@@ -220,6 +228,7 @@ export interface FileRoutesById {
   '/porter/about': typeof PorterAboutRoute
   '/porter/features': typeof PorterFeaturesRoute
   '/porter/lab': typeof PorterLabRoute
+  '/porter/purpose': typeof PorterPurposeRoute
   '/s/$key': typeof SKeyRouteWithChildren
   '/porter/': typeof PorterIndexRoute
   '/s/$key/$page': typeof SKeyPageRoute
@@ -247,6 +256,7 @@ export interface FileRouteTypes {
     | '/porter/about'
     | '/porter/features'
     | '/porter/lab'
+    | '/porter/purpose'
     | '/s/$key'
     | '/porter/'
     | '/s/$key/$page'
@@ -271,6 +281,7 @@ export interface FileRouteTypes {
     | '/porter/about'
     | '/porter/features'
     | '/porter/lab'
+    | '/porter/purpose'
     | '/s/$key'
     | '/porter'
     | '/s/$key/$page'
@@ -296,6 +307,7 @@ export interface FileRouteTypes {
     | '/porter/about'
     | '/porter/features'
     | '/porter/lab'
+    | '/porter/purpose'
     | '/s/$key'
     | '/porter/'
     | '/s/$key/$page'
@@ -449,6 +461,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof SKeyRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/porter/purpose': {
+      id: '/porter/purpose'
+      path: '/purpose'
+      fullPath: '/porter/purpose'
+      preLoaderRoute: typeof PorterPurposeRouteImport
+      parentRoute: typeof PorterRoute
+    }
     '/porter/lab': {
       id: '/porter/lab'
       path: '/lab'
@@ -503,6 +522,7 @@ interface PorterRouteChildren {
   PorterAboutRoute: typeof PorterAboutRoute
   PorterFeaturesRoute: typeof PorterFeaturesRoute
   PorterLabRoute: typeof PorterLabRoute
+  PorterPurposeRoute: typeof PorterPurposeRoute
   PorterIndexRoute: typeof PorterIndexRoute
 }
 
@@ -510,6 +530,7 @@ const PorterRouteChildren: PorterRouteChildren = {
   PorterAboutRoute: PorterAboutRoute,
   PorterFeaturesRoute: PorterFeaturesRoute,
   PorterLabRoute: PorterLabRoute,
+  PorterPurposeRoute: PorterPurposeRoute,
   PorterIndexRoute: PorterIndexRoute,
 }
 

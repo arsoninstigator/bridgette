@@ -120,88 +120,122 @@ function Index() {
             )}
           </div>
 
-          {/* Mini diorama — tactile scrapboard */}
+          {/* Mini diorama — hanging bunting of polaroids over a corkboard */}
           <div className="md:col-span-5 relative">
             <div
-              className="relative w-full max-w-[520px] mx-auto h-[340px] rounded-xl bg-board-cork overflow-hidden border-[12px] border-[#8d6a4a] ring-1 ring-black/10 shadow-[0_20px_50px_rgba(0,0,0,0.25)]"
+              className="relative w-full max-w-[560px] mx-auto h-[380px] rounded-xl bg-board-cork overflow-hidden border-[14px] border-[#8d6a4a] ring-1 ring-black/10 shadow-[0_24px_60px_rgba(0,0,0,0.28)]"
             >
-              {/* sagging strings */}
-              <svg className="absolute inset-0 w-full h-full pointer-events-none z-20" viewBox="0 0 560 380" fill="none" preserveAspectRatio="none">
-                <path d="M80 120 Q 280 240 480 100" stroke="#7c2d12" strokeWidth="1.5" fill="none" opacity="0.6" />
-                <path d="M480 100 Q 520 280 340 330" stroke="#7c2d12" strokeWidth="1.2" fill="none" opacity="0.5" />
+              {/* four corner pushpins */}
+              {[
+                { t: "6px", l: "6px" }, { t: "6px", r: "6px" },
+                { b: "6px", l: "6px" }, { b: "6px", r: "6px" },
+              ].map((s, i) => (
+                <div key={i} className="absolute z-30 w-3 h-3 rounded-full bg-rose-600 ring-1 ring-rose-900 shadow"
+                  style={{ top: s.t, bottom: s.b, left: s.l, right: s.r }}>
+                  <div className="absolute top-0.5 left-0.5 w-1 h-1 bg-white/70 rounded-full" />
+                </div>
+              ))}
+
+              {/* two sagging bunting strings + a diagonal thread */}
+              <svg className="absolute inset-0 w-full h-full pointer-events-none z-10" viewBox="0 0 560 380" fill="none" preserveAspectRatio="none">
+                <defs>
+                  <pattern id="hero-fibers" width="6" height="6" patternUnits="userSpaceOnUse" patternTransform="rotate(45)">
+                    <line x1="0" y1="0" x2="0" y2="6" stroke="rgba(0,0,0,0.18)" strokeWidth="0.6" />
+                  </pattern>
+                </defs>
+                {/* top bunting */}
+                <path d="M0 60 Q 140 140 280 90 T 560 70" stroke="#5b3a1e" strokeWidth="3" fill="none" strokeLinecap="round" />
+                <path d="M0 60 Q 140 140 280 90 T 560 70" stroke="url(#hero-fibers)" strokeWidth="3" fill="none" opacity="0.35" />
+                {/* diagonal red investigation thread */}
+                <path d="M90 220 Q 260 310 470 200" stroke="#a8231a" strokeWidth="1.6" fill="none" opacity="0.75" strokeLinecap="round" />
+                <circle cx="90" cy="220" r="3" fill="#a8231a" />
+                <circle cx="470" cy="200" r="3" fill="#a8231a" />
               </svg>
 
-              {/* hanging polaroid (left) with wooden clip */}
-              <div className="absolute top-[14%] left-[10%] rotate-[-5deg] z-10">
-                <div className="absolute -top-4 left-1/2 -translate-x-1/2 w-3 h-9 bg-[#d2b48c] border border-black/10 shadow-sm rounded-sm z-30">
-                  <div className="absolute top-2 inset-x-0.5 h-px bg-black/20" />
-                  <div className="absolute bottom-2 inset-x-0.5 h-px bg-black/20" />
-                  <div className="absolute top-1/2 -translate-y-1/2 inset-x-0 h-1.5 bg-black/10" />
-                </div>
-                <div className="bg-[#f9f9f9] p-2 pb-7 shadow-[5px_10px_15px_rgba(0,0,0,0.2)] border border-black/5">
-                  <div className="w-24 h-24 bg-gradient-to-br from-stone-400 via-stone-500 to-stone-700 grayscale" />
-                </div>
-              </div>
-
-              {/* sticky note */}
-              <div className="absolute top-[10%] right-[18%] rotate-[3deg] z-10">
-                <div className="bg-[#ffff88] w-32 h-32 p-4 shadow-[4px_4px_10px_rgba(0,0,0,0.15)] flex items-center justify-center text-center relative">
-                  <div className="absolute bottom-0 right-0 w-3 h-3 bg-black/5 rounded-tl-lg" />
-                  <p className="font-display text-base leading-snug text-[#5d5a2d] lowercase">mess carries meaning.</p>
-                  <div className="absolute top-1.5 left-1/2 -translate-x-1/2 w-3 h-3">
-                    <div className="w-full h-full bg-red-600 rounded-full shadow-inner ring-1 ring-red-800" />
-                    <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-0.5 h-0.5 bg-white/60 rounded-full" />
+              {/* polaroids clipped to the top bunting */}
+              {[
+                { l: "6%", top: 74, rot: -6 },
+                { l: "26%", top: 92, rot: 3 },
+                { l: "48%", top: 84, rot: -2 },
+                { l: "70%", top: 78, rot: 5 },
+              ].map((p, i) => (
+                <div key={i} className="absolute z-20" style={{ left: p.l, top: p.top, transform: `rotate(${p.rot}deg)` }}>
+                  {/* wooden clip */}
+                  <div className="absolute -top-3 left-1/2 -translate-x-1/2 w-3 h-6 bg-[#c99a68] border border-[#7a4a1e]/50 rounded-[2px] shadow-sm z-30">
+                    <div className="absolute inset-x-0 top-1.5 h-px bg-black/25" />
+                    <div className="absolute inset-x-0 bottom-1.5 h-px bg-black/25" />
+                  </div>
+                  <div className="bg-[#f9f7f1] p-1.5 pb-6 shadow-[4px_8px_14px_rgba(0,0,0,0.28)] border border-black/5">
+                    <div
+                      className="w-[68px] h-[68px] grayscale"
+                      style={{
+                        background: i === 0 ? "linear-gradient(135deg,#8b7355,#3f342a)"
+                          : i === 1 ? "linear-gradient(135deg,#6e6e6e,#1f1f1f)"
+                          : i === 2 ? "linear-gradient(135deg,#b7a58e,#5e4f3e)"
+                          : "linear-gradient(135deg,#8a8073,#3a352d)",
+                      }}
+                    />
                   </div>
                 </div>
+              ))}
+
+              {/* sticky note */}
+              <div className="absolute bottom-[18%] left-[6%] rotate-[-4deg] z-20">
+                <div className="bg-[#ffef85] w-28 h-28 p-3 shadow-[4px_6px_12px_rgba(0,0,0,0.18)] relative">
+                  <div className="absolute top-1.5 left-1/2 -translate-x-1/2 w-3 h-3 rounded-full bg-rose-600 ring-1 ring-rose-900" />
+                  <p className="font-display text-sm leading-snug text-[#5d5a2d] lowercase mt-3 text-center">mess carries meaning.</p>
+                </div>
               </div>
 
-              {/* taped polaroid (bottom) */}
-              <div className="absolute bottom-[6%] left-[22%] rotate-[8deg] z-20">
-                <div className="bg-white p-2 pb-7 shadow-[8px_12px_20px_rgba(0,0,0,0.25)] border border-black/5">
-                  <div className="w-32 h-20 bg-gradient-to-tr from-stone-300 via-stone-400 to-stone-500" />
+              {/* taped polaroid with jagged pink washi */}
+              <div className="absolute bottom-[6%] left-[36%] rotate-[7deg] z-20">
+                <div className="bg-white p-1.5 pb-6 shadow-[8px_12px_18px_rgba(0,0,0,0.24)] border border-black/5">
+                  <div className="w-24 h-16 bg-gradient-to-tr from-stone-300 via-stone-400 to-stone-600" />
                 </div>
-                {/* jagged pink washi tape */}
                 <div
-                  className="absolute -top-2 -left-5 w-16 h-5 bg-[#f472b6]/80 rotate-[-35deg] shadow-sm mix-blend-multiply"
+                  className="absolute -top-2 -left-4 w-14 h-4 bg-[#f472b6]/85 rotate-[-30deg] mix-blend-multiply"
                   style={{
                     clipPath:
-                      "polygon(0% 10%, 4% 0%, 12% 12%, 18% 2%, 25% 15%, 32% 0%, 40% 10%, 48% 2%, 55% 18%, 62% 0%, 70% 12%, 78% 2%, 85% 15%, 92% 0%, 100% 10%, 100% 90%, 94% 100%, 86% 88%, 79% 98%, 72% 85%, 65% 100%, 58% 88%, 51% 98%, 44% 82%, 36% 100%, 28% 88%, 20% 98%, 12% 82%, 5% 100%, 0% 90%)",
+                      "polygon(0% 10%, 8% 0%, 18% 12%, 28% 0%, 40% 14%, 52% 0%, 64% 12%, 78% 0%, 90% 14%, 100% 4%, 100% 96%, 90% 86%, 78% 100%, 66% 88%, 52% 100%, 38% 88%, 26% 100%, 14% 86%, 4% 100%, 0% 90%)",
                   }}
                 />
               </div>
 
+              {/* clipped artifact card (right) */}
+              <div className="absolute bottom-[8%] right-[6%] rotate-[10deg] z-20">
+                <div className="absolute -top-3 left-1/2 -translate-x-1/2 w-3 h-6 bg-[#c99a68] border border-[#7a4a1e]/50 rounded-[2px] shadow-sm z-30">
+                  <div className="absolute inset-x-0 top-1.5 h-px bg-black/25" />
+                </div>
+                <div className="bg-[#f3f4f6] w-24 h-24 p-2 shadow-lg border-t-4 border-[#e5e7eb]">
+                  <div className="w-full h-full border border-black/5 flex flex-col items-center justify-center">
+                    <span className="font-mono text-[8px] text-black/50 tracking-widest uppercase">artifact</span>
+                    <div className="w-10 h-px bg-black/15 my-1.5" />
+                    <span className="font-mono text-[7px] text-black/40">00429-a</span>
+                    <div className="mt-2 w-8 h-1 bg-black/10 rounded-full" />
+                    <div className="mt-1 w-6 h-1 bg-black/10 rounded-full" />
+                  </div>
+                </div>
+              </div>
+
               {/* torn paper scrap */}
-              <div className="absolute bottom-[18%] right-[8%] rotate-[-12deg] z-10">
+              <div className="absolute top-[52%] left-[42%] rotate-[-8deg] z-10">
                 <div
-                  className="bg-[#ebe7e0] w-24 h-16 p-2 shadow-md border-l-2 border-black/5"
+                  className="bg-[#ebe7e0] w-24 h-12 p-2 shadow-md"
                   style={{
                     clipPath:
                       "polygon(2% 2%, 98% 0%, 100% 98%, 85% 100%, 72% 95%, 58% 100%, 45% 92%, 30% 98%, 15% 90%, 0% 100%)",
                   }}
                 >
                   <div className="space-y-1 opacity-40">
-                    <div className="h-1 w-full bg-black/20 rounded-full" />
-                    <div className="h-1 w-4/5 bg-black/20 rounded-full" />
-                    <div className="h-1 w-full bg-black/20 rounded-full" />
-                  </div>
-                </div>
-              </div>
-
-              {/* clipped artifact ticket */}
-              <div className="absolute top-[20%] right-[4%] rotate-[15deg] z-10">
-                <div className="absolute -top-3 left-1/2 -translate-x-1/2 w-2.5 h-7 bg-[#c19a6b] border border-black/10 shadow-sm rounded-sm z-30" />
-                <div className="bg-[#f3f4f6] w-20 h-20 p-1.5 shadow-lg border-t-4 border-[#e5e7eb]">
-                  <div className="w-full h-full border border-black/5 flex flex-col items-center justify-center">
-                    <span className="font-mono text-[7px] text-black/40 tracking-widest uppercase">artifact</span>
-                    <div className="w-8 h-px bg-black/10 my-1" />
-                    <span className="font-mono text-[6px] text-black/30">00429-A</span>
+                    <div className="h-1 w-full bg-black/25 rounded-full" />
+                    <div className="h-1 w-3/4 bg-black/25 rounded-full" />
                   </div>
                 </div>
               </div>
 
               {/* scuff specks */}
-              <div className="absolute top-1/4 right-1/4 w-1 h-1 bg-black/10 rounded-full blur-[1px]" />
-              <div className="absolute bottom-1/3 left-1/2 w-2 h-0.5 bg-black/5 rotate-45" />
+              <div className="absolute top-1/3 right-1/3 w-1 h-1 bg-black/10 rounded-full blur-[1px]" />
+              <div className="absolute bottom-1/4 left-1/3 w-2 h-0.5 bg-black/10 rotate-45" />
             </div>
           </div>
         </div>

@@ -1,11 +1,12 @@
 import { Link, useLocation } from "@tanstack/react-router";
 import type { ReactNode } from "react";
 
-type PorterTo = "/porter" | "/porter/lab" | "/porter/about" | "/porter/features";
+type PorterTo = "/porter" | "/porter/lab" | "/porter/about" | "/porter/features" | "/porter/purpose";
 
 const nav: { to: PorterTo; label: string }[] = [
   { to: "/porter", label: "home" },
   { to: "/porter/features", label: "features" },
+  { to: "/porter/purpose", label: "purpose" },
   { to: "/porter/lab", label: "lab" },
   { to: "/porter/about", label: "about" },
 ];

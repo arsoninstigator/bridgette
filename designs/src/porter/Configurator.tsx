@@ -277,13 +277,42 @@ export function ConfiguratorMain({ title = "figma / psd configurator", subtitle 
   async function importFile(f: File, kind: "psd" | "ai" | "eps") {
     setErr(null); setLoading(true);
     try {
-      const res = kind === "psd" ? await parsePsdFile(f) : await parseAiOrEps(f, kind);
+      let file = f;
+      let effectiveKind = kind;
+      // if the user drops a .zip on any card, extract the first supported file inside.
+      if (/\.zip$/i.test(f.name)) {
+        const extracted = await extractFromZip(f, kind);
+        if (!extracted) throw new Error(`no .psd / .ai / .eps found inside ${f.name}`);
+        file = extracted.file;
+        effectiveKind = extracted.kind;
+      }
+      const res = effectiveKind === "psd" ? await parsePsdFile(file) : await parseAiOrEps(file, effectiveKind);
       setLayers(res.layers); setRootIds(res.rootIds); setSource(res.source); setPreview(res.preview);
       setExpanded(new Set(res.layers.filter((l) => l.depth < 2).map((l) => l.id)));
-      setActiveSource(kind);
-      if (!name) setName(f.name.replace(/\.(psd|ai|eps)$/i, ""));
+      setActiveSource(effectiveKind);
+      if (!name) setName(file.name.replace(/\.(psd|ai|eps)$/i, ""));
     } catch (e: any) { setErr(e.message || String(e)); }
     finally { setLoading(false); }
+  }
+
+  async function extractFromZip(
+    f: File,
+    preferred: "psd" | "ai" | "eps",
+  ): Promise<{ file: File; kind: "psd" | "ai" | "eps" } | null> {
+    const { default: JSZip } = await import("jszip");
+    const zip = await JSZip.loadAsync(await f.arrayBuffer());
+    const entries = Object.values(zip.files).filter((e) => !e.dir);
+    const order: ("psd" | "ai" | "eps")[] = [preferred, "psd", "ai", "eps"].filter(
+      (v, i, a) => a.indexOf(v) === i,
+    ) as ("psd" | "ai" | "eps")[];
+    for (const k of order) {
+      const hit = entries.find((e) => new RegExp(`\\.${k}$`, "i").test(e.name));
+      if (hit) {
+        const blob = await hit.async("blob");
+        return { file: new File([blob], hit.name.split("/").pop() || hit.name), kind: k };
+      }
+    }
+    return null;
   }
 
   function save() {
@@ -411,27 +440,11 @@ export function ConfiguratorMain({ title = "figma / psd configurator", subtitle 
           <h3 className="font-display text-lg lowercase">upload .psd</h3>
           <p className="text-[11px] text-stone-600">photoshop — full layer tree with blend modes & effects.</p>
           {activeSource === "psd" && source?.type === "psd" && <p className="text-[10px] font-mono text-emerald-700">active · {source.fileName}</p>}
-          <input ref={psdRef} type="file" accept=".psd,image/vnd.adobe.photoshop" className="hidden"
+          <input ref={psdRef} type="file" accept=".psd,.zip,image/vnd.adobe.photoshop,application/zip" className="hidden"
                  onChange={(e) => { const f = e.target.files?.[0]; if (f) importFile(f, "psd"); }} />
-        </button>
-
-        <button type="button" onClick={() => aiRef.current?.click()}
-                className={`${cardBase} ${activeSource === "ai" ? cardActive : cardIdle}`}>
-          <p className="font-mono text-[10px] uppercase tracking-widest text-muted-foreground">source · ai</p>
-          <h3 className="font-display text-lg lowercase">upload .ai</h3>
-          <p className="text-[11px] text-stone-600">illustrator — layer names & artboards extracted from the file directory.</p>
-          {activeSource === "ai" && source?.type === "ai" && <p className="text-[10px] font-mono text-emerald-700">active · {source.fileName}</p>}
-          <input ref={aiRef} type="file" accept=".ai,application/postscript,application/illustrator" className="hidden"
+          <input ref={aiRef} type="file" accept=".ai,.zip,application/postscript,application/illustrator,application/zip" className="hidden"
                  onChange={(e) => { const f = e.target.files?.[0]; if (f) importFile(f, "ai"); }} />
-        </button>
-
-        <button type="button" onClick={() => epsRef.current?.click()}
-                className={`${cardBase} ${activeSource === "eps" ? cardActive : cardIdle}`}>
-          <p className="font-mono text-[10px] uppercase tracking-widest text-muted-foreground">source · eps</p>
-          <h3 className="font-display text-lg lowercase">upload .eps</h3>
-          <p className="text-[11px] text-stone-600">encapsulated postscript — title & layer comments parsed.</p>
-          {activeSource === "eps" && source?.type === "eps" && <p className="text-[10px] font-mono text-emerald-700">active · {source.fileName}</p>}
-          <input ref={epsRef} type="file" accept=".eps,application/postscript" className="hidden"
+          <input ref={epsRef} type="file" accept=".eps,.zip,application/postscript,application/zip" className="hidden"
                  onChange={(e) => { const f = e.target.files?.[0]; if (f) importFile(f, "eps"); }} />
         </button>
       </div>
