@@ -857,7 +857,7 @@ function Editor({ board, setBoard }: { board: Board; setBoard: (b: Board) => voi
           )}
           {hangingDraft && (
             <div className="absolute top-4 left-1/2 -translate-x-1/2 rounded-md bg-stone-900/90 text-stone-50 px-3 py-2 font-mono text-[10px] lowercase tracking-wider flex items-center gap-3">
-              hanging — click canvas points to anchor the string ({hangingDraft.points.length} set)
+              hanging — click the frame edges to anchor the string; droop calculates itself ({hangingDraft.points.length} set)
               <button
                 onClick={commitHangingDraft}
                 disabled={hangingDraft.points.length < 2}
