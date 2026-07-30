@@ -637,22 +637,34 @@ function renderAssetBody(
       const fill = a.fill || "#c9b99a";
       const shape = a.shape || "rect";
       const common: React.CSSProperties = { width: w, height: h };
-      if (shape === "circle")
+      if (shape === "circle" || shape === "oval")
         return <div className="analog-shadow-sm" style={{ ...common, background: fill, borderRadius: "50%" }} />;
       if (shape === "diamond")
         return <div className="analog-shadow-sm" style={{ ...common, background: fill, transform: "rotate(45deg)" }} />;
       if (shape === "triangle")
         return (
-          <svg width={w} height={h} viewBox="0 0 100 100">
+          <svg width={w} height={h} viewBox="0 0 100 100" preserveAspectRatio="none">
             <polygon points="50,5 95,95 5,95" fill={fill} />
           </svg>
         );
       if (shape === "star")
         return (
-          <svg width={w} height={h} viewBox="0 0 100 100">
+          <svg width={w} height={h} viewBox="0 0 100 100" preserveAspectRatio="none">
             <polygon points="50,5 61,38 96,38 67,59 78,95 50,73 22,95 33,59 4,38 39,38" fill={fill} />
           </svg>
         );
+      if (shape === "polygon") {
+        const n = Math.max(3, a.sides ?? 6);
+        const pts = Array.from({ length: n }, (_, i) => {
+          const ang = (i / n) * Math.PI * 2 - Math.PI / 2;
+          return `${50 + 47 * Math.cos(ang)},${50 + 47 * Math.sin(ang)}`;
+        }).join(" ");
+        return (
+          <svg width={w} height={h} viewBox="0 0 100 100" preserveAspectRatio="none">
+            <polygon points={pts} fill={fill} />
+          </svg>
+        );
+      }
       return <div className="analog-shadow-sm" style={{ ...common, background: fill, borderRadius: 4 }} />;
     }
     case "icon": {
