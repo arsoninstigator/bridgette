@@ -78,7 +78,8 @@ export interface AssetBase {
     tableHeaderUnderline?: boolean;
   };
   frameStyle?: "classic" | "ornate" | "polaroid" | "oval" | "scalloped" | "double"; // for kind: frame
-  shape?: "rect" | "circle" | "triangle" | "diamond" | "star";
+  shape?: "rect" | "square" | "circle" | "oval" | "triangle" | "diamond" | "star" | "polygon";
+  sides?: number; // for shape: polygon (3+)
   fill?: string;
   // icon / marquee
   iconText?: string; // marquee scrolling text
