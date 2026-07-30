@@ -2924,28 +2924,170 @@ function AssetsPanel() {
   );
 }
 
+type ShapeVariant = NonNullable<AssetBase["shape"]>;
+type ShapeCfg = { width: number; height: number; sides: number };
+
+function ShapeTile({
+  variant,
+  preview,
+  onAdd,
+}: {
+  variant: ShapeVariant;
+  preview: React.ReactNode;
+  onAdd: AddFn;
+}) {
+  const isRound = variant === "circle" || variant === "oval";
+  const square = variant === "square" || variant === "circle";
+  const [cfg, setCfg] = useState<ShapeCfg>({ width: 140, height: square ? 140 : 100, sides: 6 });
+  const [mode, setMode] = useState<"wh" | "ratio" | null>(null);
+  const [ratio, setRatio] = useState({ w: 3, h: 2 });
+
+  const extra: Partial<AssetBase> = {
+    shape: variant,
+    width: cfg.width,
+    height: square ? cfg.width : cfg.height,
+    ...(variant === "polygon" ? { sides: cfg.sides } : {}),
+  };
+
+  const applyRatio = (rw: number, rh: number) => {
+    setRatio({ w: rw, h: rh });
+    if (rw > 0 && rh > 0) setCfg((c) => ({ ...c, height: Math.round((c.width * rh) / rw) }));
+  };
+
+  return (
+    <ContextMenu>
+      <ContextMenuTrigger asChild>
+        <div>
+          <DraggableItem kind="shape" label={variant} onAdd={onAdd} extra={extra}>
+            {preview}
+          </DraggableItem>
+          {mode && (
+            <div className="mt-1 rounded-md border border-border bg-card/70 p-2 space-y-1">
+              {mode === "wh" ? (
+                <div className="flex items-center gap-1">
+                  <NumField
+                    label={isRound && !square ? "w" : "w"}
+                    value={cfg.width}
+                    onChange={(v) => setCfg((c) => ({ ...c, width: v }))}
+                  />
+                  {!square && (
+                    <NumField label="h" value={cfg.height} onChange={(v) => setCfg((c) => ({ ...c, height: v }))} />
+                  )}
+                  {square && (
+                    <span className="font-mono text-[9px] lowercase text-muted-foreground">
+                      {variant === "circle" ? "radius " + Math.round(cfg.width / 2) : "equal sides"}
+                    </span>
+                  )}
+                </div>
+              ) : (
+                <div className="flex items-center gap-1">
+                  <NumField label="w:" value={ratio.w} onChange={(v) => applyRatio(v, ratio.h)} />
+                  <NumField label="h:" value={ratio.h} onChange={(v) => applyRatio(ratio.w, v)} />
+                  <span className="font-mono text-[9px] text-muted-foreground">
+                    {cfg.width}×{square ? cfg.width : cfg.height}
+                  </span>
+                </div>
+              )}
+              {variant === "polygon" && (
+                <div className="flex items-center gap-1">
+                  <span className="font-mono text-[9px] lowercase text-muted-foreground">sides</span>
+                  <StepBtn onClick={() => setCfg((c) => ({ ...c, sides: Math.max(3, c.sides - 1) }))}>−</StepBtn>
+                  <span className="font-mono text-[10px] w-5 text-center">{cfg.sides}</span>
+                  <StepBtn onClick={() => setCfg((c) => ({ ...c, sides: c.sides + 1 }))}>+</StepBtn>
+                </div>
+              )}
+            </div>
+          )}
+        </div>
+      </ContextMenuTrigger>
+      <ContextMenuContent className="w-52">
+        <ContextMenuSub>
+          <ContextMenuSubTrigger className="font-mono text-[11px] lowercase">adjust dimensions</ContextMenuSubTrigger>
+          <ContextMenuSubContent className="w-52">
+            <ContextMenuItem className="font-mono text-[11px] lowercase" onSelect={() => setMode("wh")}>
+              {variant === "circle" ? "set radius" : isRound ? "set width & height" : "add width and height"}
+            </ContextMenuItem>
+            <ContextMenuItem className="font-mono text-[11px] lowercase" onSelect={() => setMode("ratio")}>
+              add ratios of w:h
+            </ContextMenuItem>
+            <ContextMenuItem className="font-mono text-[11px] lowercase" onSelect={() => setMode(null)}>
+              reset
+            </ContextMenuItem>
+          </ContextMenuSubContent>
+        </ContextMenuSub>
+        {variant === "polygon" && (
+          <ContextMenuSub>
+            <ContextMenuSubTrigger className="font-mono text-[11px] lowercase">number of sides</ContextMenuSubTrigger>
+            <ContextMenuSubContent className="w-40">
+              <div className="flex items-center justify-between px-2 py-1.5">
+                <StepBtn onClick={() => setCfg((c) => ({ ...c, sides: Math.max(3, c.sides - 1) }))}>−</StepBtn>
+                <span className="font-mono text-[12px]">{cfg.sides}</span>
+                <StepBtn onClick={() => setCfg((c) => ({ ...c, sides: c.sides + 1 }))}>+</StepBtn>
+              </div>
+            </ContextMenuSubContent>
+          </ContextMenuSub>
+        )}
+        <ContextMenuItem className="font-mono text-[11px] lowercase" onSelect={() => onAdd("shape", undefined, undefined, extra)}>
+          add to board
+        </ContextMenuItem>
+      </ContextMenuContent>
+    </ContextMenu>
+  );
+}
+
+function NumField({ label, value, onChange }: { label: string; value: number; onChange: (v: number) => void }) {
+  return (
+    <label className="flex items-center gap-1">
+      <span className="font-mono text-[9px] lowercase text-muted-foreground">{label}</span>
+      <input
+        type="number"
+        min={1}
+        value={value}
+        onChange={(e) => onChange(Math.max(1, Number(e.target.value) || 1))}
+        className="w-12 rounded border border-border bg-background px-1 py-0.5 font-mono text-[10px]"
+      />
+    </label>
+  );
+}
+
+function StepBtn({ onClick, children }: { onClick: () => void; children: React.ReactNode }) {
+  return (
+    <button
+      type="button"
+      onClick={onClick}
+      className="size-5 rounded border border-border bg-background font-mono text-[11px] leading-none hover:bg-accent/40"
+    >
+      {children}
+    </button>
+  );
+}
+
 function ShapePanel({ onAdd }: { onAdd: AddFn }) {
-  const basic: { variant: NonNullable<AssetBase["shape"]>; preview: React.ReactNode }[] = [
-    { variant: "rect", preview: <div className="size-10" style={{ background: "#8b7355" }} /> },
+  const basic: { variant: ShapeVariant; preview: React.ReactNode }[] = [
+    { variant: "rect", preview: <div className="h-8 w-10" style={{ background: "#8b7355" }} /> },
+    { variant: "square", preview: <div className="size-10" style={{ background: "#8b7355" }} /> },
     { variant: "circle", preview: <div className="size-10 rounded-full" style={{ background: "#8b7355" }} /> },
+    { variant: "oval", preview: <div className="h-7 w-11 rounded-full" style={{ background: "#8b7355" }} /> },
     { variant: "triangle", preview: <svg width={40} height={40} viewBox="0 0 100 100"><polygon points="50,5 95,95 5,95" fill="#8b7355" /></svg> },
     { variant: "diamond", preview: <div className="size-9" style={{ background: "#8b7355", transform: "rotate(45deg)" }} /> },
     { variant: "star", preview: <svg width={40} height={40} viewBox="0 0 100 100"><polygon points="50,5 61,38 96,38 67,59 78,95 50,73 22,95 33,59 4,38 39,38" fill="#8b7355" /></svg> },
+    {
+      variant: "polygon",
+      preview: (
+        <svg width={40} height={40} viewBox="0 0 100 100">
+          <polygon points="50,3 91,26.5 91,73.5 50,97 9,73.5 9,26.5" fill="#8b7355" />
+        </svg>
+      ),
+    },
   ];
   return (
     <div className="space-y-3">
-      <p className="font-mono text-[10px] lowercase text-muted-foreground">drag or tap a shape onto the frame</p>
+      <p className="font-mono text-[10px] lowercase text-muted-foreground">
+        drag or tap a shape onto the frame · right-click for dimensions
+      </p>
       <SubheadingGroup title="basic">
         {basic.map((s) => (
-          <DraggableItem
-            key={s.variant}
-            kind="shape"
-            label={s.variant}
-            onAdd={onAdd}
-            extra={{ shape: s.variant }}
-          >
-            {s.preview}
-          </DraggableItem>
+          <ShapeTile key={s.variant} variant={s.variant} preview={s.preview} onAdd={onAdd} />
         ))}
       </SubheadingGroup>
       <IconsSubsection onAdd={onAdd} />
