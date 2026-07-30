@@ -39,7 +39,7 @@ import type { AssetBase, AssetKind, Board, BoardKind, StringConn } from "../lib/
 import { makeAsset, nextZ, defaultBlockData, defaultLayoutData } from "../lib/boardr/factories";
 import { BoardCanvas } from "../components/boardr/BoardCanvas";
 import { SettingsPanel } from "../components/boardr/SettingsPanel";
-import { ContextMenu, ContextMenuTrigger, ContextMenuContent, ContextMenuItem } from "../components/ui/context-menu";
+import { ContextMenu, ContextMenuTrigger, ContextMenuContent, ContextMenuItem, ContextMenuSub, ContextMenuSubTrigger, ContextMenuSubContent } from "../components/ui/context-menu";
 import corkboardAsset from "@/assets/corkboard.jpg.asset.json";
 
 const search = z.object({
