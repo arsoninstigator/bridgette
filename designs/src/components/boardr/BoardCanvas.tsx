@@ -31,6 +31,8 @@ interface Props {
   onDropAsset?: (kind: AssetKind, x: number, y: number, extra?: Partial<AssetBase>) => void;
   onStringClick?: (stringId: string) => void;
   onStringContextMenu?: (stringId: string, clientX: number, clientY: number) => void;
+  onBuntingChange?: (stringId: string, patch: Partial<NonNullable<StringConn["bunting"]>>) => void;
+
   drawWashi?: { tapeColor?: string; tapePattern?: string; tapeTextColor?: string; imageUrl?: string } | null;
   drawHanging?: { points: { x: number; y: number }[]; color?: string; thickness?: number; sag?: number } | null;
   onHangingPoint?: (x: number, y: number) => void;
