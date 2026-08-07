@@ -3345,6 +3345,8 @@ function StringContextMenu({
   onDelete: () => void;
 }) {
   const [openHang, setOpenHang] = useState(false);
+  const [openBunting, setOpenBunting] = useState(false);
+  const b = conn.bunting;
   const swatches = ["#8a6a3a", "#a8231a", "#3a2a1a", "#1e6bbf", "#1d8a4f", "#c9a84c", "#0d0d0d"];
   return (
     <div className="fixed inset-0 z-40" onClick={onClose}>
