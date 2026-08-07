@@ -3782,3 +3782,14 @@ function AddPageOrSectionDialog({
 }
 
 
+
+function miniFlag(shape: string): string {
+  const hw = 10, h = 24;
+  switch (shape) {
+    case "rect": return `M ${-hw} 0 L ${hw} 0 L ${hw} ${h} L ${-hw} ${h} Z`;
+    case "swallowtail": return `M ${-hw} 0 L ${hw} 0 L ${hw} ${h} L 0 ${h * 0.62} L ${-hw} ${h} Z`;
+    case "scallop": return `M ${-hw} 0 L ${hw} 0 L ${hw} ${h * 0.6} Q 0 ${h * 1.25} ${-hw} ${h * 0.6} Z`;
+    case "pennant": return `M ${-hw} 0 L ${hw} 0 L ${-hw * 0.15} ${h} Z`;
+    default: return `M ${-hw} 0 L ${hw} 0 L 0 ${h} Z`;
+  }
+}
