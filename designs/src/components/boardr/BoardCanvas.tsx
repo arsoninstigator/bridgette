@@ -60,6 +60,8 @@ export function BoardCanvas({
   onDropAsset,
   onStringClick,
   onStringContextMenu,
+  onBuntingChange,
+
   drawWashi,
   drawHanging,
   onHangingPoint,
