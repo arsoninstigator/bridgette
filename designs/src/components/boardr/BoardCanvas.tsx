@@ -335,7 +335,7 @@ export function BoardCanvas({
         })()}
         {drawHanging && drawHanging.points.length > 0 && (() => {
           const pts = [...drawHanging.points, ...(hoverPoint ? [hoverPoint] : [])];
-          const d = buildBuntingPath(pts, drawHanging.sag ?? 0.18);
+          const d = quadsToPath(quadChain(pts, drawHanging.sag ?? 0.18));
           return (
             <g>
               <path d={d} stroke={drawHanging.color || "#8a6a3a"} strokeWidth={drawHanging.thickness ?? 3.5}
