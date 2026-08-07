@@ -404,12 +404,46 @@ function pinPoint(a: AssetBase): { x: number; y: number } {
   return { x: a.x + rx, y: a.y + ry };
 }
 
+type Pt = { x: number; y: number };
+type Quad = { a: Pt; c: Pt; b: Pt };
+
+function quadChain(pts: Pt[], sagFactor: number, minSag = 20): Quad[] {
+  const out: Quad[] = [];
+  for (let i = 1; i < pts.length; i++) {
+    const a = pts[i - 1];
+    const b = pts[i];
+    const dist = Math.hypot(b.x - a.x, b.y - a.y);
+    const sag = Math.max(minSag, dist * sagFactor);
+    out.push({ a, b, c: { x: (a.x + b.x) / 2, y: (a.y + b.y) / 2 + sag } });
+  }
+  return out;
+}
+
+function quadPointAt(q: Quad, t: number): { p: Pt; angle: number } {
+  const mt = 1 - t;
+  const p = {
+    x: mt * mt * q.a.x + 2 * mt * t * q.c.x + t * t * q.b.x,
+    y: mt * mt * q.a.y + 2 * mt * t * q.c.y + t * t * q.b.y,
+  };
+  const dx = 2 * mt * (q.c.x - q.a.x) + 2 * t * (q.b.x - q.c.x);
+  const dy = 2 * mt * (q.c.y - q.a.y) + 2 * t * (q.b.y - q.c.y);
+  return { p, angle: (Math.atan2(dy, dx) * 180) / Math.PI };
+}
+
+function quadsToPath(qs: Quad[]): string {
+  if (!qs.length) return "";
+  const segs = [`M ${qs[0].a.x} ${qs[0].a.y}`];
+  for (const q of qs) segs.push(`Q ${q.c.x} ${q.c.y} ${q.b.x} ${q.b.y}`);
+  return segs.join(" ");
+}
+
 function buildStringPath(
   s: StringConn,
   assets: AssetBase[],
-): { d: string; points: { x: number; y: number }[] } | null {
+): { d: string; points: Pt[]; quads: Quad[] } | null {
   if (s.points && s.points.length >= 2) {
-    return { d: buildBuntingPath(s.points, s.sag ?? 0.18), points: s.points };
+    const quads = quadChain(s.points, s.sag ?? 0.18);
+    return { d: quadsToPath(quads), points: s.points, quads };
   }
   if (s.from && s.to) {
     const a = assets.find((x) => x.id === s.from);
@@ -417,30 +451,13 @@ function buildStringPath(
     if (!a || !b) return null;
     const pa = pinPoint(a);
     const pb = pinPoint(b);
-    const dist = Math.hypot(pb.x - pa.x, pb.y - pa.y);
     const sagFactor = s.sag ?? (s.hanging ? 0.18 : 0.03);
-    const sag = s.hanging ? Math.max(30, dist * sagFactor) : Math.max(6, dist * sagFactor);
-    const mx = (pa.x + pb.x) / 2;
-    const my = (pa.y + pb.y) / 2 + sag;
-    return { d: `M ${pa.x} ${pa.y} Q ${mx} ${my} ${pb.x} ${pb.y}`, points: [pa, pb] };
+    const quads = quadChain([pa, pb], sagFactor, s.hanging ? 30 : 6);
+    return { d: quadsToPath(quads), points: [pa, pb], quads };
   }
   return null;
 }
 
-function buildBuntingPath(pts: { x: number; y: number }[], sagFactor: number): string {
-  if (pts.length < 2) return "";
-  const segs: string[] = [`M ${pts[0].x} ${pts[0].y}`];
-  for (let i = 1; i < pts.length; i++) {
-    const a = pts[i - 1];
-    const b = pts[i];
-    const dist = Math.hypot(b.x - a.x, b.y - a.y);
-    const sag = Math.max(20, dist * sagFactor);
-    const mx = (a.x + b.x) / 2;
-    const my = (a.y + b.y) / 2 + sag;
-    segs.push(`Q ${mx} ${my} ${b.x} ${b.y}`);
-  }
-  return segs.join(" ");
-}
 
 function hexToRgb(hex: string): { r: number; g: number; b: number } | null {
   const m = /^#?([a-f\d]{6})$/i.exec(hex);
