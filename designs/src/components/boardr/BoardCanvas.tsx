@@ -318,6 +318,9 @@ export function BoardCanvas({
                   fill={darken(stroke, 0.4)} opacity={0.85}
                   style={{ pointerEvents: "none" }} />
               ))}
+              {s.bunting && s.bunting.count > 0 && (
+                <BuntingFlags cfg={s.bunting} quads={path.quads} sid={s.id} />
+              )}
             </g>
           );
         })}
