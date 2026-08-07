@@ -3345,6 +3345,8 @@ function StringContextMenu({
   onDelete: () => void;
 }) {
   const [openHang, setOpenHang] = useState(false);
+  const [openBunting, setOpenBunting] = useState(false);
+  const b = conn.bunting;
   const swatches = ["#8a6a3a", "#a8231a", "#3a2a1a", "#1e6bbf", "#1d8a4f", "#c9a84c", "#0d0d0d"];
   return (
     <div className="fixed inset-0 z-40" onClick={onClose}>
@@ -3386,9 +3388,79 @@ function StringContextMenu({
               <button onClick={onHangPolaroid} className="w-full text-left rounded hover:bg-black/5 px-2 py-1">
                 + polaroid (clipped)
               </button>
-              <button disabled className="w-full text-left rounded px-2 py-1 text-muted-foreground/60 cursor-not-allowed">
-                + bunting flags (soon)
+              <button
+                onClick={() => setOpenBunting(true)}
+                className="w-full text-left rounded hover:bg-black/5 px-2 py-1"
+              >
+                + bunting garland ▸
               </button>
+              {openBunting && (
+                <div className="pt-1 space-y-2 border-l border-border pl-2">
+                  <div className="text-[10px] text-muted-foreground">shape</div>
+                  <div className="grid grid-cols-5 gap-1">
+                    {(["triangle", "swallowtail", "rect", "scallop", "pennant"] as const).map((sh) => (
+                      <button
+                        key={sh}
+                        title={sh}
+                        onClick={() => onChange({ bunting: { count: 7, size: 46, spacing: 0.12, ...(conn.bunting || {}), shape: sh } })}
+                        className={`grid place-items-center rounded border py-1 ${b?.shape === sh ? "border-stone-900 bg-black/5" : "border-border"}`}
+                      >
+                        <svg viewBox="-12 0 24 26" className="w-5 h-5">
+                          <path d={miniFlag(sh)} fill="#e4572e" stroke="rgba(0,0,0,0.4)" strokeWidth={1} />
+                        </svg>
+                      </button>
+                    ))}
+                  </div>
+                  {b && (
+                    <>
+                      <div>
+                        <div className="text-[10px] text-muted-foreground mb-1">flags · {b.count}</div>
+                        <input type="range" min={2} max={30} step={1} value={b.count}
+                          onChange={(e) => onChange({ bunting: { ...b, count: Number(e.target.value) } })} className="w-full" />
+                      </div>
+                      <div>
+                        <div className="text-[10px] text-muted-foreground mb-1">size · {b.size}px</div>
+                        <input type="range" min={18} max={120} step={2} value={b.size}
+                          onChange={(e) => onChange({ bunting: { ...b, size: Number(e.target.value) } })} className="w-full" />
+                      </div>
+                      <div>
+                        <div className="text-[10px] text-muted-foreground mb-1">spacing · {((b.spacing ?? 0.12) * 100).toFixed(0)}%</div>
+                        <input type="range" min={0} max={0.7} step={0.02} value={b.spacing ?? 0.12}
+                          onChange={(e) => onChange({ bunting: { ...b, spacing: Number(e.target.value) } })} className="w-full" />
+                      </div>
+                      <div>
+                        <div className="text-[10px] text-muted-foreground mb-1">pattern</div>
+                        <div className="flex flex-wrap gap-1">
+                          {(["none", "dots", "stripes", "chevron", "waves"] as const).map((p) => (
+                            <button key={p} onClick={() => onChange({ bunting: { ...b, pattern: p } })}
+                              className={`rounded border px-1.5 py-0.5 ${(b.pattern ?? "none") === p ? "border-stone-900 bg-black/5" : "border-border"}`}>
+                              {p}
+                            </button>
+                          ))}
+                        </div>
+                      </div>
+                      <div>
+                        <div className="text-[10px] text-muted-foreground mb-1">palette</div>
+                        <div className="flex flex-wrap items-center gap-1">
+                          {(b.colors ?? ["#e4572e", "#f4c95d", "#4d9de0", "#7fb069", "#e07a9c"]).map((c, i) => (
+                            <input key={i} type="color" value={c}
+                              onChange={(e) => {
+                                const next = [...(b.colors ?? ["#e4572e", "#f4c95d", "#4d9de0", "#7fb069", "#e07a9c"])];
+                                next[i] = e.target.value;
+                                onChange({ bunting: { ...b, colors: next } });
+                              }}
+                              className="size-5 rounded border border-stone-700/30 bg-transparent cursor-pointer" />
+                          ))}
+                        </div>
+                      </div>
+                      <button onClick={() => onChange({ bunting: undefined })}
+                        className="w-full text-left rounded hover:bg-rose-500/10 text-rose-600 px-2 py-1">
+                        remove garland
+                      </button>
+                    </>
+                  )}
+                </div>
+              )}
             </div>
           )}
         </div>
@@ -3710,3 +3782,14 @@ function AddPageOrSectionDialog({
 }
 
 
+
+function miniFlag(shape: string): string {
+  const hw = 10, h = 24;
+  switch (shape) {
+    case "rect": return `M ${-hw} 0 L ${hw} 0 L ${hw} ${h} L ${-hw} ${h} Z`;
+    case "swallowtail": return `M ${-hw} 0 L ${hw} 0 L ${hw} ${h} L 0 ${h * 0.62} L ${-hw} ${h} Z`;
+    case "scallop": return `M ${-hw} 0 L ${hw} 0 L ${hw} ${h * 0.6} Q 0 ${h * 1.25} ${-hw} ${h * 0.6} Z`;
+    case "pennant": return `M ${-hw} 0 L ${hw} 0 L ${-hw * 0.15} ${h} Z`;
+    default: return `M ${-hw} 0 L ${hw} 0 L 0 ${h} Z`;
+  }
+}

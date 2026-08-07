@@ -318,6 +318,9 @@ export function BoardCanvas({
                   fill={darken(stroke, 0.4)} opacity={0.85}
                   style={{ pointerEvents: "none" }} />
               ))}
+              {s.bunting && s.bunting.count > 0 && (
+                <BuntingFlags cfg={s.bunting} quads={path.quads} sid={s.id} />
+              )}
             </g>
           );
         })}
@@ -335,7 +338,7 @@ export function BoardCanvas({
         })()}
         {drawHanging && drawHanging.points.length > 0 && (() => {
           const pts = [...drawHanging.points, ...(hoverPoint ? [hoverPoint] : [])];
-          const d = buildBuntingPath(pts, drawHanging.sag ?? 0.18);
+          const d = quadsToPath(quadChain(pts, drawHanging.sag ?? 0.18));
           return (
             <g>
               <path d={d} stroke={drawHanging.color || "#8a6a3a"} strokeWidth={drawHanging.thickness ?? 3.5}
@@ -404,12 +407,46 @@ function pinPoint(a: AssetBase): { x: number; y: number } {
   return { x: a.x + rx, y: a.y + ry };
 }
 
+type Pt = { x: number; y: number };
+type Quad = { a: Pt; c: Pt; b: Pt };
+
+function quadChain(pts: Pt[], sagFactor: number, minSag = 20): Quad[] {
+  const out: Quad[] = [];
+  for (let i = 1; i < pts.length; i++) {
+    const a = pts[i - 1];
+    const b = pts[i];
+    const dist = Math.hypot(b.x - a.x, b.y - a.y);
+    const sag = Math.max(minSag, dist * sagFactor);
+    out.push({ a, b, c: { x: (a.x + b.x) / 2, y: (a.y + b.y) / 2 + sag } });
+  }
+  return out;
+}
+
+function quadPointAt(q: Quad, t: number): { p: Pt; angle: number } {
+  const mt = 1 - t;
+  const p = {
+    x: mt * mt * q.a.x + 2 * mt * t * q.c.x + t * t * q.b.x,
+    y: mt * mt * q.a.y + 2 * mt * t * q.c.y + t * t * q.b.y,
+  };
+  const dx = 2 * mt * (q.c.x - q.a.x) + 2 * t * (q.b.x - q.c.x);
+  const dy = 2 * mt * (q.c.y - q.a.y) + 2 * t * (q.b.y - q.c.y);
+  return { p, angle: (Math.atan2(dy, dx) * 180) / Math.PI };
+}
+
+function quadsToPath(qs: Quad[]): string {
+  if (!qs.length) return "";
+  const segs = [`M ${qs[0].a.x} ${qs[0].a.y}`];
+  for (const q of qs) segs.push(`Q ${q.c.x} ${q.c.y} ${q.b.x} ${q.b.y}`);
+  return segs.join(" ");
+}
+
 function buildStringPath(
   s: StringConn,
   assets: AssetBase[],
-): { d: string; points: { x: number; y: number }[] } | null {
+): { d: string; points: Pt[]; quads: Quad[] } | null {
   if (s.points && s.points.length >= 2) {
-    return { d: buildBuntingPath(s.points, s.sag ?? 0.18), points: s.points };
+    const quads = quadChain(s.points, s.sag ?? 0.18);
+    return { d: quadsToPath(quads), points: s.points, quads };
   }
   if (s.from && s.to) {
     const a = assets.find((x) => x.id === s.from);
@@ -417,30 +454,13 @@ function buildStringPath(
     if (!a || !b) return null;
     const pa = pinPoint(a);
     const pb = pinPoint(b);
-    const dist = Math.hypot(pb.x - pa.x, pb.y - pa.y);
     const sagFactor = s.sag ?? (s.hanging ? 0.18 : 0.03);
-    const sag = s.hanging ? Math.max(30, dist * sagFactor) : Math.max(6, dist * sagFactor);
-    const mx = (pa.x + pb.x) / 2;
-    const my = (pa.y + pb.y) / 2 + sag;
-    return { d: `M ${pa.x} ${pa.y} Q ${mx} ${my} ${pb.x} ${pb.y}`, points: [pa, pb] };
+    const quads = quadChain([pa, pb], sagFactor, s.hanging ? 30 : 6);
+    return { d: quadsToPath(quads), points: [pa, pb], quads };
   }
   return null;
 }
 
-function buildBuntingPath(pts: { x: number; y: number }[], sagFactor: number): string {
-  if (pts.length < 2) return "";
-  const segs: string[] = [`M ${pts[0].x} ${pts[0].y}`];
-  for (let i = 1; i < pts.length; i++) {
-    const a = pts[i - 1];
-    const b = pts[i];
-    const dist = Math.hypot(b.x - a.x, b.y - a.y);
-    const sag = Math.max(20, dist * sagFactor);
-    const mx = (a.x + b.x) / 2;
-    const my = (a.y + b.y) / 2 + sag;
-    segs.push(`Q ${mx} ${my} ${b.x} ${b.y}`);
-  }
-  return segs.join(" ");
-}
 
 function hexToRgb(hex: string): { r: number; g: number; b: number } | null {
   const m = /^#?([a-f\d]{6})$/i.exec(hex);
@@ -519,4 +539,78 @@ function patternStyle(p: NonNullable<SurfaceOverlay["pattern"]>): React.CSSPrope
     backgroundImage: `linear-gradient(${c1} ${t}px, transparent ${t}px), linear-gradient(90deg, ${c1} ${t}px, transparent ${t}px)`,
     backgroundSize: `${size}px ${size}px`,
   };
+}
+
+// ---------- bunting garland flags ----------
+const BUNTING_DEFAULT_COLORS = ["#e4572e", "#f4c95d", "#4d9de0", "#7fb069", "#e07a9c"];
+
+function flagPath(shape: string, w: number, h: number): string {
+  const hw = w / 2;
+  switch (shape) {
+    case "rect":
+      return `M ${-hw} 0 L ${hw} 0 L ${hw} ${h} L ${-hw} ${h} Z`;
+    case "swallowtail":
+      return `M ${-hw} 0 L ${hw} 0 L ${hw} ${h} L 0 ${h * 0.62} L ${-hw} ${h} Z`;
+    case "scallop":
+      return `M ${-hw} 0 L ${hw} 0 L ${hw} ${h * 0.6} Q 0 ${h * 1.25} ${-hw} ${h * 0.6} Z`;
+    case "pennant":
+      return `M ${-hw} 0 L ${hw} 0 L ${-hw * 0.15} ${h} Z`;
+    case "triangle":
+    default:
+      return `M ${-hw} 0 L ${hw} 0 L 0 ${h} Z`;
+  }
+}
+
+function patternFill(kind: string | undefined, w: number, h: number, ink: string) {
+  if (!kind || kind === "none") return null;
+  const els: React.ReactNode[] = [];
+  if (kind === "dots") {
+    for (let r = 0; r < 5; r++)
+      for (let c = 0; c < 5; c++)
+        els.push(<circle key={`${r}-${c}`} cx={-w / 2 + (c + 0.5) * (w / 5)} cy={(r + 0.5) * (h / 5)} r={Math.max(1, w * 0.035)} fill={ink} />);
+  } else if (kind === "stripes") {
+    for (let i = 0; i < 7; i++)
+      els.push(<rect key={i} x={-w / 2 + i * (w / 7)} y={0} width={w / 14} height={h} fill={ink} />);
+  } else if (kind === "chevron") {
+    for (let i = 0; i < 6; i++)
+      els.push(<path key={i} d={`M ${-w / 2} ${i * (h / 6)} L 0 ${i * (h / 6) + h / 12} L ${w / 2} ${i * (h / 6)}`} stroke={ink} strokeWidth={Math.max(1, h * 0.03)} fill="none" />);
+  } else if (kind === "waves") {
+    for (let i = 0; i < 6; i++)
+      els.push(<path key={i} d={`M ${-w / 2} ${i * (h / 6) + h * 0.06} q ${w / 4} ${-h * 0.05} ${w / 2} 0 q ${w / 4} ${h * 0.05} ${w / 2} 0`} stroke={ink} strokeWidth={Math.max(1, h * 0.028)} fill="none" />);
+  }
+  return <>{els}</>;
+}
+
+function BuntingFlags({ cfg, quads, sid }: { cfg: NonNullable<StringConn["bunting"]>; quads: Quad[]; sid: string }) {
+  if (!quads.length) return null;
+  const count = Math.max(1, Math.min(60, Math.round(cfg.count)));
+  const h = cfg.size || 46;
+  const w = cfg.width || h * 0.8;
+  const colors = cfg.colors && cfg.colors.length ? cfg.colors : BUNTING_DEFAULT_COLORS;
+  const spread = Math.min(0.98, Math.max(0.2, 1 - (cfg.spacing ?? 0.12)));
+  const outline = cfg.outline || "rgba(0,0,0,0.35)";
+  const out: React.ReactNode[] = [];
+  for (let i = 0; i < count; i++) {
+    // global t across the whole chain, inset from the knots
+    const gt = count === 1 ? 0.5 : 0.5 - spread / 2 + (spread * i) / (count - 1);
+    const scaled = gt * quads.length;
+    const qi = Math.min(quads.length - 1, Math.floor(scaled));
+    const { p, angle } = quadPointAt(quads[qi], scaled - qi);
+    const ov = cfg.flags?.[i] || {};
+    const fill = ov.color || colors[i % colors.length];
+    const pat = ov.pattern ?? cfg.pattern;
+    out.push(
+      <g key={`${sid}-f-${i}`} transform={`translate(${p.x} ${p.y}) rotate(${angle})`} style={{ pointerEvents: "none" }}>
+        <path d={flagPath(cfg.shape, w, h)} fill={fill} stroke={outline} strokeWidth={1}
+          style={{ filter: "drop-shadow(0 2px 3px rgba(0,0,0,0.28))" }} />
+        <g clipPath={`url(#bclip-${sid}-${i})`} opacity={0.55}>
+          {patternFill(pat, w, h, "rgba(0,0,0,0.55)")}
+        </g>
+        <clipPath id={`bclip-${sid}-${i}`}>
+          <path d={flagPath(cfg.shape, w, h)} />
+        </clipPath>
+      </g>,
+    );
+  }
+  return <>{out}</>;
 }
