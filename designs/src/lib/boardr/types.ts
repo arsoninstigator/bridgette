@@ -103,6 +103,33 @@ export interface StringConn {
   thickness?: number; // px stroke width override (1..10)
   sag?: number; // 0..1 sag factor (fraction of segment length). default 0.18 hanging, 0.04 taut
   hungIds?: string[]; // asset ids clipped to this string
+  bunting?: BuntingConfig; // garland flags strung along the path
+}
+
+export type BuntingShape =
+  | "triangle"
+  | "swallowtail"
+  | "rect"
+  | "scallop"
+  | "pennant";
+
+export type BuntingPattern = "none" | "dots" | "stripes" | "chevron" | "waves";
+
+export interface BuntingFlagOverride {
+  color?: string;
+  pattern?: BuntingPattern;
+}
+
+export interface BuntingConfig {
+  shape: BuntingShape;
+  count: number; // number of flags along the whole path
+  size: number; // flag height in px
+  width?: number; // flag width in px
+  spacing?: number; // 0..1 extra gap factor between flags
+  colors?: string[]; // repeating palette
+  pattern?: BuntingPattern; // default pattern for all flags
+  outline?: string; // stroke color
+  flags?: Record<number, BuntingFlagOverride>; // per-flag overrides by index
 }
 
 export interface PageMeta {
