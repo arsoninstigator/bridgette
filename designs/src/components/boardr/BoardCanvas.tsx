@@ -581,7 +581,30 @@ function patternFill(kind: string | undefined, w: number, h: number, ink: string
   return <>{els}</>;
 }
 
-function BuntingFlags({ cfg, quads, sid }: { cfg: NonNullable<StringConn["bunting"]>; quads: Quad[]; sid: string }) {
+function quadLength(q: Quad): number {
+  let len = 0;
+  let prev = q.a;
+  for (let i = 1; i <= 12; i++) {
+    const { p } = quadPointAt(q, i / 12);
+    len += Math.hypot(p.x - prev.x, p.y - prev.y);
+    prev = p;
+  }
+  return len;
+}
+
+function BuntingFlags({
+  cfg,
+  quads,
+  sid,
+  onChange,
+}: {
+  cfg: NonNullable<StringConn["bunting"]>;
+  quads: Quad[];
+  sid: string;
+  onChange?: (patch: Partial<NonNullable<StringConn["bunting"]>>) => void;
+}) {
+  const [hoverGap, setHoverGap] = useState<number | null>(null);
+  const [dragGap, setDragGap] = useState<{ i: number; gap: number } | null>(null);
   if (!quads.length) return null;
   const count = Math.max(1, Math.min(60, Math.round(cfg.count)));
   const h = cfg.size || 46;
@@ -589,13 +612,26 @@ function BuntingFlags({ cfg, quads, sid }: { cfg: NonNullable<StringConn["buntin
   const colors = cfg.colors && cfg.colors.length ? cfg.colors : BUNTING_DEFAULT_COLORS;
   const spread = Math.min(0.98, Math.max(0.2, 1 - (cfg.spacing ?? 0.12)));
   const outline = cfg.outline || "rgba(0,0,0,0.35)";
-  const out: React.ReactNode[] = [];
-  for (let i = 0; i < count; i++) {
-    // global t across the whole chain, inset from the knots
+  const chainLen = quads.reduce((s, q) => s + quadLength(q), 0);
+  const centerGap = count > 1 ? (spread * chainLen) / (count - 1) : 0;
+  const liveGap = Math.round(Math.max(0, centerGap - w));
+
+  const at = (i: number) => {
     const gt = count === 1 ? 0.5 : 0.5 - spread / 2 + (spread * i) / (count - 1);
     const scaled = gt * quads.length;
     const qi = Math.min(quads.length - 1, Math.floor(scaled));
-    const { p, angle } = quadPointAt(quads[qi], scaled - qi);
+    return quadPointAt(quads[qi], scaled - qi);
+  };
+
+  const applyGap = (gapPx: number) => {
+    if (!onChange || count < 2 || !chainLen) return;
+    const nextSpread = ((Math.max(0, gapPx) + w) * (count - 1)) / chainLen;
+    onChange({ spacing: Math.min(0.8, Math.max(0.02, 1 - nextSpread)) });
+  };
+
+  const out: React.ReactNode[] = [];
+  for (let i = 0; i < count; i++) {
+    const { p, angle } = at(i);
     const ov = cfg.flags?.[i] || {};
     const fill = ov.color || colors[i % colors.length];
     const pat = ov.pattern ?? cfg.pattern;
@@ -612,5 +648,67 @@ function BuntingFlags({ cfg, quads, sid }: { cfg: NonNullable<StringConn["buntin
       </g>,
     );
   }
+
+  // ---- figma-style spacing handles: hover the gap between two flags, drag to
+  // set an even gap across the whole garland, with a live px badge ----
+  if (onChange && count > 1) {
+    for (let i = 0; i < count - 1; i++) {
+      const A = at(i);
+      const B = at(i + 1);
+      const mx = (A.p.x + B.p.x) / 2;
+      const my = (A.p.y + B.p.y) / 2;
+      const ang = (A.angle + B.angle) / 2;
+      const active = dragGap?.i === i || hoverGap === i;
+      const gapW = Math.max(2, centerGap - w);
+      out.push(
+        <g key={`${sid}-gap-${i}`} transform={`translate(${mx} ${my}) rotate(${ang})`} style={{ pointerEvents: "auto" }}>
+          {active && (
+            <rect x={-gapW / 2} y={0} width={gapW} height={h} fill="#ff2d9b" opacity={0.35} />
+          )}
+          <rect
+            x={-Math.max(gapW, 10) / 2}
+            y={0}
+            width={Math.max(gapW, 10)}
+            height={h}
+            fill="transparent"
+            style={{ cursor: "ew-resize" }}
+            onPointerEnter={() => setHoverGap(i)}
+            onPointerLeave={() => { if (!dragGap) setHoverGap(null); }}
+            onContextMenu={(e) => e.stopPropagation()}
+            onPointerDown={(e) => {
+              e.stopPropagation();
+              e.preventDefault();
+              (e.target as Element).setPointerCapture?.(e.pointerId);
+              const startX = e.clientX;
+              const startGap = Math.max(0, centerGap - w);
+              setDragGap({ i, gap: Math.round(startGap) });
+              const move = (ev: PointerEvent) => {
+                const next = Math.max(0, startGap + (ev.clientX - startX) * 2);
+                setDragGap({ i, gap: Math.round(next) });
+                applyGap(next);
+              };
+              const up = () => {
+                setDragGap(null);
+                setHoverGap(null);
+                window.removeEventListener("pointermove", move);
+                window.removeEventListener("pointerup", up);
+              };
+              window.addEventListener("pointermove", move);
+              window.addEventListener("pointerup", up);
+            }}
+          />
+          {active && (
+            <g transform={`translate(0 ${h + 12})`} style={{ pointerEvents: "none" }}>
+              <rect x={-18} y={-11} width={36} height={18} rx={3} fill="#ff2d9b" />
+              <text x={0} y={2} textAnchor="middle" fill="#fff" fontSize={11} fontFamily="ui-monospace, monospace">
+                {dragGap?.i === i ? dragGap.gap : liveGap}
+              </text>
+            </g>
+          )}
+        </g>,
+      );
+    }
+  }
   return <>{out}</>;
 }
+
