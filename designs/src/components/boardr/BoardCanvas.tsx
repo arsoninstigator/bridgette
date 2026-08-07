@@ -540,3 +540,77 @@ function patternStyle(p: NonNullable<SurfaceOverlay["pattern"]>): React.CSSPrope
     backgroundSize: `${size}px ${size}px`,
   };
 }
+
+// ---------- bunting garland flags ----------
+const BUNTING_DEFAULT_COLORS = ["#e4572e", "#f4c95d", "#4d9de0", "#7fb069", "#e07a9c"];
+
+function flagPath(shape: string, w: number, h: number): string {
+  const hw = w / 2;
+  switch (shape) {
+    case "rect":
+      return `M ${-hw} 0 L ${hw} 0 L ${hw} ${h} L ${-hw} ${h} Z`;
+    case "swallowtail":
+      return `M ${-hw} 0 L ${hw} 0 L ${hw} ${h} L 0 ${h * 0.62} L ${-hw} ${h} Z`;
+    case "scallop":
+      return `M ${-hw} 0 L ${hw} 0 L ${hw} ${h * 0.6} Q 0 ${h * 1.25} ${-hw} ${h * 0.6} Z`;
+    case "pennant":
+      return `M ${-hw} 0 L ${hw} 0 L ${-hw * 0.15} ${h} Z`;
+    case "triangle":
+    default:
+      return `M ${-hw} 0 L ${hw} 0 L 0 ${h} Z`;
+  }
+}
+
+function patternFill(kind: string | undefined, w: number, h: number, ink: string) {
+  if (!kind || kind === "none") return null;
+  const els: React.ReactNode[] = [];
+  if (kind === "dots") {
+    for (let r = 0; r < 5; r++)
+      for (let c = 0; c < 5; c++)
+        els.push(<circle key={`${r}-${c}`} cx={-w / 2 + (c + 0.5) * (w / 5)} cy={(r + 0.5) * (h / 5)} r={Math.max(1, w * 0.035)} fill={ink} />);
+  } else if (kind === "stripes") {
+    for (let i = 0; i < 7; i++)
+      els.push(<rect key={i} x={-w / 2 + i * (w / 7)} y={0} width={w / 14} height={h} fill={ink} />);
+  } else if (kind === "chevron") {
+    for (let i = 0; i < 6; i++)
+      els.push(<path key={i} d={`M ${-w / 2} ${i * (h / 6)} L 0 ${i * (h / 6) + h / 12} L ${w / 2} ${i * (h / 6)}`} stroke={ink} strokeWidth={Math.max(1, h * 0.03)} fill="none" />);
+  } else if (kind === "waves") {
+    for (let i = 0; i < 6; i++)
+      els.push(<path key={i} d={`M ${-w / 2} ${i * (h / 6) + h * 0.06} q ${w / 4} ${-h * 0.05} ${w / 2} 0 q ${w / 4} ${h * 0.05} ${w / 2} 0`} stroke={ink} strokeWidth={Math.max(1, h * 0.028)} fill="none" />);
+  }
+  return <>{els}</>;
+}
+
+function BuntingFlags({ cfg, quads, sid }: { cfg: NonNullable<StringConn["bunting"]>; quads: Quad[]; sid: string }) {
+  if (!quads.length) return null;
+  const count = Math.max(1, Math.min(60, Math.round(cfg.count)));
+  const h = cfg.size || 46;
+  const w = cfg.width || h * 0.8;
+  const colors = cfg.colors && cfg.colors.length ? cfg.colors : BUNTING_DEFAULT_COLORS;
+  const spread = Math.min(0.98, Math.max(0.2, 1 - (cfg.spacing ?? 0.12)));
+  const outline = cfg.outline || "rgba(0,0,0,0.35)";
+  const out: React.ReactNode[] = [];
+  for (let i = 0; i < count; i++) {
+    // global t across the whole chain, inset from the knots
+    const gt = count === 1 ? 0.5 : 0.5 - spread / 2 + (spread * i) / (count - 1);
+    const scaled = gt * quads.length;
+    const qi = Math.min(quads.length - 1, Math.floor(scaled));
+    const { p, angle } = quadPointAt(quads[qi], scaled - qi);
+    const ov = cfg.flags?.[i] || {};
+    const fill = ov.color || colors[i % colors.length];
+    const pat = ov.pattern ?? cfg.pattern;
+    out.push(
+      <g key={`${sid}-f-${i}`} transform={`translate(${p.x} ${p.y}) rotate(${angle})`} style={{ pointerEvents: "none" }}>
+        <path d={flagPath(cfg.shape, w, h)} fill={fill} stroke={outline} strokeWidth={1}
+          style={{ filter: "drop-shadow(0 2px 3px rgba(0,0,0,0.28))" }} />
+        <g clipPath={`url(#bclip-${sid}-${i})`} opacity={0.55}>
+          {patternFill(pat, w, h, "rgba(0,0,0,0.55)")}
+        </g>
+        <clipPath id={`bclip-${sid}-${i}`}>
+          <path d={flagPath(cfg.shape, w, h)} />
+        </clipPath>
+      </g>,
+    );
+  }
+  return <>{out}</>;
+}
