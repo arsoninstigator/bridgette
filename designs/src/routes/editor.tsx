@@ -786,6 +786,12 @@ function Editor({ board, setBoard }: { board: Board; setBoard: (b: Board) => voi
                 onDropAsset={(kind, x, y, extra) => addAsset(kind, x, y, extra)}
                 onStringClick={undefined}
                 onStringContextMenu={(id, x, y) => setStringMenu({ id, x, y })}
+                onBuntingChange={(id, patch) => {
+                  const s = board?.strings.find((st) => st.id === id);
+                  if (!s?.bunting) return;
+                  updateString(id, { bunting: { ...s.bunting, ...patch } });
+                }}
+
                 drawWashi={drawWashi}
                 drawHanging={hangingDraft ? { points: hangingDraft.points, color: stringColor, thickness: stringThickness, sag: stringSag } : null}
                 onHangingPoint={(x, y) => {
