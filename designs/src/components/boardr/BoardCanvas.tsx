@@ -319,8 +319,14 @@ export function BoardCanvas({
                   style={{ pointerEvents: "none" }} />
               ))}
               {s.bunting && s.bunting.count > 0 && (
-                <BuntingFlags cfg={s.bunting} quads={path.quads} sid={s.id} />
+                <BuntingFlags
+                  cfg={s.bunting}
+                  quads={path.quads}
+                  sid={s.id}
+                  onChange={onBuntingChange ? (patch) => onBuntingChange(s.id, patch) : undefined}
+                />
               )}
+
             </g>
           );
         })}
