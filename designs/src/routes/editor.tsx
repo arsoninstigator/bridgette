@@ -2979,7 +2979,8 @@ function ShapeTile({
   return (
     <ContextMenu>
       <ContextMenuTrigger asChild>
-        <div>
+        <div className="h-full">
+
           <DraggableItem kind="shape" label={variant} onAdd={onAdd} extra={extra}>
             {preview}
           </DraggableItem>
