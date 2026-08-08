@@ -784,8 +784,15 @@ function Editor({ board, setBoard }: { board: Board; setBoard: (b: Board) => voi
                   setAssetMenu({ x, y, ids });
                 }}
                 onDropAsset={(kind, x, y, extra) => addAsset(kind, x, y, extra)}
-                onStringClick={undefined}
-                onStringContextMenu={(id, x, y) => setStringMenu({ id, x, y })}
+                onStringClick={(id) => setSelectedStringId((cur) => (cur === id ? null : id))}
+                onStringContextMenu={(id, x, y) => { setSelectedStringId(id); setStringMenu({ id, x, y }); }}
+                selectedStringId={selectedStringId}
+                onStringPointMove={(sid, index, x, y) => {
+                  const s = board?.strings.find((st) => st.id === sid);
+                  if (!s?.points) return;
+                  const pts = s.points.map((p, i) => (i === index ? { x, y } : p));
+                  updateString(sid, { points: pts });
+                }}
                 onBuntingChange={(id, patch) => {
                   const s = board?.strings.find((st) => st.id === id);
                   if (!s?.bunting) return;
