@@ -2470,7 +2470,7 @@ function SubheadingGroup({
         <span>{title}</span>
         <ChevronDown size={12} className={`transition-transform ${open ? "" : "-rotate-90"}`} />
       </button>
-      {open && <div className="p-2 grid grid-cols-2 gap-2">{children}</div>}
+      {open && <div className="p-2 grid grid-cols-2 gap-2 auto-rows-fr items-stretch">{children}</div>}
     </div>
   );
 }
