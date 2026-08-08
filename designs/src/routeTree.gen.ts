@@ -10,6 +10,7 @@
 
 import { Route as rootRouteImport } from './routes/__root'
 import { Route as TemplatesRouteImport } from './routes/templates'
+import { Route as SitemapDotxmlRouteImport } from './routes/sitemap[.]xml'
 import { Route as RoadmapRouteImport } from './routes/roadmap'
 import { Route as PositioningRouteImport } from './routes/positioning'
 import { Route as PorterRouteImport } from './routes/porter'
@@ -37,6 +38,11 @@ import { Route as SKeyPageRouteImport } from './routes/s.$key.$page'
 const TemplatesRoute = TemplatesRouteImport.update({
   id: '/templates',
   path: '/templates',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const SitemapDotxmlRoute = SitemapDotxmlRouteImport.update({
+  id: '/sitemap.xml',
+  path: '/sitemap.xml',
   getParentRoute: () => rootRouteImport,
 } as any)
 const RoadmapRoute = RoadmapRouteImport.update({
@@ -171,6 +177,7 @@ export interface FileRoutesByFullPath {
   '/porter': typeof PorterRouteWithChildren
   '/positioning': typeof PositioningRoute
   '/roadmap': typeof RoadmapRoute
+  '/sitemap.xml': typeof SitemapDotxmlRoute
   '/templates': typeof TemplatesRoute
   '/marketplace/ui': typeof MarketplaceUiRoute
   '/porter/about': typeof PorterAboutRoute
@@ -196,6 +203,7 @@ export interface FileRoutesByTo {
   '/philosophy': typeof PhilosophyRoute
   '/positioning': typeof PositioningRoute
   '/roadmap': typeof RoadmapRoute
+  '/sitemap.xml': typeof SitemapDotxmlRoute
   '/templates': typeof TemplatesRoute
   '/marketplace/ui': typeof MarketplaceUiRoute
   '/porter/about': typeof PorterAboutRoute
@@ -223,6 +231,7 @@ export interface FileRoutesById {
   '/porter': typeof PorterRouteWithChildren
   '/positioning': typeof PositioningRoute
   '/roadmap': typeof RoadmapRoute
+  '/sitemap.xml': typeof SitemapDotxmlRoute
   '/templates': typeof TemplatesRoute
   '/marketplace/ui': typeof MarketplaceUiRoute
   '/porter/about': typeof PorterAboutRoute
@@ -251,6 +260,7 @@ export interface FileRouteTypes {
     | '/porter'
     | '/positioning'
     | '/roadmap'
+    | '/sitemap.xml'
     | '/templates'
     | '/marketplace/ui'
     | '/porter/about'
@@ -276,6 +286,7 @@ export interface FileRouteTypes {
     | '/philosophy'
     | '/positioning'
     | '/roadmap'
+    | '/sitemap.xml'
     | '/templates'
     | '/marketplace/ui'
     | '/porter/about'
@@ -302,6 +313,7 @@ export interface FileRouteTypes {
     | '/porter'
     | '/positioning'
     | '/roadmap'
+    | '/sitemap.xml'
     | '/templates'
     | '/marketplace/ui'
     | '/porter/about'
@@ -329,6 +341,7 @@ export interface RootRouteChildren {
   PorterRoute: typeof PorterRouteWithChildren
   PositioningRoute: typeof PositioningRoute
   RoadmapRoute: typeof RoadmapRoute
+  SitemapDotxmlRoute: typeof SitemapDotxmlRoute
   TemplatesRoute: typeof TemplatesRoute
   SKeyRoute: typeof SKeyRouteWithChildren
 }
@@ -340,6 +353,13 @@ declare module '@tanstack/react-router' {
       path: '/templates'
       fullPath: '/templates'
       preLoaderRoute: typeof TemplatesRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/sitemap.xml': {
+      id: '/sitemap.xml'
+      path: '/sitemap.xml'
+      fullPath: '/sitemap.xml'
+      preLoaderRoute: typeof SitemapDotxmlRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/roadmap': {
@@ -563,9 +583,20 @@ const rootRouteChildren: RootRouteChildren = {
   PorterRoute: PorterRouteWithChildren,
   PositioningRoute: PositioningRoute,
   RoadmapRoute: RoadmapRoute,
+  SitemapDotxmlRoute: SitemapDotxmlRoute,
   TemplatesRoute: TemplatesRoute,
   SKeyRoute: SKeyRouteWithChildren,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
   ._addFileTypes<FileRouteTypes>()
+
+import type { getRouter } from './router.tsx'
+import type { startInstance } from './start.ts'
+declare module '@tanstack/react-start' {
+  interface Register {
+    ssr: true
+    router: Awaited<ReturnType<typeof getRouter>>
+    config: Awaited<ReturnType<typeof startInstance.getOptions>>
+  }
+}
