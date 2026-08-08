@@ -11,6 +11,7 @@ export const Route = createFileRoute("/auth")({
     meta: [
       { title: "sign in — zinegeist" },
       { name: "description", content: "sign in to zinegeist to save boards, publish, and share asset packs. or skip and use an edit key." },
+      { name: "robots", content: "noindex, nofollow" },
     ],
   }),
   component: AuthPage,

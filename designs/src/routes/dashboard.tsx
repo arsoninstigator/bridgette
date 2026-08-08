@@ -4,6 +4,13 @@ import { allBoards, createBoard } from "../lib/boardr/storage";
 import type { Board, BoardKind } from "../lib/boardr/types";
 
 export const Route = createFileRoute("/dashboard")({
+  head: () => ({
+    meta: [
+      { title: "your boards — zinegeist" },
+      { name: "description", content: "all your zinegeist boards in one place: open, duplicate, publish." },
+      { name: "robots", content: "noindex, nofollow" },
+    ],
+  }),
   component: Dashboard,
 });
 
