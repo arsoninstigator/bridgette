@@ -321,11 +321,27 @@ export function BoardCanvas({
                 opacity={0.35}
                 style={{ pointerEvents: "none", mixBlendMode: "multiply" }}
               />
-              {/* anchor knots at each bunting point */}
+              {/* selection outline */}
+              {selectedStringId === s.id && (
+                <path d={d} stroke="#2f7df6" strokeWidth={Math.max(1.5, width * 0.6)} fill="none"
+                  opacity={0.85} strokeDasharray="5 4" style={{ pointerEvents: "none" }} />
+              )}
+              {/* anchor knots at each bunting point — draggable when selected */}
               {s.points && points.map((p: { x: number; y: number }, i: number) => (
-                <circle key={i} cx={p.x} cy={p.y} r={Math.max(3, width * 1.1)}
-                  fill={darken(stroke, 0.4)} opacity={0.85}
-                  style={{ pointerEvents: "none" }} />
+                selectedStringId === s.id && onStringPointMove ? (
+                  <rect
+                    key={i}
+                    x={p.x - 5} y={p.y - 5} width={10} height={10}
+                    fill="#fff" stroke="#2f7df6" strokeWidth={1.5}
+                    style={{ cursor: "grab", pointerEvents: "auto" }}
+                    onPointerDown={(e) => startPointDrag(e, s.id, i)}
+                    onClick={(e) => e.stopPropagation()}
+                  />
+                ) : (
+                  <circle key={i} cx={p.x} cy={p.y} r={Math.max(3, width * 1.1)}
+                    fill={darken(stroke, 0.4)} opacity={0.85}
+                    style={{ pointerEvents: "none" }} />
+                )
               ))}
               {s.bunting && s.bunting.count > 0 && (
                 <BuntingFlags
