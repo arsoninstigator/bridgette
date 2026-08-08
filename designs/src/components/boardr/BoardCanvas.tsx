@@ -488,7 +488,21 @@ function quadsToPath(qs: Quad[]): string {
   return segs.join(" ");
 }
 
+/** Point along a string's sagging curve at normalized position t (0..1). */
+export function stringAnchorAt(
+  s: StringConn,
+  assets: AssetBase[],
+  t: number,
+): { x: number; y: number } | null {
+  const path = buildStringPath(s, assets);
+  if (!path || !path.quads.length) return null;
+  const tt = Math.min(0.999, Math.max(0.001, t)) * path.quads.length;
+  const idx = Math.min(path.quads.length - 1, Math.floor(tt));
+  return quadPointAt(path.quads[idx], tt - idx).p;
+}
+
 function buildStringPath(
+
   s: StringConn,
   assets: AssetBase[],
 ): { d: string; points: Pt[]; quads: Quad[] } | null {
