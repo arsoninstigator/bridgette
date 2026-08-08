@@ -105,6 +105,7 @@ function Editor({ board, setBoard }: { board: Board; setBoard: (b: Board) => voi
   const [stringSag, setStringSag] = useState<number>(0.18);
   const [hangingDraft, setHangingDraft] = useState<{ points: { x: number; y: number }[] } | null>(null);
   const [stringMenu, setStringMenu] = useState<{ x: number; y: number; id: string } | null>(null);
+  const [selectedStringId, setSelectedStringId] = useState<string | null>(null);
   const [showPublish, setShowPublish] = useState(false);
   const [activePanel, setActivePanel] = useState<PanelKey | null>("library");
   const [previewMode, setPreviewMode] = useState(false);
