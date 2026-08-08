@@ -782,6 +782,7 @@ function Editor({ board, setBoard }: { board: Board; setBoard: (b: Board) => voi
                   toggleSelect(id, additive);
                   if (id && !additive) setShowSettings(true);
                   setAssetMenu(null);
+                  if (!id) setSelectedStringId(null);
                 }}
                 onMove={(id, x, y) => updateAsset(id, { x, y }, false)}
                 onMoveMany={moveMany}
