@@ -1,0 +1,8 @@
+User-agent: *
+Allow: /
+Disallow: /editor
+Disallow: /dashboard
+Disallow: /auth
+Disallow: /figma
+
+Sitemap: https://zinegeist.lovable.app/sitemap.xml
