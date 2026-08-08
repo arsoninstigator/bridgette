@@ -505,20 +505,28 @@ function Editor({ board, setBoard }: { board: Board; setBoard: (b: Board) => voi
   function hangPolaroidOnString(sid: string) {
     const s = board.strings.find((x) => x.id === sid);
     if (!s) return;
-    // pick a point along the string to place the polaroid.
-    let anchor: { x: number; y: number } | null = null;
-    if (s.points && s.points.length >= 2) {
-      const p0 = s.points[0];
-      const p1 = s.points[1];
-      anchor = { x: (p0.x + p1.x) / 2, y: (p0.y + p1.y) / 2 + 40 };
-    } else if (s.from && s.to) {
-      const a = board.assets.find((x) => x.id === s.from);
-      const b = board.assets.find((x) => x.id === s.to);
-      if (a && b) anchor = { x: (a.x + b.x) / 2, y: (a.y + b.y) / 2 + 60 };
-    }
+    const existing = (s.hungIds || []).filter((id) => board.assets.some((a) => a.id === id));
+    const n = existing.length + 1;
+    const t = n / (n + 1); // spread hung items evenly along the curve
+    const anchor = stringAnchorAt(s, board.assets, t);
     if (!anchor) return;
-    addAsset("polaroid", anchor.x, anchor.y, { clipAttached: true, pinEnabled: false });
-    updateString(sid, { hungIds: [...(s.hungIds || []), "pending"] });
+    const width = 150;
+    const height = width + 32; // polaroid render height
+    const a: AssetBase = {
+      ...makeAsset("polaroid", anchor.x, anchor.y + height / 2 - 4),
+      width,
+      clipAttached: true,
+      pinEnabled: false,
+      rotation: (Math.random() - 0.5) * 4,
+      z: nextZ(),
+    };
+    update({
+      assets: [...board.assets, a],
+      strings: board.strings.map((st) =>
+        st.id === sid ? { ...st, hungIds: [...existing, a.id] } : st,
+      ),
+    });
+    setSelectedId(a.id);
   }
 
   async function publish() {
