@@ -63,6 +63,9 @@ export function BoardCanvas({
   onStringClick,
   onStringContextMenu,
   onBuntingChange,
+  selectedStringId,
+  onStringPointMove,
+
 
   drawWashi,
   drawHanging,
