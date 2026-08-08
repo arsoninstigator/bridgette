@@ -37,7 +37,7 @@ import {
 } from "../lib/boardr/storage";
 import type { AssetBase, AssetKind, Board, BoardKind, StringConn } from "../lib/boardr/types";
 import { makeAsset, nextZ, defaultBlockData, defaultLayoutData } from "../lib/boardr/factories";
-import { BoardCanvas } from "../components/boardr/BoardCanvas";
+import { BoardCanvas, stringAnchorAt } from "../components/boardr/BoardCanvas";
 import { SettingsPanel } from "../components/boardr/SettingsPanel";
 import { ContextMenu, ContextMenuTrigger, ContextMenuContent, ContextMenuItem, ContextMenuSub, ContextMenuSubTrigger, ContextMenuSubContent } from "../components/ui/context-menu";
 import corkboardAsset from "@/assets/corkboard.jpg.asset.json";
@@ -105,6 +105,7 @@ function Editor({ board, setBoard }: { board: Board; setBoard: (b: Board) => voi
   const [stringSag, setStringSag] = useState<number>(0.18);
   const [hangingDraft, setHangingDraft] = useState<{ points: { x: number; y: number }[] } | null>(null);
   const [stringMenu, setStringMenu] = useState<{ x: number; y: number; id: string } | null>(null);
+  const [selectedStringId, setSelectedStringId] = useState<string | null>(null);
   const [showPublish, setShowPublish] = useState(false);
   const [activePanel, setActivePanel] = useState<PanelKey | null>("library");
   const [previewMode, setPreviewMode] = useState(false);
@@ -504,20 +505,28 @@ function Editor({ board, setBoard }: { board: Board; setBoard: (b: Board) => voi
   function hangPolaroidOnString(sid: string) {
     const s = board.strings.find((x) => x.id === sid);
     if (!s) return;
-    // pick a point along the string to place the polaroid.
-    let anchor: { x: number; y: number } | null = null;
-    if (s.points && s.points.length >= 2) {
-      const p0 = s.points[0];
-      const p1 = s.points[1];
-      anchor = { x: (p0.x + p1.x) / 2, y: (p0.y + p1.y) / 2 + 40 };
-    } else if (s.from && s.to) {
-      const a = board.assets.find((x) => x.id === s.from);
-      const b = board.assets.find((x) => x.id === s.to);
-      if (a && b) anchor = { x: (a.x + b.x) / 2, y: (a.y + b.y) / 2 + 60 };
-    }
+    const existing = (s.hungIds || []).filter((id) => board.assets.some((a) => a.id === id));
+    const n = existing.length + 1;
+    const t = n / (n + 1); // spread hung items evenly along the curve
+    const anchor = stringAnchorAt(s, board.assets, t);
     if (!anchor) return;
-    addAsset("polaroid", anchor.x, anchor.y, { clipAttached: true, pinEnabled: false });
-    updateString(sid, { hungIds: [...(s.hungIds || []), "pending"] });
+    const width = 150;
+    const height = width + 32; // polaroid render height
+    const a: AssetBase = {
+      ...makeAsset("polaroid", anchor.x, anchor.y + height / 2 - 4),
+      width,
+      clipAttached: true,
+      pinEnabled: false,
+      rotation: (Math.random() - 0.5) * 4,
+      z: nextZ(),
+    };
+    update({
+      assets: [...board.assets, a],
+      strings: board.strings.map((st) =>
+        st.id === sid ? { ...st, hungIds: [...existing, a.id] } : st,
+      ),
+    });
+    setSelectedId(a.id);
   }
 
   async function publish() {
@@ -773,6 +782,7 @@ function Editor({ board, setBoard }: { board: Board; setBoard: (b: Board) => voi
                   toggleSelect(id, additive);
                   if (id && !additive) setShowSettings(true);
                   setAssetMenu(null);
+                  if (!id) setSelectedStringId(null);
                 }}
                 onMove={(id, x, y) => updateAsset(id, { x, y }, false)}
                 onMoveMany={moveMany}
@@ -784,8 +794,15 @@ function Editor({ board, setBoard }: { board: Board; setBoard: (b: Board) => voi
                   setAssetMenu({ x, y, ids });
                 }}
                 onDropAsset={(kind, x, y, extra) => addAsset(kind, x, y, extra)}
-                onStringClick={undefined}
-                onStringContextMenu={(id, x, y) => setStringMenu({ id, x, y })}
+                onStringClick={(id) => setSelectedStringId((cur) => (cur === id ? null : id))}
+                onStringContextMenu={(id, x, y) => { setSelectedStringId(id); setStringMenu({ id, x, y }); }}
+                selectedStringId={selectedStringId}
+                onStringPointMove={(sid, index, x, y) => {
+                  const s = board?.strings.find((st) => st.id === sid);
+                  if (!s?.points) return;
+                  const pts = s.points.map((p, i) => (i === index ? { x, y } : p));
+                  updateString(sid, { points: pts });
+                }}
                 onBuntingChange={(id, patch) => {
                   const s = board?.strings.find((st) => st.id === id);
                   if (!s?.bunting) return;
@@ -2107,10 +2124,10 @@ function DraggableItem({
         if (extra) e.dataTransfer.setData("application/x-boardr-extra", JSON.stringify(extra));
       }}
       onClick={() => onAdd(kind, undefined, undefined, extra)}
-      className="group flex flex-col items-center justify-center gap-2 rounded-md border border-border bg-card/60 px-2 py-3 hover:bg-accent/30 cursor-grab active:cursor-grabbing"
+      className="group h-full w-full flex flex-col items-center justify-center gap-1.5 rounded-md border border-border bg-card/60 px-2 py-2 hover:bg-accent/30 cursor-grab active:cursor-grabbing"
     >
-      <div className="h-14 flex items-center justify-center">{children}</div>
-      <span className="font-mono text-[10px] lowercase text-muted-foreground">{label}</span>
+      <div className="h-12 w-full flex items-center justify-center overflow-hidden">{children}</div>
+      <span className="font-mono text-[10px] lowercase text-muted-foreground text-center leading-tight">{label}</span>
     </button>
   );
 }
@@ -2454,7 +2471,7 @@ function SubheadingGroup({
         <span>{title}</span>
         <ChevronDown size={12} className={`transition-transform ${open ? "" : "-rotate-90"}`} />
       </button>
-      {open && <div className="p-2 grid grid-cols-2 gap-2">{children}</div>}
+      {open && <div className="p-2 grid grid-cols-2 gap-2 auto-rows-fr items-stretch">{children}</div>}
     </div>
   );
 }
@@ -2963,7 +2980,8 @@ function ShapeTile({
   return (
     <ContextMenu>
       <ContextMenuTrigger asChild>
-        <div>
+        <div className="h-full">
+
           <DraggableItem kind="shape" label={variant} onAdd={onAdd} extra={extra}>
             {preview}
           </DraggableItem>

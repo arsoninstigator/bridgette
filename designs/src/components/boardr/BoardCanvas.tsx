@@ -32,6 +32,8 @@ interface Props {
   onStringClick?: (stringId: string) => void;
   onStringContextMenu?: (stringId: string, clientX: number, clientY: number) => void;
   onBuntingChange?: (stringId: string, patch: Partial<NonNullable<StringConn["bunting"]>>) => void;
+  selectedStringId?: string | null;
+  onStringPointMove?: (stringId: string, index: number, x: number, y: number) => void;
 
   drawWashi?: { tapeColor?: string; tapePattern?: string; tapeTextColor?: string; imageUrl?: string } | null;
   drawHanging?: { points: { x: number; y: number }[]; color?: string; thickness?: number; sag?: number } | null;
@@ -61,6 +63,9 @@ export function BoardCanvas({
   onStringClick,
   onStringContextMenu,
   onBuntingChange,
+  selectedStringId,
+  onStringPointMove,
+
 
   drawWashi,
   drawHanging,
@@ -116,6 +121,23 @@ export function BoardCanvas({
     window.addEventListener("pointermove", onMoveEv);
     window.addEventListener("pointerup", onUp);
   }
+
+  function startPointDrag(e: React.PointerEvent, sid: string, index: number) {
+    if (!onStringPointMove || e.button !== 0) return;
+    e.stopPropagation();
+    e.preventDefault();
+    const rect = ref.current!.getBoundingClientRect();
+    function onMoveEv(ev: PointerEvent) {
+      onStringPointMove!(sid, index, clamp(ev.clientX - rect.left, 0, rect.width), clamp(ev.clientY - rect.top, 0, rect.height));
+    }
+    function onUp() {
+      window.removeEventListener("pointermove", onMoveEv);
+      window.removeEventListener("pointerup", onUp);
+    }
+    window.addEventListener("pointermove", onMoveEv);
+    window.addEventListener("pointerup", onUp);
+  }
+
 
   function startWashiDraw(e: React.PointerEvent) {
     if (!drawWashi || !onDropAsset) return;
@@ -316,11 +338,27 @@ export function BoardCanvas({
                 opacity={0.35}
                 style={{ pointerEvents: "none", mixBlendMode: "multiply" }}
               />
-              {/* anchor knots at each bunting point */}
+              {/* selection outline */}
+              {selectedStringId === s.id && (
+                <path d={d} stroke="#2f7df6" strokeWidth={Math.max(1.5, width * 0.6)} fill="none"
+                  opacity={0.85} strokeDasharray="5 4" style={{ pointerEvents: "none" }} />
+              )}
+              {/* anchor knots at each bunting point — draggable when selected */}
               {s.points && points.map((p: { x: number; y: number }, i: number) => (
-                <circle key={i} cx={p.x} cy={p.y} r={Math.max(3, width * 1.1)}
-                  fill={darken(stroke, 0.4)} opacity={0.85}
-                  style={{ pointerEvents: "none" }} />
+                selectedStringId === s.id && onStringPointMove ? (
+                  <rect
+                    key={i}
+                    x={p.x - 5} y={p.y - 5} width={10} height={10}
+                    fill="#fff" stroke="#2f7df6" strokeWidth={1.5}
+                    style={{ cursor: "grab", pointerEvents: "auto" }}
+                    onPointerDown={(e) => startPointDrag(e, s.id, i)}
+                    onClick={(e) => e.stopPropagation()}
+                  />
+                ) : (
+                  <circle key={i} cx={p.x} cy={p.y} r={Math.max(3, width * 1.1)}
+                    fill={darken(stroke, 0.4)} opacity={0.85}
+                    style={{ pointerEvents: "none" }} />
+                )
               ))}
               {s.bunting && s.bunting.count > 0 && (
                 <BuntingFlags
@@ -450,7 +488,21 @@ function quadsToPath(qs: Quad[]): string {
   return segs.join(" ");
 }
 
+/** Point along a string's sagging curve at normalized position t (0..1). */
+export function stringAnchorAt(
+  s: StringConn,
+  assets: AssetBase[],
+  t: number,
+): { x: number; y: number } | null {
+  const path = buildStringPath(s, assets);
+  if (!path || !path.quads.length) return null;
+  const tt = Math.min(0.999, Math.max(0.001, t)) * path.quads.length;
+  const idx = Math.min(path.quads.length - 1, Math.floor(tt));
+  return quadPointAt(path.quads[idx], tt - idx).p;
+}
+
 function buildStringPath(
+
   s: StringConn,
   assets: AssetBase[],
 ): { d: string; points: Pt[]; quads: Quad[] } | null {
