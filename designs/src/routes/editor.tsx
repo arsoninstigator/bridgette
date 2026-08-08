@@ -2123,10 +2123,10 @@ function DraggableItem({
         if (extra) e.dataTransfer.setData("application/x-boardr-extra", JSON.stringify(extra));
       }}
       onClick={() => onAdd(kind, undefined, undefined, extra)}
-      className="group flex flex-col items-center justify-center gap-2 rounded-md border border-border bg-card/60 px-2 py-3 hover:bg-accent/30 cursor-grab active:cursor-grabbing"
+      className="group h-full w-full flex flex-col items-center justify-center gap-1.5 rounded-md border border-border bg-card/60 px-2 py-2 hover:bg-accent/30 cursor-grab active:cursor-grabbing"
     >
-      <div className="h-14 flex items-center justify-center">{children}</div>
-      <span className="font-mono text-[10px] lowercase text-muted-foreground">{label}</span>
+      <div className="h-12 w-full flex items-center justify-center overflow-hidden">{children}</div>
+      <span className="font-mono text-[10px] lowercase text-muted-foreground text-center leading-tight">{label}</span>
     </button>
   );
 }
