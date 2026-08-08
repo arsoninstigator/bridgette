@@ -4,6 +4,29 @@ import { SiteHeader, SiteFooter } from "../components/boardr/SiteChrome";
 import type { BoardKind } from "../lib/boardr/types";
 
 export const Route = createFileRoute("/")({
+  head: () => ({
+    meta: [
+      { title: "zinegeist — analog pinboards you can publish" },
+      { name: "description", content: "build corkboard-style sites: polaroids, washi tape, strings, bunting and blocks. arrange it like a real board, publish it as a page." },
+      { property: "og:title", content: "zinegeist — analog pinboards you can publish" },
+      { property: "og:description", content: "build corkboard-style sites: polaroids, washi tape, strings, bunting and blocks. arrange it like a real board, publish it as a page." },
+      { property: "og:type", content: "website" },
+      { property: "og:url", content: "https://zinegeist.lovable.app/" },
+      { name: "twitter:card", content: "summary_large_image" },
+    ],
+    links: [{ rel: "canonical", href: "https://zinegeist.lovable.app/" }],
+    scripts: [
+      {
+        type: "application/ld+json",
+        children: JSON.stringify({
+          "@context": "https://schema.org",
+          "@type": "WebSite",
+          name: "zinegeist",
+          url: "https://zinegeist.lovable.app/",
+        }),
+      },
+    ],
+  }),
   component: Index,
 });
 
