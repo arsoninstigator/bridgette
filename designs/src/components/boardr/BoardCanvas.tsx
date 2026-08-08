@@ -122,6 +122,23 @@ export function BoardCanvas({
     window.addEventListener("pointerup", onUp);
   }
 
+  function startPointDrag(e: React.PointerEvent, sid: string, index: number) {
+    if (!onStringPointMove || e.button !== 0) return;
+    e.stopPropagation();
+    e.preventDefault();
+    const rect = ref.current!.getBoundingClientRect();
+    function onMoveEv(ev: PointerEvent) {
+      onStringPointMove!(sid, index, clamp(ev.clientX - rect.left, 0, rect.width), clamp(ev.clientY - rect.top, 0, rect.height));
+    }
+    function onUp() {
+      window.removeEventListener("pointermove", onMoveEv);
+      window.removeEventListener("pointerup", onUp);
+    }
+    window.addEventListener("pointermove", onMoveEv);
+    window.addEventListener("pointerup", onUp);
+  }
+
+
   function startWashiDraw(e: React.PointerEvent) {
     if (!drawWashi || !onDropAsset) return;
     e.stopPropagation();
