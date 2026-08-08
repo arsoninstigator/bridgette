@@ -49,6 +49,13 @@ const search = z.object({
 
 export const Route = createFileRoute("/editor")({
   validateSearch: search,
+  head: () => ({
+    meta: [
+      { title: "board editor — zinegeist" },
+      { name: "description", content: "arrange polaroids, washi tape, strings and blocks on your zinegeist board." },
+      { name: "robots", content: "noindex, nofollow" },
+    ],
+  }),
   component: EditorRoute,
 });
 
