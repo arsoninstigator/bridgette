@@ -32,6 +32,8 @@ interface Props {
   onStringClick?: (stringId: string) => void;
   onStringContextMenu?: (stringId: string, clientX: number, clientY: number) => void;
   onBuntingChange?: (stringId: string, patch: Partial<NonNullable<StringConn["bunting"]>>) => void;
+  selectedStringId?: string | null;
+  onStringPointMove?: (stringId: string, index: number, x: number, y: number) => void;
 
   drawWashi?: { tapeColor?: string; tapePattern?: string; tapeTextColor?: string; imageUrl?: string } | null;
   drawHanging?: { points: { x: number; y: number }[]; color?: string; thickness?: number; sag?: number } | null;
