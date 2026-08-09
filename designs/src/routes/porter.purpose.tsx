@@ -1,4 +1,5 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
+import { PorterSquiggle, PorterStitches } from "@/porter/PorterShell";
 
 export const Route = createFileRoute("/porter/purpose")({
   head: () => ({
@@ -54,8 +55,11 @@ const USES = [
 function PurposePage() {
   return (
     <div className="max-w-4xl mx-auto px-6 py-14">
-      <p className="font-mono text-[11px] uppercase tracking-[0.24em] text-stone-500">purpose</p>
-      <h1 className="mt-3 font-display text-4xl lowercase text-stone-900">porter is for the designer who has already shipped the file.</h1>
+      <PorterStitches />
+      <p className="mt-2 porter-chip inline-block bg-[#e8ff4a] px-3 py-1 font-mono text-[10px] uppercase tracking-[0.24em] text-stone-900">purpose</p>
+      <h1 className="mt-4 font-display text-4xl lowercase text-stone-900">
+        porter is for the designer who has <span className="porter-highlight">already shipped the file</span>.
+      </h1>
       <p className="mt-4 font-body text-stone-700 leading-relaxed">
         every case below already exists in your work: the same file, sent again and again, with one tiny thing changed each
         time. porter is the layer between your file and that "one tiny thing" — so the tiny thing is the only thing the
@@ -63,17 +67,17 @@ function PurposePage() {
       </p>
 
       <div className="mt-10 space-y-6">
-        {USES.map((u) => (
-          <article key={u.who} className="rounded-lg border border-stone-300/80 bg-white/70 p-6">
+        {USES.map((u, i) => (
+          <article key={u.who} className="porter-card p-6" style={{ transform: `rotate(${i % 2 ? 0.4 : -0.4}deg)` }}>
             <h2 className="font-display text-xl lowercase text-stone-900">{u.who}</h2>
             <p className="mt-1 font-mono text-[11px] uppercase tracking-[0.16em] text-stone-500">{u.scene}</p>
             <div className="mt-4 grid md:grid-cols-2 gap-4 text-[14px] font-body">
-              <div className="rounded border border-stone-300 bg-stone-50/70 p-3">
+              <div className="border-[1.5px] border-stone-900/25 bg-stone-50/70 p-3">
                 <p className="font-mono text-[10px] uppercase tracking-[0.2em] text-stone-500">without porter</p>
                 <p className="mt-1 text-stone-700 leading-relaxed">{u.without}</p>
               </div>
-              <div className="rounded border border-stone-900/70 bg-stone-900 text-stone-50 p-3">
-                <p className="font-mono text-[10px] uppercase tracking-[0.2em] text-stone-400">with porter</p>
+              <div className="border-[1.5px] border-stone-900 bg-[#4b53d6] text-stone-50 p-3">
+                <p className="font-mono text-[10px] uppercase tracking-[0.2em] text-stone-200">with porter</p>
                 <p className="mt-1 leading-relaxed">{u.with}</p>
               </div>
             </div>
@@ -81,16 +85,18 @@ function PurposePage() {
         ))}
       </div>
 
-      <div className="mt-14 flex items-center gap-4">
+      <PorterSquiggle className="mt-12 h-10 w-full text-[#4b53d6]/70" />
+
+      <div className="mt-8 flex items-center gap-4">
         <Link
           to="/porter/lab"
-          className="rounded-full border border-stone-900 bg-stone-900 px-5 py-2 font-mono text-[11px] uppercase tracking-[0.18em] text-white hover:bg-stone-700"
+          className="porter-btn bg-[#4b53d6] px-5 py-2 font-mono text-[11px] uppercase tracking-[0.18em] text-stone-50"
         >
           open the lab
         </Link>
         <Link
           to="/porter/features"
-          className="rounded-full border border-stone-400 bg-white/60 px-5 py-2 font-mono text-[11px] uppercase tracking-[0.18em] hover:bg-white"
+          className="porter-btn bg-white px-5 py-2 font-mono text-[11px] uppercase tracking-[0.18em]"
         >
           see the features
         </Link>
