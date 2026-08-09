@@ -33,7 +33,7 @@ export function PorterShell({ children }: { children: ReactNode }) {
   const { pathname } = useLocation();
   return (
     <div className="porter-paper min-h-screen flex flex-col text-stone-900">
-      <header className="border-b-2 border-stone-900 bg-[#fbfaf6]/85 backdrop-blur">
+      <header className="border-b-2 border-[#d9d2bd] bg-[#fdfaf0]/85 backdrop-blur">
         <div className="max-w-6xl mx-auto px-6 py-4 flex items-center justify-between gap-4">
           <Link to="/porter" className="flex items-baseline gap-2">
             <span className="font-display text-2xl lowercase tracking-tight">porter</span>
@@ -55,7 +55,7 @@ export function PorterShell({ children }: { children: ReactNode }) {
             ))}
             <Link
               to="/porter/lab"
-              className="porter-btn ml-1 bg-[#4b53d6] px-4 py-1.5 font-mono text-[10px] uppercase tracking-[0.18em] text-stone-50"
+              className="porter-btn ml-1 bg-[#8aa06e] px-4 py-1.5 font-mono text-[10px] uppercase tracking-[0.18em] text-stone-50"
             >
               open lab
             </Link>
@@ -63,8 +63,8 @@ export function PorterShell({ children }: { children: ReactNode }) {
         </div>
       </header>
       <main className="flex-1">{children}</main>
-      <footer className="relative border-t-2 border-stone-900 bg-[#fbfaf6]/70">
-        <PorterSquiggle className="w-full h-10 text-[#4b53d6] -mt-5" />
+      <footer className="relative border-t-2 border-[#d9d2bd] bg-[#fdfaf0]/70">
+        <PorterSquiggle className="w-full h-10 text-[#7ab0d6] -mt-5" />
         <div className="max-w-6xl mx-auto px-6 pb-8 pt-2 flex flex-wrap items-center justify-between gap-4 text-[11px] font-mono uppercase tracking-[0.18em] text-stone-600">
           <span>porter · a standalone configurator lab</span>
           <span className="porter-highlight">designed for designers who ship files, not tickets.</span>
