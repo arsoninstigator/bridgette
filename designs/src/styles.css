@@ -340,54 +340,59 @@
   100% { transform: translateX(-100%); }
 }
 
-/* ── porter: risograph / graph-paper zine chrome ───────────────── */
+/* ── porter: soft botanical crayon chrome ──────────────────────── */
 .porter-paper {
-  background-color: #fbfaf6;
+  background-color: #fdfaf0;
   background-image:
-    linear-gradient(rgba(90, 110, 140, 0.13) 1px, transparent 1px),
-    linear-gradient(90deg, rgba(90, 110, 140, 0.13) 1px, transparent 1px),
-    linear-gradient(rgba(90, 110, 140, 0.06) 1px, transparent 1px),
-    linear-gradient(90deg, rgba(90, 110, 140, 0.06) 1px, transparent 1px);
-  background-size: 96px 96px, 96px 96px, 16px 16px, 16px 16px;
+    radial-gradient(circle at 12% 88%, rgba(138, 160, 110, 0.16), transparent 42%),
+    radial-gradient(circle at 88% 12%, rgba(122, 176, 214, 0.16), transparent 40%),
+    radial-gradient(circle at 70% 92%, rgba(226, 154, 178, 0.13), transparent 38%),
+    radial-gradient(rgba(120, 120, 100, 0.05) 1px, transparent 1px);
+  background-size: auto, auto, auto, 7px 7px;
 }
 .porter-highlight {
-  background: linear-gradient(180deg, transparent 55%, #e8ff4a 55%, #e8ff4a 94%, transparent 94%);
-  padding-inline: 0.15em;
+  background: linear-gradient(180deg, transparent 58%, #ffd95e 58%, #ffe98f 92%, transparent 92%);
+  padding-inline: 0.18em;
+  border-radius: 6px;
 }
 .porter-sticker {
-  border: 3px dashed #4bbf9a;
+  border: 2.5px dashed #8aa06e;
   border-radius: 50%;
-  transform: rotate(-7deg);
+  transform: rotate(-5deg);
+  color: #5d6b46;
 }
 .porter-card {
-  background: rgba(255, 255, 255, 0.82);
-  border: 1.5px solid #1c1c1c;
-  border-radius: 2px;
-  box-shadow: 5px 5px 0 rgba(28, 28, 28, 0.9);
-  transition: transform 140ms ease, box-shadow 140ms ease;
+  background: rgba(255, 253, 246, 0.9);
+  border: 2px solid #d9d2bd;
+  border-radius: 22px;
+  box-shadow: 0 10px 0 -4px rgba(138, 160, 110, 0.22), 0 12px 28px -18px rgba(60, 60, 40, 0.5);
+  transition: transform 180ms ease, box-shadow 180ms ease, border-color 180ms ease;
 }
 .porter-card:hover {
-  transform: translate(-2px, -2px);
-  box-shadow: 8px 8px 0 rgba(28, 28, 28, 0.9);
+  transform: translateY(-4px) rotate(-0.4deg);
+  border-color: #8aa06e;
+  box-shadow: 0 14px 0 -4px rgba(226, 154, 178, 0.28), 0 18px 34px -20px rgba(60, 60, 40, 0.5);
 }
 .porter-chip {
-  border: 1.5px solid #1c1c1c;
-  box-shadow: 3px 3px 0 rgba(28, 28, 28, 0.9);
+  border: 2px solid #d9d2bd;
+  background: rgba(255, 255, 250, 0.75);
+  box-shadow: none;
   border-radius: 999px;
 }
 .porter-btn {
-  border: 1.5px solid #1c1c1c;
-  box-shadow: 4px 4px 0 rgba(28, 28, 28, 0.9);
+  border: 2px solid #5d6b46;
+  box-shadow: 0 6px 0 -1px rgba(138, 160, 110, 0.45);
   border-radius: 999px;
-  transition: transform 120ms ease, box-shadow 120ms ease;
+  transition: transform 160ms ease, box-shadow 160ms ease;
 }
-.porter-btn:hover { transform: translate(-2px, -2px); box-shadow: 6px 6px 0 rgba(28,28,28,0.9); }
-.porter-btn:active { transform: translate(2px, 2px); box-shadow: 1px 1px 0 rgba(28,28,28,0.9); }
+.porter-btn:hover { transform: translateY(-3px); box-shadow: 0 9px 0 -1px rgba(226, 154, 178, 0.5); }
+.porter-btn:active { transform: translateY(1px); box-shadow: 0 3px 0 -1px rgba(138, 160, 110, 0.5); }
 .porter-stitch {
-  color: #4b53d6;
+  color: #7ab0d6;
   font-size: 13px;
   line-height: 1;
   letter-spacing: 0.35em;
   user-select: none;
   pointer-events: none;
 }
+
