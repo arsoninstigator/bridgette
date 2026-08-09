@@ -1,4 +1,5 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
+import { PorterSquiggle, PorterStitches } from "@/porter/PorterShell";
 import {
   ArrowRight,
   Check,
@@ -141,12 +142,13 @@ function Features() {
     <div className="max-w-6xl mx-auto px-6 py-16 md:py-24">
       {/* Hero */}
       <section className="max-w-3xl">
-        <div className="inline-flex items-center gap-2 rounded-full border border-stone-400 bg-white/60 px-3 py-1 font-mono text-[10px] uppercase tracking-widest text-stone-600">
+        <div className="inline-flex items-center gap-2 porter-btn bg-white px-3 py-1 font-mono text-[10px] uppercase tracking-widest text-stone-600">
           <Sparkles size={12} />
           <span>v0 lab feature set</span>
         </div>
+        <PorterStitches className="mt-6" />
         <h1 className="mt-6 font-display text-5xl md:text-6xl lowercase tracking-tight leading-[1.05]">
-          everything porter does today.
+          everything porter <span className="porter-highlight">does today</span>.
         </h1>
         <p className="mt-6 max-w-2xl text-base md:text-lg leading-relaxed text-stone-700">
           porter is still shy of v1 — but everything below is wired up and usable right now.
@@ -155,24 +157,26 @@ function Features() {
         <div className="mt-8 flex flex-wrap gap-3">
           <Link
             to="/porter/lab"
-            className="inline-flex items-center gap-2 rounded-full bg-stone-900 text-white px-5 py-2 font-mono text-[11px] uppercase tracking-[0.18em] hover:bg-stone-700"
+            className="inline-flex items-center gap-2 porter-btn bg-[#4b53d6] text-stone-50 px-5 py-2 font-mono text-[11px] uppercase tracking-[0.18em] hover:bg-stone-700"
           >
             open the lab
             <ArrowRight size={14} />
           </Link>
           <Link
             to="/porter/purpose"
-            className="rounded-full border border-stone-400 bg-white/60 px-5 py-2 font-mono text-[11px] uppercase tracking-[0.18em] hover:bg-white"
+            className="porter-btn bg-white px-5 py-2 font-mono text-[11px] uppercase tracking-[0.18em] hover:bg-white"
           >
             who is it for?
           </Link>
         </div>
       </section>
 
+      <PorterSquiggle className="mt-14 h-12 w-full text-[#4b53d6]/70" />
+
       {/* Sources */}
       <section className="mt-20 md:mt-28">
         <div className="flex items-center gap-3">
-          <div className="rounded-full bg-stone-900/5 p-2 text-stone-700">
+          <div className="rounded-full bg-[#9ee8cf] p-2 text-stone-900">
             <Image size={18} />
           </div>
           <p className="font-mono text-[11px] uppercase tracking-[0.22em] text-stone-500">import sources</p>
@@ -186,7 +190,7 @@ function Features() {
           {sourceCards.map((card) => (
             <div
               key={card.title}
-              className="group rounded-lg border border-stone-300 bg-white/70 p-5 transition hover:-translate-y-0.5 hover:border-stone-400 hover:shadow-sm"
+              className="group porter-card p-5 transition hover:-translate-y-0.5 hover:border-stone-400 hover:shadow-sm"
             >
               <div className="flex items-start justify-between gap-3">
                 <div className="rounded-full bg-stone-900/5 p-2 text-stone-700 group-hover:bg-stone-900 group-hover:text-stone-50 transition-colors">
@@ -220,7 +224,7 @@ function Features() {
           {policyCards.map((card, i) => (
             <div
               key={card.title}
-              className="relative rounded-lg border border-stone-300 bg-white/70 p-6"
+              className="relative porter-card p-6"
             >
               <div className="absolute top-0 left-0 h-1 w-full rounded-t-lg bg-stone-300" />
               <div className="rounded-full bg-stone-900/5 p-2 w-fit text-stone-700">
@@ -248,7 +252,7 @@ function Features() {
 
         <div className="mt-8 grid sm:grid-cols-2 lg:grid-cols-4 gap-4">
           {workflowCards.map((card) => (
-            <div key={card.title} className="rounded-lg border border-stone-300 bg-white/70 p-5">
+            <div key={card.title} className="porter-card p-5">
               <div className="rounded-full bg-stone-900/5 p-2 w-fit text-stone-700">
                 <card.icon size={18} />
               </div>
@@ -269,7 +273,7 @@ function Features() {
         </div>
         <h2 className="mt-2 font-display text-3xl md:text-4xl lowercase tracking-tight">with porter vs. without.</h2>
 
-        <div className="mt-8 overflow-hidden rounded-lg border border-stone-300 bg-white/70">
+        <div className="mt-8 overflow-hidden porter-card">
           <div className="grid grid-cols-12 border-b border-stone-300 bg-stone-100/50">
             <div className="col-span-5 p-4 font-mono text-[10px] uppercase tracking-[0.2em] text-stone-500">without porter</div>
             <div className="col-span-7 border-l border-stone-300 p-4 font-mono text-[10px] uppercase tracking-[0.2em] text-stone-900">with porter</div>
@@ -290,7 +294,7 @@ function Features() {
       </section>
 
       {/* CTA */}
-      <section className="mt-20 md:mt-28 rounded-2xl border border-stone-300 bg-stone-900 text-stone-50 p-8 md:p-12">
+      <section className="mt-20 md:mt-28 border-[1.5px] border-stone-900 bg-[#1c1c1c] shadow-[8px_8px_0_rgba(75,83,214,0.9)] text-stone-50 p-8 md:p-12">
         <div className="max-w-3xl">
           <p className="font-mono text-[10px] uppercase tracking-[0.2em] text-stone-400">ready to try?</p>
           <h2 className="mt-3 font-display text-4xl md:text-5xl lowercase tracking-tight">{cta.headline}</h2>
@@ -298,14 +302,14 @@ function Features() {
           <div className="mt-8 flex flex-wrap gap-3">
             <Link
               to="/porter/lab"
-              className="inline-flex items-center gap-2 rounded-full bg-white text-stone-900 px-5 py-2 font-mono text-[11px] uppercase tracking-[0.18em] hover:bg-stone-200"
+              className="inline-flex items-center gap-2 porter-btn bg-[#e8ff4a] text-stone-900 px-5 py-2 font-mono text-[11px] uppercase tracking-[0.18em] hover:bg-stone-200"
             >
               open the lab
               <ArrowRight size={14} />
             </Link>
             <Link
               to="/porter/about"
-              className="rounded-full border border-stone-600 bg-stone-900/50 px-5 py-2 font-mono text-[11px] uppercase tracking-[0.18em] text-stone-300 hover:bg-stone-800"
+              className="porter-btn bg-stone-900/40 px-5 py-2 font-mono text-[11px] uppercase tracking-[0.18em] text-stone-300 hover:bg-stone-800"
             >
               about porter
             </Link>
