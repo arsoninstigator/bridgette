@@ -1,4 +1,5 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
+import { PorterSquiggle, PorterStitches } from "@/porter/PorterShell";
 
 export const Route = createFileRoute("/porter/purpose")({
   head: () => ({
