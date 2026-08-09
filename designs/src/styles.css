@@ -339,3 +339,55 @@
   0%   { transform: translateX(0); }
   100% { transform: translateX(-100%); }
 }
+
+/* ── porter: risograph / graph-paper zine chrome ───────────────── */
+.porter-paper {
+  background-color: #fbfaf6;
+  background-image:
+    linear-gradient(rgba(90, 110, 140, 0.13) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(90, 110, 140, 0.13) 1px, transparent 1px),
+    linear-gradient(rgba(90, 110, 140, 0.06) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(90, 110, 140, 0.06) 1px, transparent 1px);
+  background-size: 96px 96px, 96px 96px, 16px 16px, 16px 16px;
+}
+.porter-highlight {
+  background: linear-gradient(180deg, transparent 55%, #e8ff4a 55%, #e8ff4a 94%, transparent 94%);
+  padding-inline: 0.15em;
+}
+.porter-sticker {
+  border: 3px dashed #4bbf9a;
+  border-radius: 50%;
+  transform: rotate(-7deg);
+}
+.porter-card {
+  background: rgba(255, 255, 255, 0.82);
+  border: 1.5px solid #1c1c1c;
+  border-radius: 2px;
+  box-shadow: 5px 5px 0 rgba(28, 28, 28, 0.9);
+  transition: transform 140ms ease, box-shadow 140ms ease;
+}
+.porter-card:hover {
+  transform: translate(-2px, -2px);
+  box-shadow: 8px 8px 0 rgba(28, 28, 28, 0.9);
+}
+.porter-chip {
+  border: 1.5px solid #1c1c1c;
+  box-shadow: 3px 3px 0 rgba(28, 28, 28, 0.9);
+  border-radius: 999px;
+}
+.porter-btn {
+  border: 1.5px solid #1c1c1c;
+  box-shadow: 4px 4px 0 rgba(28, 28, 28, 0.9);
+  border-radius: 999px;
+  transition: transform 120ms ease, box-shadow 120ms ease;
+}
+.porter-btn:hover { transform: translate(-2px, -2px); box-shadow: 6px 6px 0 rgba(28,28,28,0.9); }
+.porter-btn:active { transform: translate(2px, 2px); box-shadow: 1px 1px 0 rgba(28,28,28,0.9); }
+.porter-stitch {
+  color: #4b53d6;
+  font-size: 13px;
+  line-height: 1;
+  letter-spacing: 0.35em;
+  user-select: none;
+  pointer-events: none;
+}
