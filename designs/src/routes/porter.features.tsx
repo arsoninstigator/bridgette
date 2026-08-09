@@ -190,7 +190,7 @@ function Features() {
           {sourceCards.map((card) => (
             <div
               key={card.title}
-              className="group porter-card p-5 transition hover:-translate-y-0.5 hover:border-stone-400 hover:shadow-sm"
+              className="group porter-card p-5"
             >
               <div className="flex items-start justify-between gap-3">
                 <div className="rounded-full bg-stone-900/5 p-2 text-stone-700 group-hover:bg-stone-900 group-hover:text-stone-50 transition-colors">
