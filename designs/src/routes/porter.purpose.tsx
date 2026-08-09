@@ -54,8 +54,11 @@ const USES = [
 function PurposePage() {
   return (
     <div className="max-w-4xl mx-auto px-6 py-14">
-      <p className="font-mono text-[11px] uppercase tracking-[0.24em] text-stone-500">purpose</p>
-      <h1 className="mt-3 font-display text-4xl lowercase text-stone-900">porter is for the designer who has already shipped the file.</h1>
+      <PorterStitches />
+      <p className="mt-2 porter-chip inline-block bg-[#e8ff4a] px-3 py-1 font-mono text-[10px] uppercase tracking-[0.24em] text-stone-900">purpose</p>
+      <h1 className="mt-4 font-display text-4xl lowercase text-stone-900">
+        porter is for the designer who has <span className="porter-highlight">already shipped the file</span>.
+      </h1>
       <p className="mt-4 font-body text-stone-700 leading-relaxed">
         every case below already exists in your work: the same file, sent again and again, with one tiny thing changed each
         time. porter is the layer between your file and that "one tiny thing" — so the tiny thing is the only thing the
