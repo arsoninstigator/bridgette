@@ -738,74 +738,223 @@ function BlockDataEditor({ asset, onChange }: { asset: AssetBase; onChange: (p: 
   return null;
 }
 
-function TableEditor({ asset, onChange }: { asset: AssetBase; onChange: (p: Partial<AssetBase>) => void }) {
-  const d = readData<{ headers: string[]; rows: string[][] }>(asset.blockData, { headers: ["col 1", "col 2"], rows: [["", ""]] });
-  const headers = Array.isArray(d.headers) ? d.headers : [];
-  const rows = Array.isArray(d.rows) ? d.rows.map((r) => (Array.isArray(r) ? r : [])) : [];
-  const cols = headers.length;
+type Sel = { r0: number; c0: number; r1: number; c1: number };
 
-  function update(next: { headers: string[]; rows: string[][] }) {
-    writeData(onChange, next);
+function normSel(s: Sel) {
+  return {
+    rMin: Math.min(s.r0, s.r1),
+    rMax: Math.max(s.r0, s.r1),
+    cMin: Math.min(s.c0, s.c1),
+    cMax: Math.max(s.c0, s.c1),
+  };
+}
+
+function TableEditor({ asset, onChange }: { asset: AssetBase; onChange: (p: Partial<AssetBase>) => void }) {
+  const t = normalizeTable(readData<Record<string, unknown>>(asset.blockData, {}));
+  const { headers, rows, colWidths, aligns } = t;
+  const merges = t.merges ?? [];
+  const cols = headers.length;
+  const covered = coveredCells(merges);
+  const [sel, setSel] = useState<Sel | null>(null);
+  const s = sel ? normSel(sel) : null;
+
+  function commit(next: TableData) {
+    writeData(onChange, { ...next, merges: clampMerges(next) });
   }
-  function setHeader(i: number, v: string) {
-    const h = [...headers]; h[i] = v; update({ headers: h, rows });
+  function setCell(r: number, c: number, v: string) {
+    if (r === -1) {
+      const h = [...headers];
+      h[c] = v;
+      commit({ ...t, headers: h });
+    } else {
+      const nr = rows.map((row) => [...row]);
+      nr[r][c] = v;
+      commit({ ...t, rows: nr });
+    }
   }
-  function setCell(ri: number, ci: number, v: string) {
-    const next = rows.map((r) => [...r]);
-    while (next[ri].length < cols) next[ri].push("");
-    next[ri][ci] = v;
-    update({ headers, rows: next });
+  function shiftMerges(fn: (m: { r: number; c: number; rs: number; cs: number }) => { r: number; c: number; rs: number; cs: number } | null) {
+    return merges.map(fn).filter(Boolean) as typeof merges;
   }
-  function addRow() {
-    update({ headers, rows: [...rows, Array(cols).fill("")] });
+  function insertRow(at: number) {
+    const nr = [...rows];
+    nr.splice(at, 0, Array(cols).fill(""));
+    commit({
+      ...t,
+      rows: nr,
+      merges: shiftMerges((m) => (m.r >= at ? { ...m, r: m.r + 1 } : m.r + m.rs > at ? { ...m, rs: m.rs + 1 } : m)),
+    });
   }
-  function removeRow(i: number) {
-    update({ headers, rows: rows.filter((_, idx) => idx !== i) });
+  function deleteRow(at: number) {
+    if (rows.length <= 1) return;
+    commit({
+      ...t,
+      rows: rows.filter((_, i) => i !== at),
+      merges: shiftMerges((m) =>
+        m.r > at ? { ...m, r: m.r - 1 } : m.r + m.rs > at && m.r <= at ? { ...m, rs: m.rs - 1 } : m,
+      ),
+    });
+    setSel(null);
   }
-  function addCol() {
-    update({ headers: [...headers, `col ${cols + 1}`], rows: rows.map((r) => [...r, ""]) });
+  function insertCol(at: number) {
+    const h = [...headers];
+    h.splice(at, 0, `col ${cols + 1}`);
+    const w = [...(colWidths ?? [])];
+    w.splice(at, 0, null);
+    const al = [...(aligns ?? [])];
+    al.splice(at, 0, "left");
+    commit({
+      ...t,
+      headers: h,
+      colWidths: w,
+      aligns: al,
+      rows: rows.map((r) => {
+        const nr = [...r];
+        nr.splice(at, 0, "");
+        return nr;
+      }),
+      merges: shiftMerges((m) => (m.c >= at ? { ...m, c: m.c + 1 } : m.c + m.cs > at ? { ...m, cs: m.cs + 1 } : m)),
+    });
   }
-  function removeCol(i: number) {
-    update({ headers: headers.filter((_, idx) => idx !== i), rows: rows.map((r) => r.filter((_, idx) => idx !== i)) });
+  function deleteCol(at: number) {
+    if (cols <= 1) return;
+    commit({
+      ...t,
+      headers: headers.filter((_, i) => i !== at),
+      colWidths: (colWidths ?? []).filter((_, i) => i !== at),
+      aligns: (aligns ?? []).filter((_, i) => i !== at),
+      rows: rows.map((r) => r.filter((_, i) => i !== at)),
+      merges: shiftMerges((m) =>
+        m.c > at ? { ...m, c: m.c - 1 } : m.c + m.cs > at && m.c <= at ? { ...m, cs: m.cs - 1 } : m,
+      ),
+    });
+    setSel(null);
   }
+  function mergeSel() {
+    if (!s) return;
+    if (s.rMin === s.rMax && s.cMin === s.cMax) return;
+    // header row can only merge horizontally
+    const rMin = s.rMin;
+    const rs = rMin === -1 ? 1 : s.rMax - s.rMin + 1;
+    const cs = s.cMax - s.cMin + 1;
+    const kept = merges.filter(
+      (m) => m.r + m.rs <= rMin || m.r > s.rMax || m.c + m.cs <= s.cMin || m.c > s.cMax,
+    );
+    commit({ ...t, merges: [...kept, { r: rMin, c: s.cMin, rs, cs }] });
+  }
+  function splitSel() {
+    if (!s) return;
+    commit({
+      ...t,
+      merges: merges.filter((m) => m.r + m.rs <= s.rMin || m.r > s.rMax || m.c + m.cs <= s.cMin || m.c > s.cMax),
+    });
+  }
+  function setAlign(a: TableAlign) {
+    if (!s) return;
+    const al = [...(aligns ?? [])];
+    for (let c = s.cMin; c <= s.cMax; c++) al[c] = a;
+    commit({ ...t, aligns: al });
+  }
+  function setWidth(c: number, v: string) {
+    const w = [...(colWidths ?? [])];
+    const n = parseInt(v, 10);
+    w[c] = Number.isFinite(n) && n > 0 ? Math.min(100, n) : null;
+    commit({ ...t, colWidths: w });
+  }
+  const inSel = (r: number, c: number) => !!s && r >= s.rMin && r <= s.rMax && c >= s.cMin && c <= s.cMax;
+  const onCellDown = (r: number, c: number) => (e: React.MouseEvent) => {
+    if (e.shiftKey && sel) setSel({ ...sel, r1: r, c1: c });
+    else setSel({ r0: r, c0: c, r1: r, c1: c });
+  };
+  const cellCls = (r: number, c: number) =>
+    `relative border border-input p-0 align-top ${inSel(r, c) ? "bg-amber-200/50 outline outline-1 outline-amber-700" : ""}`;
+
+  const canMerge = !!s && (s.rMin !== s.rMax || s.cMin !== s.cMax);
+  const selHasMerge = !!s && merges.some((m) => m.r >= s.rMin && m.r <= s.rMax && m.c >= s.cMin && m.c <= s.cMax);
 
   return (
     <Field>
-      <Label>Table</Label>
-      <div className="overflow-x-auto rounded border border-input">
-        <table className="w-full text-xs font-mono">
+      <Label>Table — click a cell, shift+click to select a range</Label>
+      <div className="overflow-x-auto rounded border border-input bg-background">
+        <table className="w-full text-xs font-mono" style={{ borderCollapse: "collapse" }}>
           <thead>
-            <tr className="bg-muted/40">
-              {headers.map((h, i) => (
-                <th key={i} className="p-1 border-b border-input">
-                  <div className="flex items-center gap-1">
-                    <input value={h} onChange={(e) => setHeader(i, e.target.value)} className="w-full rounded bg-transparent px-1 py-0.5 text-[11px] font-semibold lowercase" />
-                    <button onClick={() => removeCol(i)} className={removeCls} title="remove column">×</button>
-                  </div>
-                </th>
-              ))}
-              <th className="p-1 border-b border-input w-8">
-                <button onClick={addCol} className={btnCls} title="add column">+col</button>
-              </th>
+            <tr>
+              {headers.map((h, i) => {
+                if (covered.has(`-1:${i}`)) return null;
+                const m = mergeAt(merges, -1, i);
+                return (
+                  <th key={i} colSpan={m?.cs} className={cellCls(-1, i)} onMouseDown={onCellDown(-1, i)}>
+                    <input
+                      value={h}
+                      onChange={(e) => setCell(-1, i, e.target.value)}
+                      onFocus={() => setSel({ r0: -1, c0: i, r1: -1, c1: i })}
+                      className="w-full bg-transparent px-1.5 py-1 text-[11px] font-semibold lowercase outline-none"
+                    />
+                  </th>
+                );
+              })}
             </tr>
           </thead>
           <tbody>
             {rows.map((row, ri) => (
               <tr key={ri}>
-                {headers.map((_, ci) => (
-                  <td key={ci} className="p-1 border-b border-dashed border-input">
-                    <input value={row[ci] ?? ""} onChange={(e) => setCell(ri, ci, e.target.value)} className="w-full rounded bg-transparent px-1 py-0.5 text-[11px]" />
-                  </td>
-                ))}
-                <td className="p-1 border-b border-dashed border-input text-center">
-                  <button onClick={() => removeRow(ri)} className={removeCls} title="remove row">×</button>
-                </td>
+                {row.map((cell, ci) => {
+                  if (covered.has(`${ri}:${ci}`)) return null;
+                  const m = mergeAt(merges, ri, ci);
+                  return (
+                    <td key={ci} colSpan={m?.cs} rowSpan={m?.rs} className={cellCls(ri, ci)} onMouseDown={onCellDown(ri, ci)}>
+                      <input
+                        value={cell}
+                        onChange={(e) => setCell(ri, ci, e.target.value)}
+                        onFocus={() => setSel({ r0: ri, c0: ci, r1: ri, c1: ci })}
+                        className="w-full bg-transparent px-1.5 py-1 text-[11px] outline-none"
+                      />
+                    </td>
+                  );
+                })}
               </tr>
             ))}
           </tbody>
         </table>
       </div>
-      <button onClick={addRow} className={`${btnCls} mt-2 w-full`}>+ add row</button>
+
+      <div className="mt-2 grid grid-cols-2 gap-1.5">
+        <button onClick={() => insertRow(s ? Math.max(0, s.rMin) : rows.length)} className={btnCls}>+ row above</button>
+        <button onClick={() => insertRow(s ? Math.max(0, s.rMax) + 1 : rows.length)} className={btnCls}>+ row below</button>
+        <button onClick={() => insertCol(s ? s.cMin : cols)} className={btnCls}>+ col left</button>
+        <button onClick={() => insertCol(s ? s.cMax + 1 : cols)} className={btnCls}>+ col right</button>
+        <button onClick={() => s && s.rMin >= 0 && deleteRow(s.rMin)} disabled={!s || s.rMin < 0} className={`${removeCls} py-1 disabled:opacity-40`}>delete row</button>
+        <button onClick={() => s && deleteCol(s.cMin)} disabled={!s} className={`${removeCls} py-1 disabled:opacity-40`}>delete column</button>
+        <button onClick={mergeSel} disabled={!canMerge} className={`${btnCls} disabled:opacity-40`}>merge cells</button>
+        <button onClick={splitSel} disabled={!selHasMerge} className={`${btnCls} disabled:opacity-40`}>split cells</button>
+      </div>
+
+      <div className="mt-2 grid grid-cols-3 gap-1.5">
+        {(["left", "center", "right"] as const).map((a) => (
+          <button
+            key={a}
+            onClick={() => setAlign(a)}
+            disabled={!s}
+            className={`${btnCls} disabled:opacity-40 ${s && (aligns?.[s.cMin] ?? "left") === a ? "border-stone-900 bg-accent/40" : ""}`}
+          >
+            {a}
+          </button>
+        ))}
+      </div>
+
+      {s && (
+        <div className="mt-2 flex items-center gap-2">
+          <span className="font-mono text-[10px] lowercase text-muted-foreground">col {s.cMin + 1} width %</span>
+          <input
+            type="number"
+            min={0}
+            max={100}
+            value={colWidths?.[s.cMin] ?? ""}
+            placeholder="auto"
+            onChange={(e) => setWidth(s.cMin, e.target.value)}
+            className={`${inputCls} w-20`}
+          />
+        </div>
+      )}
     </Field>
   );
 }
