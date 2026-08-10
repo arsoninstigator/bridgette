@@ -1360,6 +1360,60 @@ function BlockStyleTab({ asset, onChange }: { asset: AssetBase; onChange: (p: Pa
               header underline
             </label>
           </Field>
+          <Field>
+            <Label>Grid lines</Label>
+            <div className="grid grid-cols-5 gap-1">
+              {(["all", "horizontal", "vertical", "outer", "none"] as const).map((g) => (
+                <button
+                  key={g}
+                  onClick={() => setS({ tableGrid: g })}
+                  className={`rounded border px-1 py-1.5 font-mono text-[9px] lowercase ${
+                    (s.tableGrid ?? "horizontal") === g ? "border-stone-900 bg-accent/40" : "border-border hover:bg-black/5"
+                  }`}
+                >
+                  {g === "horizontal" ? "rows" : g === "vertical" ? "cols" : g}
+                </button>
+              ))}
+            </div>
+          </Field>
+          <div className="grid grid-cols-2 gap-2">
+            <Field>
+              <Label>Line color</Label>
+              <input type="color" value={s.tableLineColor ?? "#c9b99a"} onChange={(e) => setS({ tableLineColor: e.target.value })} className="h-8 w-full rounded border border-input bg-background" />
+            </Field>
+            <Field>
+              <Label>Line width ({s.tableLineWidth ?? 1}px)</Label>
+              <input type="range" min={1} max={6} value={s.tableLineWidth ?? 1} onChange={(e) => setS({ tableLineWidth: parseInt(e.target.value, 10) })} className="w-full" />
+            </Field>
+          </div>
+          <div className="grid grid-cols-2 gap-2">
+            <Field>
+              <Label>Header fill</Label>
+              <input type="color" value={s.tableHeaderBg ?? "#f0e8d6"} onChange={(e) => setS({ tableHeaderBg: e.target.value })} className="h-8 w-full rounded border border-input bg-background" />
+            </Field>
+            <Field>
+              <Label>Zebra fill</Label>
+              <input type="color" value={s.tableZebraColor ?? "#f4eee0"} onChange={(e) => setS({ tableZebraColor: e.target.value })} className="h-8 w-full rounded border border-input bg-background" />
+            </Field>
+          </div>
+          <Field>
+            <label className="flex items-center gap-2 font-mono text-[11px] lowercase text-foreground cursor-pointer">
+              <input type="checkbox" checked={!!s.tableZebra} onChange={(e) => setS({ tableZebra: e.target.checked })} />
+              zebra striping
+            </label>
+          </Field>
+          <Field>
+            <label className="flex items-center gap-2 font-mono text-[11px] lowercase text-foreground cursor-pointer">
+              <input type="checkbox" checked={s.tableShowHeader !== false} onChange={(e) => setS({ tableShowHeader: e.target.checked })} />
+              show header row
+            </label>
+          </Field>
+          <Field>
+            <label className="flex items-center gap-2 font-mono text-[11px] lowercase text-foreground cursor-pointer">
+              <input type="checkbox" checked={!!s.tableFirstColBold} onChange={(e) => setS({ tableFirstColBold: e.target.checked })} />
+              bold first column
+            </label>
+          </Field>
         </>
       )}
     </>
