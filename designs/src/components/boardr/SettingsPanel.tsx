@@ -1,5 +1,13 @@
 import { useEffect, useMemo, useRef, useState } from "react";
 import type { AssetBase } from "../../lib/boardr/types";
+import {
+  normalizeTable,
+  coveredCells,
+  mergeAt,
+  clampMerges,
+  type TableData,
+  type TableAlign,
+} from "../../lib/boardr/table";
 
 interface Props {
   asset: AssetBase;
