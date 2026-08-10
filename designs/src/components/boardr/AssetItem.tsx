@@ -2,6 +2,7 @@ import { useEffect, useRef, useState } from "react";
 import { Lock } from "lucide-react";
 import { motion } from "framer-motion";
 import type { AssetBase } from "../../lib/boardr/types";
+import { normalizeTable, coveredCells, mergeAt } from "../../lib/boardr/table";
 
 function animationProps(a: AssetBase) {
   const d = a.animationDuration ?? 2;
