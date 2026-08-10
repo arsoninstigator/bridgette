@@ -2,6 +2,7 @@ import { useEffect, useRef, useState } from "react";
 import { Lock } from "lucide-react";
 import { motion } from "framer-motion";
 import type { AssetBase } from "../../lib/boardr/types";
+import { normalizeTable, coveredCells, mergeAt } from "../../lib/boardr/table";
 
 function animationProps(a: AssetBase) {
   const d = a.animationDuration ?? 2;
@@ -755,31 +756,86 @@ function renderBlock(a: AssetBase): React.ReactNode {
     color: fg,
   };
   if (t === "table") {
-    const raw = parseBlockData<{ headers?: string[]; rows?: string[][] }>(a.blockData) || {};
-    const headers = Array.isArray(raw.headers) ? raw.headers : [];
-    const rows = Array.isArray(raw.rows) ? raw.rows : [];
+    const tbl = normalizeTable(parseBlockData<Record<string, unknown>>(a.blockData) || {});
+    const { headers, rows, merges, colWidths, aligns } = tbl;
+    const covered = coveredCells(merges);
     const density = s.tableDensity ?? "cozy";
     const cellPadY = density === "compact" ? 2 : density === "roomy" ? 8 : 4;
     const cellPadX = density === "compact" ? 4 : density === "roomy" ? 10 : 6;
-    const divider = s.tableDividers ?? "dashed";
-    const cellBorder = divider === "none" ? "none" : `1px ${divider} ${divider === "solid" ? "#1f1a14" : "#c9b99a"}`;
-    const headerUnderline = s.tableHeaderUnderline === false ? "none" : `1px solid ${fg}`;
+    const grid = s.tableGrid ?? (s.tableDividers === "none" ? "none" : "horizontal");
+    const lineColor = s.tableLineColor ?? (s.tableDividers === "solid" ? "#1f1a14" : "#c9b99a");
+    const lineWidth = s.tableLineWidth ?? 1;
+    const lineStyle = s.tableDividers === "solid" ? "solid" : s.tableDividers === "none" ? "solid" : "dashed";
+    const line = `${lineWidth}px ${lineStyle} ${lineColor}`;
+    const hBorder = grid === "all" || grid === "horizontal" ? line : "none";
+    const vBorder = grid === "all" || grid === "vertical" ? line : "none";
+    const outer = grid === "none" ? "none" : `${lineWidth}px solid ${lineColor}`;
+    const showHeader = s.tableShowHeader !== false;
+    const headerUnderline = s.tableHeaderUnderline === false ? "none" : `${lineWidth}px solid ${fg}`;
+    const cellStyle = (ci: number, ri: number): React.CSSProperties => ({
+      borderBottom: hBorder,
+      borderRight: vBorder,
+      padding: `${cellPadY}px ${cellPadX}px`,
+      textAlign: aligns?.[ci] ?? "left",
+      fontWeight: s.tableFirstColBold && ci === 0 ? 700 : undefined,
+      background:
+        s.tableZebra && ri % 2 === 1 ? (s.tableZebraColor ?? "rgba(31,26,20,0.05)") : undefined,
+      verticalAlign: "top",
+    });
     return (
       <div style={wrap}>
-        <table style={{ width: "100%", borderCollapse: "collapse", fontSize: 11 }}>
-          <thead>
-            <tr>
-              {headers.map((hd, i) => (
-                <th key={i} style={{ textAlign: "left", borderBottom: headerUnderline, padding: `${cellPadY}px ${cellPadX}px`, textTransform: "lowercase", letterSpacing: "0.06em" }}>{hd}</th>
-              ))}
-            </tr>
-          </thead>
+        <table
+          style={{
+            width: "100%",
+            borderCollapse: "collapse",
+            fontSize: 11,
+            tableLayout: (colWidths ?? []).some((w) => w) ? "fixed" : "auto",
+            border: grid === "outer" || grid === "all" ? outer : "none",
+          }}
+        >
+          <colgroup>
+            {headers.map((_, i) => (
+              <col key={i} style={colWidths?.[i] ? { width: `${colWidths[i]}%` } : undefined} />
+            ))}
+          </colgroup>
+          {showHeader && (
+            <thead>
+              <tr>
+                {headers.map((hd, i) => {
+                  if (covered.has(`-1:${i}`)) return null;
+                  const m = mergeAt(merges, -1, i);
+                  return (
+                    <th
+                      key={i}
+                      colSpan={m?.cs}
+                      style={{
+                        ...cellStyle(i, -1),
+                        background: s.tableHeaderBg ?? undefined,
+                        borderBottom: headerUnderline,
+                        textTransform: "lowercase",
+                        letterSpacing: "0.06em",
+                        fontWeight: 700,
+                      }}
+                    >
+                      {hd}
+                    </th>
+                  );
+                })}
+              </tr>
+            </thead>
+          )}
           <tbody>
             {rows.map((row, ri) => (
               <tr key={ri}>
-                {(Array.isArray(row) ? row : []).map((c, ci) => (
-                  <td key={ci} style={{ borderBottom: cellBorder, padding: `${cellPadY}px ${cellPadX}px` }}>{c}</td>
-                ))}
+                {row.map((c, ci) => {
+                  if (covered.has(`${ri}:${ci}`)) return null;
+                  const m = mergeAt(merges, ri, ci);
+                  return (
+                    <td key={ci} colSpan={m?.cs} rowSpan={m?.rs} style={cellStyle(ci, ri)}>
+                      {c}
+                    </td>
+                  );
+                })}
               </tr>
             ))}
           </tbody>

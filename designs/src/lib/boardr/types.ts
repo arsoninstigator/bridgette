@@ -76,6 +76,14 @@ export interface AssetBase {
     tableDensity?: "compact" | "cozy" | "roomy";
     tableDividers?: "solid" | "dashed" | "none";
     tableHeaderUnderline?: boolean;
+    tableGrid?: "all" | "horizontal" | "vertical" | "outer" | "none";
+    tableLineColor?: string;
+    tableLineWidth?: number;
+    tableZebra?: boolean;
+    tableZebraColor?: string;
+    tableHeaderBg?: string;
+    tableShowHeader?: boolean;
+    tableFirstColBold?: boolean;
   };
   frameStyle?: "classic" | "ornate" | "polaroid" | "oval" | "scalloped" | "double"; // for kind: frame
   shape?: "rect" | "square" | "circle" | "oval" | "triangle" | "diamond" | "star" | "polygon";
