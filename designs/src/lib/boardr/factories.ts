@@ -41,6 +41,8 @@ export function makeAsset(kind: AssetKind, x: number, y: number): AssetBase {
       };
     case "frame":
       return { ...base, width: 220, height: 260, frameStyle: "classic", color: "#3a2a1a", rotation: 0 };
+    case "meshgrid":
+      return { ...base, width: 320, height: 240, rotation: 0, meshShape: "rect", meshCell: 34, meshColor: "#2b2b2b" };
     case "block":
       return { ...base, width: 280, height: 180, rotation: 0, blockType: "table", blockData: defaultBlockData("table") };
   }

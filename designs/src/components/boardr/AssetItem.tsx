@@ -203,6 +203,8 @@ function defaultSize(a: AssetBase): { w: number; h: number } {
       return { w: a.width ?? 320, h: a.height ?? 40 };
     case "frame":
       return { w: a.width ?? 220, h: a.height ?? 260 };
+    case "meshgrid":
+      return { w: a.width ?? 320, h: a.height ?? 240 };
     case "block":
       return { w: a.width ?? 280, h: a.height ?? 180 };
   }
