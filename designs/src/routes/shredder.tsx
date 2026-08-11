@@ -1,5 +1,5 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
-import { SiteChrome } from "@/components/boardr/SiteChrome";
+import { SiteHeader, SiteFooter } from "@/components/boardr/SiteChrome";
 
 export const Route = createFileRoute("/shredder")({
   head: () => ({
@@ -31,7 +31,8 @@ const STEPS = [
 
 function ShredderPage() {
   return (
-    <SiteChrome>
+    <>
+      <SiteHeader />
       <section className="mx-auto max-w-5xl px-6 py-16">
         <span className="inline-block rounded-full border border-stone-700/30 px-3 py-1 font-mono text-[10px] lowercase tracking-widest text-stone-600">
           prototype · not wired up yet
@@ -71,7 +72,8 @@ function ShredderPage() {
           </Link>
         </div>
       </section>
-    </SiteChrome>
+      <SiteFooter />
+    </>
   );
 }
 
