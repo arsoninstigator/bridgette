@@ -3628,6 +3628,60 @@ function AssetContextMenu({
       onMouseDown={(e) => e.stopPropagation()}
       onContextMenu={(e) => e.preventDefault()}
     >
+      {assets.length > 0 && assets.every((a) => a.kind === "meshgrid") && (
+        <>
+          <MenuRow
+            label="change shape"
+            chevron
+            active={submenu === "meshShape"}
+            onMouseEnter={() => setSubmenu("meshShape")}
+            onClick={() => setSubmenu(submenu === "meshShape" ? null : "meshShape")}
+          >
+            {submenu === "meshShape" && (
+              <Submenu>
+                {(["rect", "square", "circle", "heart", "star", "hexagon"] as const).map((s) => (
+                  <MenuRow
+                    key={s}
+                    label={s}
+                    check={assets.every((a) => (a.meshShape || "rect") === s)}
+                    onClick={() => { onPatch({ meshShape: s }); onClose(); }}
+                  />
+                ))}
+              </Submenu>
+            )}
+          </MenuRow>
+          <MenuRow
+            label="change color"
+            chevron
+            active={submenu === "meshColor"}
+            onMouseEnter={() => setSubmenu("meshColor")}
+            onClick={() => setSubmenu(submenu === "meshColor" ? null : "meshColor")}
+          >
+            {submenu === "meshColor" && (
+              <Submenu>
+                {([
+                  ["black", "#1a1a1a"],
+                  ["charcoal", "#2b2b2b"],
+                  ["white", "#f5f5f4"],
+                  ["brass", "#b08d3f"],
+                  ["copper", "#b06a3b"],
+                  ["sage", "#7d8f6a"],
+                  ["blush", "#d98ba0"],
+                  ["sky", "#7ab0d6"],
+                ] as const).map(([name, hex]) => (
+                  <MenuRow
+                    key={hex}
+                    label={name}
+                    check={assets.every((a) => (a.meshColor || "#2b2b2b") === hex)}
+                    onClick={() => { onPatch({ meshColor: hex }); onClose(); }}
+                  />
+                ))}
+              </Submenu>
+            )}
+          </MenuRow>
+          <div className="my-1 border-t border-stone-700/15" />
+        </>
+      )}
       <MenuRow
         check={allTaped}
         label="tape this up (washi tape)"
