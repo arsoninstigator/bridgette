@@ -3578,6 +3578,7 @@ function AssetContextMenu({
   onTogglePin,
   onToggleClip,
   onEditStyle,
+  onPatch,
   onDelete,
 }: {
   state: { x: number; y: number; ids: string[] };
@@ -3592,9 +3593,10 @@ function AssetContextMenu({
   onTogglePin: () => void;
   onToggleClip: () => void;
   onEditStyle: (focus: "content" | "mechanics" | "tape" | "pin") => void;
+  onPatch: (patch: Partial<AssetBase>) => void;
   onDelete: () => void;
 }) {
-  const [submenu, setSubmenu] = useState<null | "layer" | "style">(null);
+  const [submenu, setSubmenu] = useState<null | "layer" | "style" | "meshShape" | "meshColor">(null);
   useEffect(() => {
     const onDown = () => onClose();
     const onKey = (e: KeyboardEvent) => e.key === "Escape" && onClose();
