@@ -11,6 +11,7 @@
 import { Route as rootRouteImport } from './routes/__root'
 import { Route as TemplatesRouteImport } from './routes/templates'
 import { Route as SitemapDotxmlRouteImport } from './routes/sitemap[.]xml'
+import { Route as ShredderRouteImport } from './routes/shredder'
 import { Route as RoadmapRouteImport } from './routes/roadmap'
 import { Route as PositioningRouteImport } from './routes/positioning'
 import { Route as PorterRouteImport } from './routes/porter'
@@ -43,6 +44,11 @@ const TemplatesRoute = TemplatesRouteImport.update({
 const SitemapDotxmlRoute = SitemapDotxmlRouteImport.update({
   id: '/sitemap.xml',
   path: '/sitemap.xml',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ShredderRoute = ShredderRouteImport.update({
+  id: '/shredder',
+  path: '/shredder',
   getParentRoute: () => rootRouteImport,
 } as any)
 const RoadmapRoute = RoadmapRouteImport.update({
@@ -177,6 +183,7 @@ export interface FileRoutesByFullPath {
   '/porter': typeof PorterRouteWithChildren
   '/positioning': typeof PositioningRoute
   '/roadmap': typeof RoadmapRoute
+  '/shredder': typeof ShredderRoute
   '/sitemap.xml': typeof SitemapDotxmlRoute
   '/templates': typeof TemplatesRoute
   '/marketplace/ui': typeof MarketplaceUiRoute
@@ -203,6 +210,7 @@ export interface FileRoutesByTo {
   '/philosophy': typeof PhilosophyRoute
   '/positioning': typeof PositioningRoute
   '/roadmap': typeof RoadmapRoute
+  '/shredder': typeof ShredderRoute
   '/sitemap.xml': typeof SitemapDotxmlRoute
   '/templates': typeof TemplatesRoute
   '/marketplace/ui': typeof MarketplaceUiRoute
@@ -231,6 +239,7 @@ export interface FileRoutesById {
   '/porter': typeof PorterRouteWithChildren
   '/positioning': typeof PositioningRoute
   '/roadmap': typeof RoadmapRoute
+  '/shredder': typeof ShredderRoute
   '/sitemap.xml': typeof SitemapDotxmlRoute
   '/templates': typeof TemplatesRoute
   '/marketplace/ui': typeof MarketplaceUiRoute
@@ -260,6 +269,7 @@ export interface FileRouteTypes {
     | '/porter'
     | '/positioning'
     | '/roadmap'
+    | '/shredder'
     | '/sitemap.xml'
     | '/templates'
     | '/marketplace/ui'
@@ -286,6 +296,7 @@ export interface FileRouteTypes {
     | '/philosophy'
     | '/positioning'
     | '/roadmap'
+    | '/shredder'
     | '/sitemap.xml'
     | '/templates'
     | '/marketplace/ui'
@@ -313,6 +324,7 @@ export interface FileRouteTypes {
     | '/porter'
     | '/positioning'
     | '/roadmap'
+    | '/shredder'
     | '/sitemap.xml'
     | '/templates'
     | '/marketplace/ui'
@@ -341,6 +353,7 @@ export interface RootRouteChildren {
   PorterRoute: typeof PorterRouteWithChildren
   PositioningRoute: typeof PositioningRoute
   RoadmapRoute: typeof RoadmapRoute
+  ShredderRoute: typeof ShredderRoute
   SitemapDotxmlRoute: typeof SitemapDotxmlRoute
   TemplatesRoute: typeof TemplatesRoute
   SKeyRoute: typeof SKeyRouteWithChildren
@@ -360,6 +373,13 @@ declare module '@tanstack/react-router' {
       path: '/sitemap.xml'
       fullPath: '/sitemap.xml'
       preLoaderRoute: typeof SitemapDotxmlRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/shredder': {
+      id: '/shredder'
+      path: '/shredder'
+      fullPath: '/shredder'
+      preLoaderRoute: typeof ShredderRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/roadmap': {
@@ -583,6 +603,7 @@ const rootRouteChildren: RootRouteChildren = {
   PorterRoute: PorterRouteWithChildren,
   PositioningRoute: PositioningRoute,
   RoadmapRoute: RoadmapRoute,
+  ShredderRoute: ShredderRoute,
   SitemapDotxmlRoute: SitemapDotxmlRoute,
   TemplatesRoute: TemplatesRoute,
   SKeyRoute: SKeyRouteWithChildren,
