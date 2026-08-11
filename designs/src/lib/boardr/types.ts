@@ -12,6 +12,7 @@ export type AssetKind =
   | "icon"
   | "marquee"
   | "frame"
+  | "meshgrid"
   | "block";
 
 export interface AssetBase {
@@ -87,6 +88,10 @@ export interface AssetBase {
   };
   frameStyle?: "classic" | "ornate" | "polaroid" | "oval" | "scalloped" | "double"; // for kind: frame
   shape?: "rect" | "square" | "circle" | "oval" | "triangle" | "diamond" | "star" | "polygon";
+  // metal wall mesh grid
+  meshShape?: "rect" | "square" | "circle" | "heart" | "star" | "hexagon";
+  meshCell?: number; // px size of each wire cell
+  meshColor?: string; // wire color
   sides?: number; // for shape: polygon (3+)
   fill?: string;
   // icon / marquee

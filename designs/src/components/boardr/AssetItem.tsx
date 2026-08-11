@@ -203,6 +203,8 @@ function defaultSize(a: AssetBase): { w: number; h: number } {
       return { w: a.width ?? 320, h: a.height ?? 40 };
     case "frame":
       return { w: a.width ?? 220, h: a.height ?? 260 };
+    case "meshgrid":
+      return { w: a.width ?? 320, h: a.height ?? 240 };
     case "block":
       return { w: a.width ?? 280, h: a.height ?? 180 };
   }
@@ -628,6 +630,9 @@ function renderAssetBody(
     }
     case "frame": {
       return renderFrame(a, interactive, onPatch, gallery);
+    }
+    case "meshgrid": {
+      return renderMeshGrid(a);
     }
     case "pin": {
       return <div style={{ width: 18, height: 18 }} />;
@@ -1366,4 +1371,71 @@ function ScallopedRect({ w, h, fill }: { w: number; h: number; fill: string }) {
   }
   d += " Z";
   return <path d={d} fill={fill} />;
+}
+
+// ---------- metal wall mesh grid ----------
+export function meshShapePath(shape: string, w: number, h: number): string {
+  const rx = w / 2, ry = h / 2;
+  switch (shape) {
+    case "circle":
+      return `M ${rx} 0 A ${rx} ${ry} 0 1 1 ${rx - 0.01} 0 Z`;
+    case "heart": {
+      const x = (p: number) => (p / 100) * w;
+      const y = (p: number) => (p / 100) * h;
+      return `M ${x(50)} ${y(96)} C ${x(10)} ${y(66)} ${x(2)} ${y(34)} ${x(18)} ${y(12)} C ${x(32)} ${y(-4)} ${x(50)} ${y(12)} ${x(50)} ${y(26)} C ${x(50)} ${y(12)} ${x(68)} ${y(-4)} ${x(82)} ${y(12)} C ${x(98)} ${y(34)} ${x(90)} ${y(66)} ${x(50)} ${y(96)} Z`;
+    }
+    case "star": {
+      const pts: string[] = [];
+      for (let i = 0; i < 10; i++) {
+        const r = i % 2 === 0 ? 0.49 : 0.21;
+        const ang = (i / 10) * Math.PI * 2 - Math.PI / 2;
+        pts.push(`${rx + w * r * Math.cos(ang)},${ry + h * r * Math.sin(ang)}`);
+      }
+      return `M ${pts.join(" L ")} Z`;
+    }
+    case "hexagon": {
+      const pts: string[] = [];
+      for (let i = 0; i < 6; i++) {
+        const ang = (i / 6) * Math.PI * 2 - Math.PI / 2;
+        pts.push(`${rx + w * 0.49 * Math.cos(ang)},${ry + h * 0.49 * Math.sin(ang)}`);
+      }
+      return `M ${pts.join(" L ")} Z`;
+    }
+    default: {
+      const r = 10;
+      return `M ${r} 0 H ${w - r} Q ${w} 0 ${w} ${r} V ${h - r} Q ${w} ${h} ${w - r} ${h} H ${r} Q 0 ${h} 0 ${h - r} V ${r} Q 0 0 ${r} 0 Z`;
+    }
+  }
+}
+
+function renderMeshGrid(a: AssetBase) {
+  const w = a.width ?? 320;
+  const h = a.height ?? 240;
+  const shape = a.meshShape || "rect";
+  const cell = Math.max(12, a.meshCell ?? 34);
+  const color = a.meshColor || a.fill || "#2b2b2b";
+  const id = `mesh-${a.id}`;
+  const d = meshShapePath(shape, w, h);
+  const vLines: number[] = [];
+  for (let x = cell; x < w; x += cell) vLines.push(x);
+  const hLines: number[] = [];
+  for (let y = cell; y < h; y += cell) hLines.push(y);
+  return (
+    <svg width={w} height={h} style={{ display: "block", overflow: "visible" }}>
+      <defs>
+        <clipPath id={id}>
+          <path d={d} />
+        </clipPath>
+      </defs>
+      <g clipPath={`url(#${id})`} stroke={color} strokeWidth={2.2} strokeLinecap="square">
+        {vLines.map((x) => (
+          <line key={`v${x}`} x1={x} y1={0} x2={x} y2={h} />
+        ))}
+        {hLines.map((y) => (
+          <line key={`h${y}`} x1={0} y1={y} x2={w} y2={y} />
+        ))}
+      </g>
+      <path d={d} fill="none" stroke={color} strokeWidth={4} strokeLinejoin="round" />
+    </svg>
+  );
 }

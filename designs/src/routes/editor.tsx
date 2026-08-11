@@ -1022,6 +1022,11 @@ function Editor({ board, setBoard }: { board: Board; setBoard: (b: Board) => voi
               ),
             });
           }}
+          onPatch={(patch) => {
+            update({
+              assets: board.assets.map((a) => (assetMenu.ids.includes(a.id) ? { ...a, ...patch } : a)),
+            });
+          }}
           onEditStyle={(focus) => {
             const id = assetMenu.ids[0];
             setSelectedId(id);
@@ -1731,6 +1736,12 @@ const LIBRARY_SETS: LibrarySet[] = [
       { id: "anchor-binder", label: "binder clip", kind: "shape", extra: { shape: "triangle", width: 44, height: 36, fill: "#1a1a1a" } },
       { id: "anchor-brad", label: "brass fastener", kind: "shape", extra: { shape: "circle", width: 22, height: 22, fill: "#c9a84c" } },
       { id: "anchor-pinboard", label: "pinboard tile", kind: "paper", extra: { width: 180, color: "#c9a07a" } },
+      { id: "anchor-doornail-iron", label: "doornail (iron)", kind: "shape", extra: { shape: "circle", width: 26, height: 26, fill: "#3f3f46" } },
+      { id: "anchor-doornail-brass", label: "doornail (brass)", kind: "shape", extra: { shape: "circle", width: 26, height: 26, fill: "#b08d3f" } },
+      { id: "anchor-doornail-clavos", label: "clavos doornail", kind: "shape", extra: { shape: "polygon", sides: 6, width: 30, height: 30, fill: "#4b4b4b" } },
+      { id: "anchor-doornail-square", label: "square doornail", kind: "shape", extra: { shape: "square", width: 22, height: 22, fill: "#2d2d2d" } },
+      { id: "anchor-doornail-domed", label: "domed doornail", kind: "shape", extra: { shape: "circle", width: 34, height: 34, fill: "#5b5b60" } },
+      { id: "anchor-doornail-star", label: "star doornail", kind: "shape", extra: { shape: "star", width: 30, height: 30, fill: "#8a6a2f" } },
     ],
   },
   { id: "scrapbook", label: "scrapbooking", available: false, blurb: "pressed flowers, ticket stubs, ephemera.", items: [] },
@@ -1739,11 +1750,14 @@ const LIBRARY_SETS: LibrarySet[] = [
     id: "metal-wall-grid",
     label: "metal wall grid",
     available: true,
-    blurb: "industrial wire grid + s-hooks for hanging polaroids, cards, and tags.",
+    blurb: "industrial wire mesh panels (rect, circle, heart, star) + s-hooks and mini clips.",
     items: [
-      { id: "mwg-panel-lg", label: "grid panel (large)", kind: "shape", extra: { shape: "rect", width: 320, height: 220, fill: "#4b5563" } },
-      { id: "mwg-panel-sq", label: "grid panel (square)", kind: "shape", extra: { shape: "rect", width: 220, height: 220, fill: "#4b5563" } },
-      { id: "mwg-panel-tall", label: "grid panel (tall)", kind: "shape", extra: { shape: "rect", width: 180, height: 320, fill: "#4b5563" } },
+      { id: "mwg-panel-lg", label: "mesh panel (large)", kind: "meshgrid", extra: { width: 340, height: 250, meshShape: "rect", meshCell: 34, meshColor: "#2b2b2b" } },
+      { id: "mwg-panel-sq", label: "mesh panel (square)", kind: "meshgrid", extra: { width: 240, height: 240, meshShape: "square", meshCell: 34, meshColor: "#2b2b2b" } },
+      { id: "mwg-panel-circle", label: "mesh circle", kind: "meshgrid", extra: { width: 240, height: 240, meshShape: "circle", meshCell: 32, meshColor: "#2b2b2b" } },
+      { id: "mwg-panel-heart", label: "mesh heart", kind: "meshgrid", extra: { width: 240, height: 230, meshShape: "heart", meshCell: 30, meshColor: "#2b2b2b" } },
+      { id: "mwg-panel-star", label: "mesh star", kind: "meshgrid", extra: { width: 240, height: 240, meshShape: "star", meshCell: 28, meshColor: "#2b2b2b" } },
+      { id: "mwg-panel-hex", label: "mesh hexagon", kind: "meshgrid", extra: { width: 240, height: 240, meshShape: "hexagon", meshCell: 30, meshColor: "#2b2b2b" } },
       { id: "mwg-shook", label: "s-hook", kind: "shape", extra: { shape: "rect", width: 14, height: 40, fill: "#9ca3af" } },
       { id: "mwg-clip-mini", label: "mini bulldog clip", kind: "shape", extra: { shape: "rect", width: 22, height: 16, fill: "#111827" } },
       { id: "mwg-tag", label: "hang tag", kind: "paper", extra: { width: 90, color: "#f5f5f4" } },
@@ -2853,6 +2867,11 @@ function BlocksPanel({ onAdd }: { onAdd: AddFn }) {
   return (
     <div className="space-y-3">
       <p className="font-mono text-[10px] lowercase text-muted-foreground">prebuilt building pieces</p>
+      <SubheadingGroup title="collage">
+        <div className="col-span-2 rounded-md border border-dashed border-stone-400/60 p-3 text-center font-mono text-[10px] lowercase text-stone-500">
+          collage — coming soon
+        </div>
+      </SubheadingGroup>
       <SubheadingGroup title="building blocks">
         {building.map((b) => (
           <DraggableItem
@@ -3564,6 +3583,7 @@ function AssetContextMenu({
   onTogglePin,
   onToggleClip,
   onEditStyle,
+  onPatch,
   onDelete,
 }: {
   state: { x: number; y: number; ids: string[] };
@@ -3578,9 +3598,10 @@ function AssetContextMenu({
   onTogglePin: () => void;
   onToggleClip: () => void;
   onEditStyle: (focus: "content" | "mechanics" | "tape" | "pin") => void;
+  onPatch: (patch: Partial<AssetBase>) => void;
   onDelete: () => void;
 }) {
-  const [submenu, setSubmenu] = useState<null | "layer" | "style">(null);
+  const [submenu, setSubmenu] = useState<null | "layer" | "style" | "meshShape" | "meshColor">(null);
   useEffect(() => {
     const onDown = () => onClose();
     const onKey = (e: KeyboardEvent) => e.key === "Escape" && onClose();
@@ -3612,6 +3633,60 @@ function AssetContextMenu({
       onMouseDown={(e) => e.stopPropagation()}
       onContextMenu={(e) => e.preventDefault()}
     >
+      {assets.length > 0 && assets.every((a) => a.kind === "meshgrid") && (
+        <>
+          <MenuRow
+            label="change shape"
+            chevron
+            active={submenu === "meshShape"}
+            onMouseEnter={() => setSubmenu("meshShape")}
+            onClick={() => setSubmenu(submenu === "meshShape" ? null : "meshShape")}
+          >
+            {submenu === "meshShape" && (
+              <Submenu>
+                {(["rect", "square", "circle", "heart", "star", "hexagon"] as const).map((s) => (
+                  <MenuRow
+                    key={s}
+                    label={s}
+                    check={assets.every((a) => (a.meshShape || "rect") === s)}
+                    onClick={() => { onPatch({ meshShape: s }); onClose(); }}
+                  />
+                ))}
+              </Submenu>
+            )}
+          </MenuRow>
+          <MenuRow
+            label="change color"
+            chevron
+            active={submenu === "meshColor"}
+            onMouseEnter={() => setSubmenu("meshColor")}
+            onClick={() => setSubmenu(submenu === "meshColor" ? null : "meshColor")}
+          >
+            {submenu === "meshColor" && (
+              <Submenu>
+                {([
+                  ["black", "#1a1a1a"],
+                  ["charcoal", "#2b2b2b"],
+                  ["white", "#f5f5f4"],
+                  ["brass", "#b08d3f"],
+                  ["copper", "#b06a3b"],
+                  ["sage", "#7d8f6a"],
+                  ["blush", "#d98ba0"],
+                  ["sky", "#7ab0d6"],
+                ] as const).map(([name, hex]) => (
+                  <MenuRow
+                    key={hex}
+                    label={name}
+                    check={assets.every((a) => (a.meshColor || "#2b2b2b") === hex)}
+                    onClick={() => { onPatch({ meshColor: hex }); onClose(); }}
+                  />
+                ))}
+              </Submenu>
+            )}
+          </MenuRow>
+          <div className="my-1 border-t border-stone-700/15" />
+        </>
+      )}
       <MenuRow
         check={allTaped}
         label="tape this up (washi tape)"
