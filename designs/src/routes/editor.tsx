@@ -2867,6 +2867,11 @@ function BlocksPanel({ onAdd }: { onAdd: AddFn }) {
   return (
     <div className="space-y-3">
       <p className="font-mono text-[10px] lowercase text-muted-foreground">prebuilt building pieces</p>
+      <SubheadingGroup title="collage">
+        <div className="col-span-2 rounded-md border border-dashed border-stone-400/60 p-3 text-center font-mono text-[10px] lowercase text-stone-500">
+          collage — coming soon
+        </div>
+      </SubheadingGroup>
       <SubheadingGroup title="building blocks">
         {building.map((b) => (
           <DraggableItem
