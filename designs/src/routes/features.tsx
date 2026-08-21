@@ -103,9 +103,22 @@ const GROUPS: { title: string; blurb: string; items: FeatureItem[] }[] = [
   },
 ];
 
-function FeatureChip({ children }: { children: string }) {
+const CHIP_TONES = [
+  "bg-rose-100 text-rose-800 border-rose-200",
+  "bg-amber-100 text-amber-800 border-amber-200",
+  "bg-emerald-100 text-emerald-800 border-emerald-200",
+  "bg-sky-100 text-sky-800 border-sky-200",
+  "bg-violet-100 text-violet-800 border-violet-200",
+  "bg-orange-100 text-orange-800 border-orange-200",
+  "bg-teal-100 text-teal-800 border-teal-200",
+  "bg-indigo-100 text-indigo-800 border-indigo-200",
+  "bg-pink-100 text-pink-800 border-pink-200",
+  "bg-cyan-100 text-cyan-800 border-cyan-200",
+];
+
+function FeatureChip({ children, tone }: { children: string; tone: number }) {
   return (
-    <span className="inline-flex items-center rounded-full border border-border bg-background px-2.5 py-1 font-mono text-[11px] lowercase text-stone-700 shadow-sm">
+    <span className={`inline-flex items-center rounded-full border px-2.5 py-1 font-mono text-[11px] lowercase shadow-sm ${CHIP_TONES[tone % CHIP_TONES.length]}`}>
       {children}
     </span>
   );
@@ -129,19 +142,20 @@ function FeaturesPage() {
             <section key={g.title} className="rounded-md border border-border bg-card/60 p-6">
               <h2 className="font-display text-2xl lowercase">{g.title}</h2>
               <p className="font-mono text-[11px] lowercase text-muted-foreground mt-1 mb-4">{g.blurb}</p>
-              <ul className="space-y-3">
+              <ul className="space-y-2">
                 {g.items.map((it) => (
-                  <li key={it.label} className="flex flex-col gap-2">
-                    <div className="flex items-start gap-2 font-mono text-[12px] lowercase text-stone-900">
-                      <span className="text-rose-600 mt-[2px]">·</span>
-                      <span className="font-medium">{it.label}</span>
-                    </div>
-                    {it.chips && it.chips.length > 0 && (
-                      <div className="flex flex-wrap gap-1.5 pl-3.5">
-                        {it.chips.map((chip) => (
-                          <FeatureChip key={chip}>{chip}</FeatureChip>
+                  <li key={it.label} className="grid grid-cols-[140px_1fr] gap-4 items-start">
+                    <span className="font-mono text-[12px] lowercase text-stone-900 font-medium leading-5 pt-1.5">
+                      {it.label}
+                    </span>
+                    {it.chips && it.chips.length > 0 ? (
+                      <div className="flex flex-wrap gap-1.5">
+                        {it.chips.map((chip, idx) => (
+                          <FeatureChip key={chip} tone={idx}>{chip}</FeatureChip>
                         ))}
                       </div>
+                    ) : (
+                      <span className="font-mono text-[11px] lowercase text-muted-foreground pt-1.5">—</span>
                     )}
                   </li>
                 ))}
