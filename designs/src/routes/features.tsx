@@ -8,93 +8,108 @@ export const Route = createFileRoute("/features")({
       { name: "description", content: "every tactile object, surface, and interaction zinegeist offers for spatial publishing." },
       { property: "og:title", content: "features — zinegeist" },
       { property: "og:description", content: "every tactile object, surface, and interaction zinegeist offers." },
+      { property: "og:type", content: "website" },
+      { name: "twitter:card", content: "summary" },
     ],
   }),
   component: FeaturesPage,
 });
 
-const GROUPS = [
+type FeatureItem = {
+  label: string;
+  chips?: string[];
+};
+
+const GROUPS: { title: string; blurb: string; items: FeatureItem[] }[] = [
   {
     title: "surfaces",
     blurb: "the substrate is part of the meaning.",
     items: [
-      "corkboard (drawn) + corkboard (photo) — two flavors of the original",
-      "cutting mat, wall, metallic — the rest of the originals",
-      "texture overlays (paper, kraft, denim, linen, burlap, felt, leather, concrete, brick, marble, woodgrain, grid, dots)",
-      "build-your-own patterns: grid, stripes, checker, dots — pick row count, shade colors, thickness, angle",
-      "upload any image as the surface",
-      "recolor any surface via hex base color + overlay strength",
+      { label: "corkboard flavors", chips: ["drawn corkboard", "photo corkboard"] },
+      { label: "base surfaces", chips: ["cutting mat", "wall", "metallic"] },
+      { label: "texture overlays", chips: ["paper", "kraft", "denim", "linen", "burlap", "felt", "leather", "concrete", "brick", "marble", "woodgrain", "grid", "dots"] },
+      { label: "build-your-own patterns", chips: ["grid", "stripes", "checker", "dots", "row count", "shade colors", "thickness", "angle"] },
+      { label: "upload any image as the surface" },
+      { label: "recolor any surface", chips: ["hex base color", "overlay strength"] },
     ],
   },
   {
     title: "tactile objects",
     blurb: "every piece flips, pins, drags, and connects.",
     items: [
-      "sticky notes — six colorways, flip for hidden notes",
-      "polaroids — classic / wide / mini, click the big plus inside to upload a photo",
-      "photo frames — classic, ornate, double-matte, oval, scalloped, polaroid; plus-to-fill empty slots in any svg",
-      "photostrips — four-frame booth strips with plus-to-upload on every frame",
-      "loose sheets — torn notes, receipts, index cards",
-      "washi tape — jagged v-edges, adjustable opacity, draw-on-canvas to set length",
-      "attached tape — washi strip across the top of any pinned object",
-      "pushpins — recolorable svg heads, anchor threads conspiracy-board style",
-      "wooden clips — clothespin clips attach to assets so they hang from strings",
-      "marquee strips, news tickers, pastel scrollers — fully recolorable",
+      { label: "sticky notes", chips: ["six colorways", "flip for hidden notes"] },
+      { label: "polaroids", chips: ["classic", "wide", "mini", "plus-to-upload photo"] },
+      { label: "photo frames", chips: ["classic", "ornate", "double-matte", "oval", "scalloped", "polaroid", "plus-to-fill empty svg slots"] },
+      { label: "photostrips", chips: ["four-frame booth strips", "plus-to-upload on every frame"] },
+      { label: "loose sheets", chips: ["torn notes", "receipts", "index cards"] },
+      { label: "washi tape", chips: ["jagged v-edges", "adjustable opacity", "draw-on-canvas length"] },
+      { label: "attached tape", chips: ["washi strip across top of any pinned object"] },
+      { label: "pushpins", chips: ["recolorable svg heads", "anchor threads conspiracy-board style"] },
+      { label: "wooden clips", chips: ["clothespin clips", "hang assets from strings"] },
+      { label: "scrollers", chips: ["marquee strips", "news tickers", "pastel scrollers", "fully recolorable"] },
     ],
   },
   {
     title: "strings & hanging mode",
     blurb: "thread, sag, clip, hang — murderboard meets clothesline.",
     items: [
-      "textured jute-rope rendering with knot anchors, inspired by real cork-and-thread boards",
-      "sidebar tabs: connect (pin-to-pin), edit (defaults for new strings), hanging (free bunting)",
-      "right-click any string on the canvas → change color, thickness slider, droopiness slider",
-      "hanging mode: click anywhere to lay a multi-point bunting garland corner-to-corner-to-corner",
-      "right-click a hanging string → \"hang things up\" to clip polaroids to it",
-      "add wooden clip to any asset — the exact original svg, transparent so it reads on any surface",
-      "sag / gravity controls per string, from taut wire to heavy clothesline",
+      { label: "textured jute-rope rendering", chips: ["knot anchors", "murderboard style"] },
+      { label: "sidebar tabs", chips: ["connect (pin-to-pin)", "edit (defaults)", "hanging (free bunting)"] },
+      { label: "right-click any string", chips: ["change color", "thickness slider", "droopiness slider"] },
+      { label: "hanging mode", chips: ["multi-point bunting garland", "corner-to-corner"] },
+      { label: "hang things up", chips: ["clip polaroids to a hanging string"] },
+      { label: "wooden clip", chips: ["exact original svg", "transparent on any surface"] },
+      { label: "sag / gravity controls", chips: ["taut wire", "heavy clothesline"] },
     ],
   },
   {
     title: "kits & configurators",
     blurb: "opinionated presets — the good parts of a psd, none of the layer hell.",
     items: [
-      "kits tab in the sidebar — case file, redacted, archivalcore, vintage ephemera, paperwork, signage, visual diary, forensic evidence, analog studio, junk drawer, confetti, blobs, trinkets, zine, charms",
-      "metal wall grid — industrial wire panels + s-hooks + mini bulldog clips for hanging polaroids and tags",
-      "accessories configurator — enamel pins, die-cut stickers, iron-on patches, appliqués, button pins",
-      "socialcore configurator — punch cards, tear-away flyers, tickets, boarding passes",
+      { label: "kits tab", chips: ["case file", "redacted", "archivalcore", "vintage ephemera", "paperwork", "signage", "visual diary", "forensic evidence", "analog studio", "junk drawer", "confetti", "blobs", "trinkets", "zine", "charms"] },
+      { label: "metal wall grid", chips: ["industrial wire panels", "s-hooks", "mini bulldog clips"] },
+      { label: "accessories configurator", chips: ["enamel pins", "die-cut stickers", "iron-on patches", "appliqués", "button pins"] },
+      { label: "socialcore configurator", chips: ["punch cards", "tear-away flyers", "tickets", "boarding passes"] },
     ],
   },
   {
     title: "pages & sections",
     blurb: "rooms and the walls inside them.",
     items: [
-      "pages = routes — each page publishes as /pagename under your /s/key",
-      "sections = anchors — each section publishes as #section-name on its page",
-      "sections share one continuous canvas with the same background — no breaks",
-      "tab bar at the top for pages; jump-link bar for sections within a page",
-      "add, rename, delete pages and sections from the meta panel",
-      "viewer follows hash links and scrolls to anchors on load",
+      { label: "pages = routes", chips: ["each publishes as /pagename under your /s/key"] },
+      { label: "sections = anchors", chips: ["each publishes as #section-name on its page"] },
+      { label: "continuous canvas", chips: ["same background", "no breaks"] },
+      { label: "navigation", chips: ["top tab bar for pages", "jump-link bar for sections"] },
+      { label: "manage pages & sections", chips: ["add", "rename", "delete", "meta panel"] },
+      { label: "viewer behavior", chips: ["follows hash links", "scrolls to anchors on load"] },
     ],
   },
   {
     title: "interactions",
     blurb: "more than static. boards that respond.",
     items: [
-      "drag, rotate, layer with z-order",
-      "flip cards to reveal back notes — works in preview & published view",
-      "click the big plus inside any empty photo / polaroid / frame to upload",
-      "string-connect pinned anchors or hang clipped assets from a string",
-      "right-click any element for the full context menu (edit, tape, pin, clip, layer, lock, group)",
-      "in-screen popups for palettes, fonts, tags — no browser prompts",
-      "custom hex / palette colors anywhere a color is editable",
-      "favorites + recents per library set",
-      "resizable canvas frame (canva-style), with per-page height that grows as you add sections",
-      "publish to a 5-digit /s/key url — publicly viewable via lovable cloud",
-      "edit-key for private edits",
+      { label: "transform", chips: ["drag", "rotate", "layer with z-order"] },
+      { label: "flip cards", chips: ["reveal back notes", "works in preview & published view"] },
+      { label: "plus-to-upload", chips: ["empty photos", "polaroids", "frames"] },
+      { label: "string interactions", chips: ["pin-to-pin connect", "hang clipped assets"] },
+      { label: "right-click context menu", chips: ["edit", "tape", "pin", "clip", "layer", "lock", "group"] },
+      { label: "in-screen popups", chips: ["palettes", "fonts", "tags", "no browser prompts"] },
+      { label: "color control", chips: ["custom hex", "palette colors", "any editable color"] },
+      { label: "library helpers", chips: ["favorites", "recents per library set"] },
+      { label: "resizable canvas frame", chips: ["canva-style", "per-page height grows with sections"] },
+      { label: "publish", chips: ["5-digit /s/key url", "publicly viewable"] },
+      { label: "private edits", chips: ["edit-key access"] },
     ],
   },
 ];
+
+function FeatureChip({ children }: { children: string }) {
+  return (
+    <span className="inline-flex items-center rounded-full border border-border bg-background px-2.5 py-1 font-mono text-[11px] lowercase text-stone-700 shadow-sm">
+      {children}
+    </span>
+  );
+}
 
 function FeaturesPage() {
   return (
@@ -114,11 +129,20 @@ function FeaturesPage() {
             <section key={g.title} className="rounded-md border border-border bg-card/60 p-6">
               <h2 className="font-display text-2xl lowercase">{g.title}</h2>
               <p className="font-mono text-[11px] lowercase text-muted-foreground mt-1 mb-4">{g.blurb}</p>
-              <ul className="space-y-2">
+              <ul className="space-y-3">
                 {g.items.map((it) => (
-                  <li key={it} className="flex items-start gap-2 font-mono text-[12px] lowercase text-stone-700">
-                    <span className="text-rose-600 mt-[2px]">·</span>
-                    <span>{it}</span>
+                  <li key={it.label} className="flex flex-col gap-2">
+                    <div className="flex items-start gap-2 font-mono text-[12px] lowercase text-stone-900">
+                      <span className="text-rose-600 mt-[2px]">·</span>
+                      <span className="font-medium">{it.label}</span>
+                    </div>
+                    {it.chips && it.chips.length > 0 && (
+                      <div className="flex flex-wrap gap-1.5 pl-3.5">
+                        {it.chips.map((chip) => (
+                          <FeatureChip key={chip}>{chip}</FeatureChip>
+                        ))}
+                      </div>
+                    )}
                   </li>
                 ))}
               </ul>
