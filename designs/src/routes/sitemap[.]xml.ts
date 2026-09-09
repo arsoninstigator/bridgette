@@ -1,7 +1,7 @@
 import { createFileRoute } from "@tanstack/react-router";
 import type {} from "@tanstack/react-start";
 
-const BASE_URL = "https://zinegeist.lovable.app";
+const BASE_URL = "https://porter.lovable.app";
 
 interface SitemapEntry {
   path: string;
@@ -12,19 +12,9 @@ interface SitemapEntry {
 const entries: SitemapEntry[] = [
   { path: "/", changefreq: "weekly", priority: "1.0" },
   { path: "/features", changefreq: "weekly", priority: "0.9" },
-  { path: "/templates", changefreq: "weekly", priority: "0.8" },
-  { path: "/assets", changefreq: "weekly", priority: "0.8" },
-  { path: "/marketplace", changefreq: "weekly", priority: "0.8" },
-  { path: "/roadmap", changefreq: "monthly", priority: "0.6" },
-  { path: "/compare", changefreq: "monthly", priority: "0.6" },
-  { path: "/philosophy", changefreq: "monthly", priority: "0.6" },
-  { path: "/positioning", changefreq: "monthly", priority: "0.5" },
+  { path: "/crossvert", changefreq: "weekly", priority: "0.9" },
+  { path: "/purpose", changefreq: "monthly", priority: "0.7" },
   { path: "/about", changefreq: "monthly", priority: "0.6" },
-  { path: "/contact", changefreq: "monthly", priority: "0.5" },
-  { path: "/porter", changefreq: "weekly", priority: "0.7" },
-  { path: "/porter/features", changefreq: "monthly", priority: "0.6" },
-  { path: "/porter/about", changefreq: "monthly", priority: "0.5" },
-  { path: "/porter/purpose", changefreq: "monthly", priority: "0.5" },
 ];
 
 export const Route = createFileRoute("/sitemap.xml")({

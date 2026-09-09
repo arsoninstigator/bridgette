@@ -9,6 +9,7 @@ import {
 } from "@tanstack/react-router";
 
 import appCss from "../styles.css?url";
+import { PorterShell } from "@/porter/PorterShell";
 
 function NotFoundComponent() {
   return (
@@ -72,19 +73,19 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
     meta: [
       { charSet: "utf-8" },
       { name: "viewport", content: "width=device-width, initial-scale=1" },
-      { title: "zinegeist — tactile spatial publishing platform" },
-      { name: "description", content: "zinegeist is a tactile spatial publishing platform for rabbit holes, archives, investigations, nonlinear storytelling, and obsessive curation." },
-      { name: "author", content: "zinegeist" },
-      { property: "og:title", content: "zinegeist — tactile spatial publishing platform" },
-      { property: "og:description", content: "zinegeist is a tactile spatial publishing platform for rabbit holes, archives, investigations, nonlinear storytelling, and obsessive curation." },
+      { title: "porter — turn design files into configurators" },
+      { name: "description", content: "porter imports figma frames, psd, ai and eps files, keeps the layer tree intact, and turns them into configurable, shareable artifacts." },
+      { name: "author", content: "porter" },
+      { property: "og:title", content: "porter — turn design files into configurators" },
+      { property: "og:description", content: "porter imports figma frames, psd, ai and eps files, keeps the layer tree intact, and turns them into configurable, shareable artifacts." },
       { property: "og:type", content: "website" },
       { name: "twitter:card", content: "summary" },
-      { name: "twitter:site", content: "@zinegeist" },
-      { property: "twitter:title", content: "zinegeist — tactile spatial publishing platform" },
-      { name: "twitter:description", content: "zinegeist is a tactile spatial publishing platform for rabbit holes, archives, investigations, nonlinear storytelling, and obsessive curation." },
+      { name: "twitter:site", content: "@porter" },
+      { property: "twitter:title", content: "porter — turn design files into configurators" },
+      { name: "twitter:description", content: "porter imports figma frames, psd, ai and eps files, keeps the layer tree intact, and turns them into configurable, shareable artifacts." },
       { property: "og:image", content: "https://pub-bb2e103a32db4e198524a2e9ed8f35b4.r2.dev/e8500bc7-3401-4206-a9eb-95b5242cfb12/id-preview-b9bb7fd2--5851a950-a50d-4f99-bce4-7f5fcbb9b904.lovable.app-1779273030681.png" },
       { name: "twitter:image", content: "https://pub-bb2e103a32db4e198524a2e9ed8f35b4.r2.dev/e8500bc7-3401-4206-a9eb-95b5242cfb12/id-preview-b9bb7fd2--5851a950-a50d-4f99-bce4-7f5fcbb9b904.lovable.app-1779273030681.png" },
-      { name: "twitter:title", content: "zinegeist — tactile spatial publishing platform" },
+      { name: "twitter:title", content: "porter — turn design files into configurators" },
     ],
     links: [
       {
@@ -124,7 +125,9 @@ function RootComponent() {
 
   return (
     <QueryClientProvider client={queryClient}>
-      <Outlet />
+      <PorterShell>
+        <Outlet />
+      </PorterShell>
     </QueryClientProvider>
   );
 }

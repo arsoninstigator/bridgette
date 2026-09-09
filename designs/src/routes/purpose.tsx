@@ -1,7 +1,7 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { PorterSquiggle, PorterStitches } from "@/porter/PorterShell";
 
-export const Route = createFileRoute("/porter/purpose")({
+export const Route = createFileRoute("/purpose")({
   head: () => ({
     meta: [
       { title: "porter · purpose — who porter is for" },
@@ -89,13 +89,13 @@ function PurposePage() {
 
       <div className="mt-8 flex items-center gap-4">
         <Link
-          to="/porter/lab"
+          to="/lab"
           className="porter-btn bg-[#4b53d6] px-5 py-2 font-mono text-[11px] uppercase tracking-[0.18em] text-stone-50"
         >
           open the lab
         </Link>
         <Link
-          to="/porter/features"
+          to="/features"
           className="porter-btn bg-white px-5 py-2 font-mono text-[11px] uppercase tracking-[0.18em]"
         >
           see the features

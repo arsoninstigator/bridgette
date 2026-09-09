@@ -1,14 +1,15 @@
 import { Link, useLocation } from "@tanstack/react-router";
 import type { ReactNode } from "react";
 
-type PorterTo = "/porter" | "/porter/lab" | "/porter/about" | "/porter/features" | "/porter/purpose";
+type PorterTo = "/" | "/lab" | "/crossvert" | "/about" | "/features" | "/purpose";
 
 const nav: { to: PorterTo; label: string }[] = [
-  { to: "/porter", label: "home" },
-  { to: "/porter/features", label: "features" },
-  { to: "/porter/purpose", label: "purpose" },
-  { to: "/porter/lab", label: "lab" },
-  { to: "/porter/about", label: "about" },
+  { to: "/", label: "home" },
+  { to: "/features", label: "features" },
+  { to: "/purpose", label: "purpose" },
+  { to: "/lab", label: "lab" },
+  { to: "/crossvert", label: "crossvert" },
+  { to: "/about", label: "about" },
 ];
 
 export function PorterSquiggle({ className = "" }: { className?: string }) {
@@ -35,7 +36,7 @@ export function PorterShell({ children }: { children: ReactNode }) {
     <div className="porter-paper min-h-screen flex flex-col text-stone-900">
       <header className="border-b-2 border-[#d9d2bd] bg-[#fdfaf0]/85 backdrop-blur">
         <div className="max-w-6xl mx-auto px-6 py-4 flex items-center justify-between gap-4">
-          <Link to="/porter" className="flex items-baseline gap-2">
+          <Link to="/" className="flex items-baseline gap-2">
             <span className="font-display text-2xl lowercase tracking-tight">porter</span>
             <span className="porter-highlight font-mono text-[10px] uppercase tracking-[0.2em] text-stone-700">
               design-file configurator
@@ -54,7 +55,7 @@ export function PorterShell({ children }: { children: ReactNode }) {
               </Link>
             ))}
             <Link
-              to="/porter/lab"
+              to="/lab"
               className="porter-btn ml-1 bg-[#8aa06e] px-4 py-1.5 font-mono text-[10px] uppercase tracking-[0.18em] text-stone-50"
             >
               open lab

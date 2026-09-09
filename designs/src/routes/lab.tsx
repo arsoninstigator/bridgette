@@ -1,7 +1,7 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { ConfiguratorMain } from "@/porter/Configurator";
 
-export const Route = createFileRoute("/porter/lab")({
+export const Route = createFileRoute("/lab")({
   head: () => ({
     meta: [
       { title: "porter · lab — design-file configurator" },
