@@ -1,7 +1,7 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { PorterSquiggle, PorterStitches } from "@/porter/PorterShell";
 
-export const Route = createFileRoute("/porter/")({
+export const Route = createFileRoute("/")({
   head: () => ({
     meta: [
       { title: "porter — design-file configurator" },
@@ -42,10 +42,10 @@ function PorterLanding() {
       </div>
 
       <div className="mt-10 flex flex-wrap gap-4">
-        <Link to="/porter/lab" className="porter-btn bg-[#4b53d6] text-stone-50 px-5 py-2 font-mono text-[11px] uppercase tracking-[0.18em]">
+        <Link to="/lab" className="porter-btn bg-[#4b53d6] text-stone-50 px-5 py-2 font-mono text-[11px] uppercase tracking-[0.18em]">
           open the lab →
         </Link>
-        <Link to="/porter/features" className="porter-btn bg-white px-5 py-2 font-mono text-[11px] uppercase tracking-[0.18em]">
+        <Link to="/features" className="porter-btn bg-white px-5 py-2 font-mono text-[11px] uppercase tracking-[0.18em]">
           see features
         </Link>
       </div>

@@ -1,7 +1,7 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { PorterSquiggle, PorterStitches } from "@/porter/PorterShell";
 
-export const Route = createFileRoute("/porter/about")({
+export const Route = createFileRoute("/about")({
   head: () => ({
     meta: [
       { title: "about porter — design-file configurator" },
@@ -48,7 +48,7 @@ function About() {
       </div>
       <PorterSquiggle className="mt-10 h-10 w-full text-[#4b53d6]/70" />
       <div className="mt-8">
-        <Link to="/porter/lab" className="porter-btn bg-[#4b53d6] text-stone-50 px-5 py-2 font-mono text-[11px] uppercase tracking-[0.18em]">
+        <Link to="/lab" className="porter-btn bg-[#4b53d6] text-stone-50 px-5 py-2 font-mono text-[11px] uppercase tracking-[0.18em]">
           try the lab →
         </Link>
       </div>

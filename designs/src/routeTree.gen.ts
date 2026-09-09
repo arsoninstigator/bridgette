@@ -9,111 +9,31 @@
 // Additionally, you should also exclude this file from your linter and/or formatter to prevent it from being checked or modified.
 
 import { Route as rootRouteImport } from './routes/__root'
-import { Route as TemplatesRouteImport } from './routes/templates'
 import { Route as SitemapDotxmlRouteImport } from './routes/sitemap[.]xml'
-import { Route as ShredderRouteImport } from './routes/shredder'
-import { Route as RoadmapRouteImport } from './routes/roadmap'
-import { Route as PositioningRouteImport } from './routes/positioning'
-import { Route as PorterRouteImport } from './routes/porter'
-import { Route as PhilosophyRouteImport } from './routes/philosophy'
-import { Route as MarketplaceRouteImport } from './routes/marketplace'
-import { Route as FigmaRouteImport } from './routes/figma'
+import { Route as PurposeRouteImport } from './routes/purpose'
+import { Route as LabRouteImport } from './routes/lab'
 import { Route as FeaturesRouteImport } from './routes/features'
-import { Route as EditorRouteImport } from './routes/editor'
-import { Route as DashboardRouteImport } from './routes/dashboard'
-import { Route as ContactRouteImport } from './routes/contact'
-import { Route as CompareRouteImport } from './routes/compare'
-import { Route as AuthRouteImport } from './routes/auth'
-import { Route as AssetsRouteImport } from './routes/assets'
 import { Route as AboutRouteImport } from './routes/about'
 import { Route as IndexRouteImport } from './routes/index'
-import { Route as PorterIndexRouteImport } from './routes/porter.index'
-import { Route as SKeyRouteImport } from './routes/s.$key'
-import { Route as PorterPurposeRouteImport } from './routes/porter.purpose'
-import { Route as PorterLabRouteImport } from './routes/porter.lab'
-import { Route as PorterFeaturesRouteImport } from './routes/porter.features'
-import { Route as PorterAboutRouteImport } from './routes/porter.about'
-import { Route as MarketplaceUiRouteImport } from './routes/marketplace.ui'
-import { Route as SKeyPageRouteImport } from './routes/s.$key.$page'
 
-const TemplatesRoute = TemplatesRouteImport.update({
-  id: '/templates',
-  path: '/templates',
-  getParentRoute: () => rootRouteImport,
-} as any)
 const SitemapDotxmlRoute = SitemapDotxmlRouteImport.update({
   id: '/sitemap.xml',
   path: '/sitemap.xml',
   getParentRoute: () => rootRouteImport,
 } as any)
-const ShredderRoute = ShredderRouteImport.update({
-  id: '/shredder',
-  path: '/shredder',
+const PurposeRoute = PurposeRouteImport.update({
+  id: '/purpose',
+  path: '/purpose',
   getParentRoute: () => rootRouteImport,
 } as any)
-const RoadmapRoute = RoadmapRouteImport.update({
-  id: '/roadmap',
-  path: '/roadmap',
-  getParentRoute: () => rootRouteImport,
-} as any)
-const PositioningRoute = PositioningRouteImport.update({
-  id: '/positioning',
-  path: '/positioning',
-  getParentRoute: () => rootRouteImport,
-} as any)
-const PorterRoute = PorterRouteImport.update({
-  id: '/porter',
-  path: '/porter',
-  getParentRoute: () => rootRouteImport,
-} as any)
-const PhilosophyRoute = PhilosophyRouteImport.update({
-  id: '/philosophy',
-  path: '/philosophy',
-  getParentRoute: () => rootRouteImport,
-} as any)
-const MarketplaceRoute = MarketplaceRouteImport.update({
-  id: '/marketplace',
-  path: '/marketplace',
-  getParentRoute: () => rootRouteImport,
-} as any)
-const FigmaRoute = FigmaRouteImport.update({
-  id: '/figma',
-  path: '/figma',
+const LabRoute = LabRouteImport.update({
+  id: '/lab',
+  path: '/lab',
   getParentRoute: () => rootRouteImport,
 } as any)
 const FeaturesRoute = FeaturesRouteImport.update({
   id: '/features',
   path: '/features',
-  getParentRoute: () => rootRouteImport,
-} as any)
-const EditorRoute = EditorRouteImport.update({
-  id: '/editor',
-  path: '/editor',
-  getParentRoute: () => rootRouteImport,
-} as any)
-const DashboardRoute = DashboardRouteImport.update({
-  id: '/dashboard',
-  path: '/dashboard',
-  getParentRoute: () => rootRouteImport,
-} as any)
-const ContactRoute = ContactRouteImport.update({
-  id: '/contact',
-  path: '/contact',
-  getParentRoute: () => rootRouteImport,
-} as any)
-const CompareRoute = CompareRouteImport.update({
-  id: '/compare',
-  path: '/compare',
-  getParentRoute: () => rootRouteImport,
-} as any)
-const AuthRoute = AuthRouteImport.update({
-  id: '/auth',
-  path: '/auth',
-  getParentRoute: () => rootRouteImport,
-} as any)
-const AssetsRoute = AssetsRouteImport.update({
-  id: '/assets',
-  path: '/assets',
   getParentRoute: () => rootRouteImport,
 } as any)
 const AboutRoute = AboutRouteImport.update({
@@ -126,248 +46,58 @@ const IndexRoute = IndexRouteImport.update({
   path: '/',
   getParentRoute: () => rootRouteImport,
 } as any)
-const PorterIndexRoute = PorterIndexRouteImport.update({
-  id: '/',
-  path: '/',
-  getParentRoute: () => PorterRoute,
-} as any)
-const SKeyRoute = SKeyRouteImport.update({
-  id: '/s/$key',
-  path: '/s/$key',
-  getParentRoute: () => rootRouteImport,
-} as any)
-const PorterPurposeRoute = PorterPurposeRouteImport.update({
-  id: '/purpose',
-  path: '/purpose',
-  getParentRoute: () => PorterRoute,
-} as any)
-const PorterLabRoute = PorterLabRouteImport.update({
-  id: '/lab',
-  path: '/lab',
-  getParentRoute: () => PorterRoute,
-} as any)
-const PorterFeaturesRoute = PorterFeaturesRouteImport.update({
-  id: '/features',
-  path: '/features',
-  getParentRoute: () => PorterRoute,
-} as any)
-const PorterAboutRoute = PorterAboutRouteImport.update({
-  id: '/about',
-  path: '/about',
-  getParentRoute: () => PorterRoute,
-} as any)
-const MarketplaceUiRoute = MarketplaceUiRouteImport.update({
-  id: '/ui',
-  path: '/ui',
-  getParentRoute: () => MarketplaceRoute,
-} as any)
-const SKeyPageRoute = SKeyPageRouteImport.update({
-  id: '/$page',
-  path: '/$page',
-  getParentRoute: () => SKeyRoute,
-} as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
   '/about': typeof AboutRoute
-  '/assets': typeof AssetsRoute
-  '/auth': typeof AuthRoute
-  '/compare': typeof CompareRoute
-  '/contact': typeof ContactRoute
-  '/dashboard': typeof DashboardRoute
-  '/editor': typeof EditorRoute
   '/features': typeof FeaturesRoute
-  '/figma': typeof FigmaRoute
-  '/marketplace': typeof MarketplaceRouteWithChildren
-  '/philosophy': typeof PhilosophyRoute
-  '/porter': typeof PorterRouteWithChildren
-  '/positioning': typeof PositioningRoute
-  '/roadmap': typeof RoadmapRoute
-  '/shredder': typeof ShredderRoute
+  '/lab': typeof LabRoute
+  '/purpose': typeof PurposeRoute
   '/sitemap.xml': typeof SitemapDotxmlRoute
-  '/templates': typeof TemplatesRoute
-  '/marketplace/ui': typeof MarketplaceUiRoute
-  '/porter/about': typeof PorterAboutRoute
-  '/porter/features': typeof PorterFeaturesRoute
-  '/porter/lab': typeof PorterLabRoute
-  '/porter/purpose': typeof PorterPurposeRoute
-  '/s/$key': typeof SKeyRouteWithChildren
-  '/porter/': typeof PorterIndexRoute
-  '/s/$key/$page': typeof SKeyPageRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
   '/about': typeof AboutRoute
-  '/assets': typeof AssetsRoute
-  '/auth': typeof AuthRoute
-  '/compare': typeof CompareRoute
-  '/contact': typeof ContactRoute
-  '/dashboard': typeof DashboardRoute
-  '/editor': typeof EditorRoute
   '/features': typeof FeaturesRoute
-  '/figma': typeof FigmaRoute
-  '/marketplace': typeof MarketplaceRouteWithChildren
-  '/philosophy': typeof PhilosophyRoute
-  '/positioning': typeof PositioningRoute
-  '/roadmap': typeof RoadmapRoute
-  '/shredder': typeof ShredderRoute
+  '/lab': typeof LabRoute
+  '/purpose': typeof PurposeRoute
   '/sitemap.xml': typeof SitemapDotxmlRoute
-  '/templates': typeof TemplatesRoute
-  '/marketplace/ui': typeof MarketplaceUiRoute
-  '/porter/about': typeof PorterAboutRoute
-  '/porter/features': typeof PorterFeaturesRoute
-  '/porter/lab': typeof PorterLabRoute
-  '/porter/purpose': typeof PorterPurposeRoute
-  '/s/$key': typeof SKeyRouteWithChildren
-  '/porter': typeof PorterIndexRoute
-  '/s/$key/$page': typeof SKeyPageRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
   '/about': typeof AboutRoute
-  '/assets': typeof AssetsRoute
-  '/auth': typeof AuthRoute
-  '/compare': typeof CompareRoute
-  '/contact': typeof ContactRoute
-  '/dashboard': typeof DashboardRoute
-  '/editor': typeof EditorRoute
   '/features': typeof FeaturesRoute
-  '/figma': typeof FigmaRoute
-  '/marketplace': typeof MarketplaceRouteWithChildren
-  '/philosophy': typeof PhilosophyRoute
-  '/porter': typeof PorterRouteWithChildren
-  '/positioning': typeof PositioningRoute
-  '/roadmap': typeof RoadmapRoute
-  '/shredder': typeof ShredderRoute
+  '/lab': typeof LabRoute
+  '/purpose': typeof PurposeRoute
   '/sitemap.xml': typeof SitemapDotxmlRoute
-  '/templates': typeof TemplatesRoute
-  '/marketplace/ui': typeof MarketplaceUiRoute
-  '/porter/about': typeof PorterAboutRoute
-  '/porter/features': typeof PorterFeaturesRoute
-  '/porter/lab': typeof PorterLabRoute
-  '/porter/purpose': typeof PorterPurposeRoute
-  '/s/$key': typeof SKeyRouteWithChildren
-  '/porter/': typeof PorterIndexRoute
-  '/s/$key/$page': typeof SKeyPageRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
-  fullPaths:
-    | '/'
-    | '/about'
-    | '/assets'
-    | '/auth'
-    | '/compare'
-    | '/contact'
-    | '/dashboard'
-    | '/editor'
-    | '/features'
-    | '/figma'
-    | '/marketplace'
-    | '/philosophy'
-    | '/porter'
-    | '/positioning'
-    | '/roadmap'
-    | '/shredder'
-    | '/sitemap.xml'
-    | '/templates'
-    | '/marketplace/ui'
-    | '/porter/about'
-    | '/porter/features'
-    | '/porter/lab'
-    | '/porter/purpose'
-    | '/s/$key'
-    | '/porter/'
-    | '/s/$key/$page'
+  fullPaths: '/' | '/about' | '/features' | '/lab' | '/purpose' | '/sitemap.xml'
   fileRoutesByTo: FileRoutesByTo
-  to:
-    | '/'
-    | '/about'
-    | '/assets'
-    | '/auth'
-    | '/compare'
-    | '/contact'
-    | '/dashboard'
-    | '/editor'
-    | '/features'
-    | '/figma'
-    | '/marketplace'
-    | '/philosophy'
-    | '/positioning'
-    | '/roadmap'
-    | '/shredder'
-    | '/sitemap.xml'
-    | '/templates'
-    | '/marketplace/ui'
-    | '/porter/about'
-    | '/porter/features'
-    | '/porter/lab'
-    | '/porter/purpose'
-    | '/s/$key'
-    | '/porter'
-    | '/s/$key/$page'
+  to: '/' | '/about' | '/features' | '/lab' | '/purpose' | '/sitemap.xml'
   id:
     | '__root__'
     | '/'
     | '/about'
-    | '/assets'
-    | '/auth'
-    | '/compare'
-    | '/contact'
-    | '/dashboard'
-    | '/editor'
     | '/features'
-    | '/figma'
-    | '/marketplace'
-    | '/philosophy'
-    | '/porter'
-    | '/positioning'
-    | '/roadmap'
-    | '/shredder'
+    | '/lab'
+    | '/purpose'
     | '/sitemap.xml'
-    | '/templates'
-    | '/marketplace/ui'
-    | '/porter/about'
-    | '/porter/features'
-    | '/porter/lab'
-    | '/porter/purpose'
-    | '/s/$key'
-    | '/porter/'
-    | '/s/$key/$page'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
   AboutRoute: typeof AboutRoute
-  AssetsRoute: typeof AssetsRoute
-  AuthRoute: typeof AuthRoute
-  CompareRoute: typeof CompareRoute
-  ContactRoute: typeof ContactRoute
-  DashboardRoute: typeof DashboardRoute
-  EditorRoute: typeof EditorRoute
   FeaturesRoute: typeof FeaturesRoute
-  FigmaRoute: typeof FigmaRoute
-  MarketplaceRoute: typeof MarketplaceRouteWithChildren
-  PhilosophyRoute: typeof PhilosophyRoute
-  PorterRoute: typeof PorterRouteWithChildren
-  PositioningRoute: typeof PositioningRoute
-  RoadmapRoute: typeof RoadmapRoute
-  ShredderRoute: typeof ShredderRoute
+  LabRoute: typeof LabRoute
+  PurposeRoute: typeof PurposeRoute
   SitemapDotxmlRoute: typeof SitemapDotxmlRoute
-  TemplatesRoute: typeof TemplatesRoute
-  SKeyRoute: typeof SKeyRouteWithChildren
 }
 
 declare module '@tanstack/react-router' {
   interface FileRoutesByPath {
-    '/templates': {
-      id: '/templates'
-      path: '/templates'
-      fullPath: '/templates'
-      preLoaderRoute: typeof TemplatesRouteImport
-      parentRoute: typeof rootRouteImport
-    }
     '/sitemap.xml': {
       id: '/sitemap.xml'
       path: '/sitemap.xml'
@@ -375,53 +105,18 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof SitemapDotxmlRouteImport
       parentRoute: typeof rootRouteImport
     }
-    '/shredder': {
-      id: '/shredder'
-      path: '/shredder'
-      fullPath: '/shredder'
-      preLoaderRoute: typeof ShredderRouteImport
+    '/purpose': {
+      id: '/purpose'
+      path: '/purpose'
+      fullPath: '/purpose'
+      preLoaderRoute: typeof PurposeRouteImport
       parentRoute: typeof rootRouteImport
     }
-    '/roadmap': {
-      id: '/roadmap'
-      path: '/roadmap'
-      fullPath: '/roadmap'
-      preLoaderRoute: typeof RoadmapRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/positioning': {
-      id: '/positioning'
-      path: '/positioning'
-      fullPath: '/positioning'
-      preLoaderRoute: typeof PositioningRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/porter': {
-      id: '/porter'
-      path: '/porter'
-      fullPath: '/porter'
-      preLoaderRoute: typeof PorterRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/philosophy': {
-      id: '/philosophy'
-      path: '/philosophy'
-      fullPath: '/philosophy'
-      preLoaderRoute: typeof PhilosophyRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/marketplace': {
-      id: '/marketplace'
-      path: '/marketplace'
-      fullPath: '/marketplace'
-      preLoaderRoute: typeof MarketplaceRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/figma': {
-      id: '/figma'
-      path: '/figma'
-      fullPath: '/figma'
-      preLoaderRoute: typeof FigmaRouteImport
+    '/lab': {
+      id: '/lab'
+      path: '/lab'
+      fullPath: '/lab'
+      preLoaderRoute: typeof LabRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/features': {
@@ -429,48 +124,6 @@ declare module '@tanstack/react-router' {
       path: '/features'
       fullPath: '/features'
       preLoaderRoute: typeof FeaturesRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/editor': {
-      id: '/editor'
-      path: '/editor'
-      fullPath: '/editor'
-      preLoaderRoute: typeof EditorRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/dashboard': {
-      id: '/dashboard'
-      path: '/dashboard'
-      fullPath: '/dashboard'
-      preLoaderRoute: typeof DashboardRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/contact': {
-      id: '/contact'
-      path: '/contact'
-      fullPath: '/contact'
-      preLoaderRoute: typeof ContactRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/compare': {
-      id: '/compare'
-      path: '/compare'
-      fullPath: '/compare'
-      preLoaderRoute: typeof CompareRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/auth': {
-      id: '/auth'
-      path: '/auth'
-      fullPath: '/auth'
-      preLoaderRoute: typeof AuthRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/assets': {
-      id: '/assets'
-      path: '/assets'
-      fullPath: '/assets'
-      preLoaderRoute: typeof AssetsRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/about': {
@@ -487,126 +140,16 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof IndexRouteImport
       parentRoute: typeof rootRouteImport
     }
-    '/porter/': {
-      id: '/porter/'
-      path: '/'
-      fullPath: '/porter/'
-      preLoaderRoute: typeof PorterIndexRouteImport
-      parentRoute: typeof PorterRoute
-    }
-    '/s/$key': {
-      id: '/s/$key'
-      path: '/s/$key'
-      fullPath: '/s/$key'
-      preLoaderRoute: typeof SKeyRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/porter/purpose': {
-      id: '/porter/purpose'
-      path: '/purpose'
-      fullPath: '/porter/purpose'
-      preLoaderRoute: typeof PorterPurposeRouteImport
-      parentRoute: typeof PorterRoute
-    }
-    '/porter/lab': {
-      id: '/porter/lab'
-      path: '/lab'
-      fullPath: '/porter/lab'
-      preLoaderRoute: typeof PorterLabRouteImport
-      parentRoute: typeof PorterRoute
-    }
-    '/porter/features': {
-      id: '/porter/features'
-      path: '/features'
-      fullPath: '/porter/features'
-      preLoaderRoute: typeof PorterFeaturesRouteImport
-      parentRoute: typeof PorterRoute
-    }
-    '/porter/about': {
-      id: '/porter/about'
-      path: '/about'
-      fullPath: '/porter/about'
-      preLoaderRoute: typeof PorterAboutRouteImport
-      parentRoute: typeof PorterRoute
-    }
-    '/marketplace/ui': {
-      id: '/marketplace/ui'
-      path: '/ui'
-      fullPath: '/marketplace/ui'
-      preLoaderRoute: typeof MarketplaceUiRouteImport
-      parentRoute: typeof MarketplaceRoute
-    }
-    '/s/$key/$page': {
-      id: '/s/$key/$page'
-      path: '/$page'
-      fullPath: '/s/$key/$page'
-      preLoaderRoute: typeof SKeyPageRouteImport
-      parentRoute: typeof SKeyRoute
-    }
   }
 }
-
-interface MarketplaceRouteChildren {
-  MarketplaceUiRoute: typeof MarketplaceUiRoute
-}
-
-const MarketplaceRouteChildren: MarketplaceRouteChildren = {
-  MarketplaceUiRoute: MarketplaceUiRoute,
-}
-
-const MarketplaceRouteWithChildren = MarketplaceRoute._addFileChildren(
-  MarketplaceRouteChildren,
-)
-
-interface PorterRouteChildren {
-  PorterAboutRoute: typeof PorterAboutRoute
-  PorterFeaturesRoute: typeof PorterFeaturesRoute
-  PorterLabRoute: typeof PorterLabRoute
-  PorterPurposeRoute: typeof PorterPurposeRoute
-  PorterIndexRoute: typeof PorterIndexRoute
-}
-
-const PorterRouteChildren: PorterRouteChildren = {
-  PorterAboutRoute: PorterAboutRoute,
-  PorterFeaturesRoute: PorterFeaturesRoute,
-  PorterLabRoute: PorterLabRoute,
-  PorterPurposeRoute: PorterPurposeRoute,
-  PorterIndexRoute: PorterIndexRoute,
-}
-
-const PorterRouteWithChildren =
-  PorterRoute._addFileChildren(PorterRouteChildren)
-
-interface SKeyRouteChildren {
-  SKeyPageRoute: typeof SKeyPageRoute
-}
-
-const SKeyRouteChildren: SKeyRouteChildren = {
-  SKeyPageRoute: SKeyPageRoute,
-}
-
-const SKeyRouteWithChildren = SKeyRoute._addFileChildren(SKeyRouteChildren)
 
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
   AboutRoute: AboutRoute,
-  AssetsRoute: AssetsRoute,
-  AuthRoute: AuthRoute,
-  CompareRoute: CompareRoute,
-  ContactRoute: ContactRoute,
-  DashboardRoute: DashboardRoute,
-  EditorRoute: EditorRoute,
   FeaturesRoute: FeaturesRoute,
-  FigmaRoute: FigmaRoute,
-  MarketplaceRoute: MarketplaceRouteWithChildren,
-  PhilosophyRoute: PhilosophyRoute,
-  PorterRoute: PorterRouteWithChildren,
-  PositioningRoute: PositioningRoute,
-  RoadmapRoute: RoadmapRoute,
-  ShredderRoute: ShredderRoute,
+  LabRoute: LabRoute,
+  PurposeRoute: PurposeRoute,
   SitemapDotxmlRoute: SitemapDotxmlRoute,
-  TemplatesRoute: TemplatesRoute,
-  SKeyRoute: SKeyRouteWithChildren,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)

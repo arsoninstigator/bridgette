@@ -19,7 +19,7 @@ import {
   Zap,
 } from "lucide-react";
 
-export const Route = createFileRoute("/porter/features")({
+export const Route = createFileRoute("/features")({
   head: () => ({
     meta: [
       { title: "porter features — design-file configurator" },
@@ -156,14 +156,14 @@ function Features() {
         </p>
         <div className="mt-8 flex flex-wrap gap-3">
           <Link
-            to="/porter/lab"
+            to="/lab"
             className="inline-flex items-center gap-2 porter-btn bg-[#4b53d6] text-stone-50 px-5 py-2 font-mono text-[11px] uppercase tracking-[0.18em] hover:bg-stone-700"
           >
             open the lab
             <ArrowRight size={14} />
           </Link>
           <Link
-            to="/porter/purpose"
+            to="/purpose"
             className="porter-btn bg-white px-5 py-2 font-mono text-[11px] uppercase tracking-[0.18em] hover:bg-white"
           >
             who is it for?
@@ -301,14 +301,14 @@ function Features() {
           <p className="mt-4 max-w-xl text-stone-300 leading-relaxed">{cta.body}</p>
           <div className="mt-8 flex flex-wrap gap-3">
             <Link
-              to="/porter/lab"
+              to="/lab"
               className="inline-flex items-center gap-2 porter-btn bg-[#e8ff4a] text-stone-900 px-5 py-2 font-mono text-[11px] uppercase tracking-[0.18em] hover:bg-stone-200"
             >
               open the lab
               <ArrowRight size={14} />
             </Link>
             <Link
-              to="/porter/about"
+              to="/about"
               className="porter-btn bg-stone-900/40 px-5 py-2 font-mono text-[11px] uppercase tracking-[0.18em] text-stone-300 hover:bg-stone-800"
             >
               about porter
