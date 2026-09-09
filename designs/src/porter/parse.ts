@@ -16,7 +16,7 @@ export type LayerNode = {
   };
   childrenIds: string[];
 };
-type Source =
+export type Source =
   | { type: "figma"; fileKey: string; nodeId?: string; raw: unknown }
   | { type: "psd"; fileName: string; raw: unknown }
   | { type: "ai"; fileName: string; raw: unknown }
