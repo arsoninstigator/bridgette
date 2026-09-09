@@ -1,170 +1,321 @@
-import { createFileRoute } from "@tanstack/react-router";
-import { SiteHeader, SiteFooter } from "../components/boardr/SiteChrome";
+import { createFileRoute, Link } from "@tanstack/react-router";
+import { PorterSquiggle, PorterStitches } from "@/porter/PorterShell";
+import {
+  ArrowRight,
+  Check,
+  Eye,
+  Figma,
+  FileCode,
+  FileImage,
+  Image,
+  Layers,
+  Lock,
+  Package,
+  Shield,
+  Sliders,
+  Sparkles,
+  Wrench,
+  X,
+  Zap,
+} from "lucide-react";
 
-export const Route = createFileRoute("/features")({
+export const Route = createFileRoute("/porter/features")({
   head: () => ({
     meta: [
-      { title: "features — zinegeist" },
-      { name: "description", content: "every tactile object, surface, and interaction zinegeist offers for spatial publishing." },
-      { property: "og:title", content: "features — zinegeist" },
-      { property: "og:description", content: "every tactile object, surface, and interaction zinegeist offers." },
+      { title: "porter features — design-file configurator" },
+      { name: "description", content: "everything porter does: import figma, psd, ai, or eps files, parse the full layer tree, and expose only what you want viewers to customize." },
+      { property: "og:title", content: "porter features — design-file configurator" },
+      { property: "og:description", content: "import figma, psd, ai, or eps files, parse the full layer tree, and expose only what you want viewers to customize." },
       { property: "og:type", content: "website" },
       { name: "twitter:card", content: "summary" },
     ],
   }),
-  component: FeaturesPage,
+  component: Features,
 });
 
-type FeatureItem = {
-  label: string;
-  chips?: string[];
+const sourceCards = [
+  {
+    icon: Figma,
+    title: "figma via oauth",
+    description: "authorize the figma account you're already logged into. frames stream through the official figma api with effects intact.",
+    badge: "oauth",
+  },
+  {
+    icon: FileCode,
+    title: "figma via token",
+    description: "paste a personal access token. it stays in your browser; porter never stores it on a server.",
+    badge: "token",
+  },
+  {
+    icon: FileImage,
+    title: ".psd files",
+    description: "full photoshop layer tree, blend modes, opacity, and effect names — parsed with ag-psd so nothing gets flattened.",
+    badge: "photoshop",
+  },
+  {
+    icon: FileImage,
+    title: ".ai files",
+    description: "illustrator artboards and layer names are extracted from the file directory so you can keep the vector hierarchy.",
+    badge: "illustrator",
+  },
+  {
+    icon: FileCode,
+    title: ".eps files",
+    description: "encapsulated postscript titles and layer comments are surfaced as editable layers in the configurator.",
+    badge: "postscript",
+  },
+  {
+    icon: Package,
+    title: ".zip archives",
+    description: "drop an archive of assets and porter will extract the layers it recognizes so you can start configuring immediately.",
+    badge: "archive",
+  },
+];
+
+const policyCards = [
+  {
+    icon: Lock,
+    title: "locked",
+    description: "the viewer sees the layer exactly as you drew it. no cursor, no handles, no accidents.",
+  },
+  {
+    icon: Sliders,
+    title: "partial",
+    description: "expose only the safe knobs — color, opacity, border, position, thickness. one checkbox at a time.",
+  },
+  {
+    icon: Wrench,
+    title: "customizable",
+    description: "full editing rights: text swap, image replacement, color shifts, and beyond. for the layers that are meant to change.",
+  },
+];
+
+const workflowCards = [
+  {
+    icon: Eye,
+    title: "admin / viewer toggle",
+    description: "preview the configurator exactly as your customer will see it before you publish the pack.",
+  },
+  {
+    icon: Package,
+    title: "saved packs",
+    description: "every configuration is saved locally as a named pack. reload, duplicate, revise, or delete them anytime.",
+  },
+  {
+    icon: Layers,
+    title: "layer tree with fx badges",
+    description: "effect-heavy layers are flagged automatically. click a layer to open the per-layer policy panel in the right rail.",
+  },
+  {
+    icon: Sparkles,
+    title: "image + color pickers",
+    description: "no hex-code guessing. pick colors visually and swap images through the same gallery used in the main board editor.",
+  },
+];
+
+const comparison = [
+  {
+    without: "you send the whole .psd and hope the client doesn't touch the wrong layer.",
+    with: "you import the .psd and mark every layer as locked, partial, or customizable.",
+  },
+  {
+    without: "google docs of change requests, back-and-forth slack threads, and version chaos.",
+    with: "one published pack. the customer tweaks only the allowed fields, nothing else moves.",
+  },
+  {
+    without: "effects and blend modes get flattened into a png because the tool can't read them.",
+    with: "porter preserves the full layer tree, opacity, and effect names from the source file.",
+  },
+  {
+    without: "different handoff tools for figma, photoshop, and illustrator.",
+    with: "one interface for figma, .psd, .ai, and .eps — same policy language, same output format.",
+  },
+];
+
+const cta = {
+  headline: "try the lab now",
+  body: "no account, no upload limit, no credit card. import a file, tag a few layers, and see what a configurator feels like.",
 };
 
-const GROUPS: { title: string; blurb: string; items: FeatureItem[] }[] = [
-  {
-    title: "surfaces",
-    blurb: "the substrate is part of the meaning.",
-    items: [
-      { label: "corkboard flavors", chips: ["drawn", "photo"] },
-      { label: "base surfaces", chips: ["cutting mat", "wall", "metallic"] },
-      { label: "texture overlays", chips: ["paper", "kraft", "denim", "linen", "burlap", "felt", "leather", "concrete", "brick", "marble", "woodgrain", "grid", "dots"] },
-      { label: "build-your-own patterns", chips: ["grid", "stripes", "checker", "dots", "rows", "shades", "thickness", "angle"] },
-      { label: "upload any image as the surface" },
-      { label: "recolor any surface", chips: ["hex", "overlay strength"] },
-    ],
-  },
-  {
-    title: "tactile objects",
-    blurb: "every piece flips, pins, drags, and connects.",
-    items: [
-      { label: "sticky notes", chips: ["six colorways", "flippable"] },
-      { label: "polaroids", chips: ["classic", "wide", "mini", "plus-to-upload"] },
-      { label: "photo frames", chips: ["classic", "ornate", "double-matte", "oval", "scalloped", "polaroid", "fillable svg slots"] },
-      { label: "photostrips", chips: ["four-frame booth", "per-frame upload"] },
-      { label: "loose sheets", chips: ["torn notes", "receipts", "index cards"] },
-      { label: "washi tape", chips: ["jagged v-edges", "opacity", "draw length"] },
-      { label: "attached tape", chips: ["strip across top", "any pinned object"] },
-      { label: "pushpins", chips: ["recolorable heads", "thread anchors"] },
-      { label: "wooden clips", chips: ["clothespin", "string hang"] },
-      { label: "scrollers", chips: ["marquee", "ticker", "pastel", "recolorable"] },
-    ],
-  },
-  {
-    title: "strings & hanging mode",
-    blurb: "thread, sag, clip, hang — murderboard meets clothesline.",
-    items: [
-      { label: "textured jute-rope rendering", chips: ["knot anchors", "murderboard"] },
-      { label: "sidebar tabs", chips: ["connect", "edit", "hanging"] },
-      { label: "right-click any string", chips: ["color", "thickness", "droopiness"] },
-      { label: "hanging mode", chips: ["multi-point", "bunting garland", "corner-to-corner"] },
-      { label: "hang things up", chips: ["clip polaroids", "to string"] },
-      { label: "wooden clip", chips: ["original svg", "transparent"] },
-      { label: "sag / gravity controls", chips: ["taut wire", "heavy clothesline"] },
-    ],
-  },
-  {
-    title: "kits & configurators",
-    blurb: "opinionated presets — the good parts of a psd, none of the layer hell.",
-    items: [
-      { label: "kits tab", chips: ["case file", "redacted", "archivalcore", "vintage ephemera", "paperwork", "signage", "visual diary", "forensic evidence", "analog studio", "junk drawer", "confetti", "blobs", "trinkets", "zine", "charms"] },
-      { label: "metal wall grid", chips: ["wire panels", "s-hooks", "bulldog clips"] },
-      { label: "accessories configurator", chips: ["enamel pins", "die-cut stickers", "iron-on patches", "appliqués", "button pins"] },
-      { label: "socialcore configurator", chips: ["punch cards", "tear-away flyers", "tickets", "boarding passes"] },
-    ],
-  },
-  {
-    title: "pages & sections",
-    blurb: "rooms and the walls inside them.",
-    items: [
-      { label: "pages = routes", chips: ["/pagename", "under /s/key"] },
-      { label: "sections = anchors", chips: ["#section-name", "same page"] },
-      { label: "continuous canvas", chips: ["shared background", "no breaks"] },
-      { label: "navigation", chips: ["page tabs", "section jumps"] },
-      { label: "manage pages & sections", chips: ["add", "rename", "delete", "meta panel"] },
-      { label: "viewer behavior", chips: ["hash links", "scroll-to-anchor"] },
-    ],
-  },
-  {
-    title: "interactions",
-    blurb: "more than static. boards that respond.",
-    items: [
-      { label: "transform", chips: ["drag", "rotate", "z-order"] },
-      { label: "flip cards", chips: ["back notes", "preview + publish"] },
-      { label: "plus-to-upload", chips: ["photos", "polaroids", "frames"] },
-      { label: "string interactions", chips: ["pin-to-pin", "clip hang"] },
-      { label: "right-click context menu", chips: ["edit", "tape", "pin", "clip", "layer", "lock", "group"] },
-      { label: "in-screen popups", chips: ["palettes", "fonts", "tags", "no prompts"] },
-      { label: "color control", chips: ["custom hex", "palette", "any element"] },
-      { label: "library helpers", chips: ["favorites", "recents"] },
-      { label: "resizable canvas frame", chips: ["canva-style", "grows per page"] },
-      { label: "publish", chips: ["5-digit /s/key", "public"] },
-      { label: "private edits", chips: ["edit-key access"] },
-    ],
-  },
-];
-
-const CHIP_TONES = [
-  "bg-rose-100 text-rose-800 border-rose-200",
-  "bg-amber-100 text-amber-800 border-amber-200",
-  "bg-emerald-100 text-emerald-800 border-emerald-200",
-  "bg-sky-100 text-sky-800 border-sky-200",
-  "bg-violet-100 text-violet-800 border-violet-200",
-  "bg-orange-100 text-orange-800 border-orange-200",
-  "bg-teal-100 text-teal-800 border-teal-200",
-  "bg-indigo-100 text-indigo-800 border-indigo-200",
-  "bg-pink-100 text-pink-800 border-pink-200",
-  "bg-cyan-100 text-cyan-800 border-cyan-200",
-];
-
-function FeatureChip({ children, tone }: { children: string; tone: number }) {
+function Features() {
   return (
-    <span className={`inline-flex items-center rounded-full border px-2.5 py-1 font-mono text-[11px] lowercase shadow-sm ${CHIP_TONES[tone % CHIP_TONES.length]}`}>
-      {children}
-    </span>
-  );
-}
+    <div className="max-w-6xl mx-auto px-6 py-16 md:py-24">
+      {/* Hero */}
+      <section className="max-w-3xl">
+        <div className="inline-flex items-center gap-2 porter-btn bg-white px-3 py-1 font-mono text-[10px] uppercase tracking-widest text-stone-600">
+          <Sparkles size={12} />
+          <span>v0 lab feature set</span>
+        </div>
+        <PorterStitches className="mt-6" />
+        <h1 className="mt-6 font-display text-5xl md:text-6xl lowercase tracking-tight leading-[1.05]">
+          everything porter <span className="porter-highlight">does today</span>.
+        </h1>
+        <p className="mt-6 max-w-2xl text-base md:text-lg leading-relaxed text-stone-700">
+          porter is still shy of v1 — but everything below is wired up and usable right now.
+          import a design file, walk the full layer tree, and decide exactly what your audience can touch.
+        </p>
+        <div className="mt-8 flex flex-wrap gap-3">
+          <Link
+            to="/porter/lab"
+            className="inline-flex items-center gap-2 porter-btn bg-[#4b53d6] text-stone-50 px-5 py-2 font-mono text-[11px] uppercase tracking-[0.18em] hover:bg-stone-700"
+          >
+            open the lab
+            <ArrowRight size={14} />
+          </Link>
+          <Link
+            to="/porter/purpose"
+            className="porter-btn bg-white px-5 py-2 font-mono text-[11px] uppercase tracking-[0.18em] hover:bg-white"
+          >
+            who is it for?
+          </Link>
+        </div>
+      </section>
 
-function FeaturesPage() {
-  return (
-    <div className="min-h-screen flex flex-col bg-background">
-      <SiteHeader />
-      <main className="flex-1 max-w-5xl mx-auto px-6 py-16 w-full">
-        <header className="mb-14">
-          <p className="font-mono text-[11px] uppercase tracking-[0.22em] text-muted-foreground mb-3">features</p>
-          <h1 className="font-display text-5xl lowercase tracking-tight">a complete tactile kit for thinking out loud.</h1>
-          <p className="mt-4 max-w-2xl text-stone-700 leading-relaxed">
-            zinegeist isn’t a slide deck or a website builder. it’s a workshop of objects, surfaces,
-            and ways of arranging them — built for people who think spatially and annotate everything.
-          </p>
-        </header>
-        <div className="grid md:grid-cols-2 gap-8">
-          {GROUPS.map((g) => (
-            <section key={g.title} className="rounded-md border border-border bg-card/60 p-6">
-              <h2 className="font-display text-2xl lowercase">{g.title}</h2>
-              <p className="font-mono text-[11px] lowercase text-muted-foreground mt-1 mb-4">{g.blurb}</p>
-              <ul className="space-y-2">
-                {g.items.map((it) => (
-                  <li key={it.label} className="grid grid-cols-[140px_1fr] gap-4 items-start">
-                    <span className="font-mono text-[12px] lowercase text-stone-900 font-medium leading-5 pt-1.5">
-                      {it.label}
-                    </span>
-                    {it.chips && it.chips.length > 0 ? (
-                      <div className="flex flex-wrap gap-1.5">
-                        {it.chips.map((chip, idx) => (
-                          <FeatureChip key={chip} tone={idx}>{chip}</FeatureChip>
-                        ))}
-                      </div>
-                    ) : (
-                      <span className="font-mono text-[11px] lowercase text-muted-foreground pt-1.5">—</span>
-                    )}
-                  </li>
-                ))}
-              </ul>
-            </section>
+      <PorterSquiggle className="mt-14 h-12 w-full text-[#4b53d6]/70" />
+
+      {/* Sources */}
+      <section className="mt-20 md:mt-28">
+        <div className="flex items-center gap-3">
+          <div className="rounded-full bg-[#9ee8cf] p-2 text-stone-900">
+            <Image size={18} />
+          </div>
+          <p className="font-mono text-[11px] uppercase tracking-[0.22em] text-stone-500">import sources</p>
+        </div>
+        <h2 className="mt-2 font-display text-3xl md:text-4xl lowercase tracking-tight">one pack, many starting points.</h2>
+        <p className="mt-3 max-w-2xl text-stone-700">
+          porter doesn't care which tool the design started in. it reads the layer tree and turns it into the same policy-driven configurator.
+        </p>
+
+        <div className="mt-8 grid sm:grid-cols-2 lg:grid-cols-3 gap-4">
+          {sourceCards.map((card) => (
+            <div
+              key={card.title}
+              className="group porter-card p-5"
+            >
+              <div className="flex items-start justify-between gap-3">
+                <div className="rounded-full bg-stone-900/5 p-2 text-stone-700 group-hover:bg-stone-900 group-hover:text-stone-50 transition-colors">
+                  <card.icon size={18} />
+                </div>
+                <span className="rounded-full border border-stone-300 bg-white/80 px-2 py-0.5 font-mono text-[9px] uppercase tracking-widest text-stone-500">
+                  {card.badge}
+                </span>
+              </div>
+              <h3 className="mt-4 font-display text-xl lowercase">{card.title}</h3>
+              <p className="mt-2 text-[13px] text-stone-600 leading-relaxed">{card.description}</p>
+            </div>
           ))}
         </div>
-      </main>
-      <SiteFooter />
+      </section>
+
+      {/* Per-layer policy */}
+      <section className="mt-20 md:mt-28">
+        <div className="flex items-center gap-3">
+          <div className="rounded-full bg-stone-900/5 p-2 text-stone-700">
+            <Shield size={18} />
+          </div>
+          <p className="font-mono text-[11px] uppercase tracking-[0.22em] text-stone-500">per-layer policy</p>
+        </div>
+        <h2 className="mt-2 font-display text-3xl md:text-4xl lowercase tracking-tight">three permissions. total control.</h2>
+        <p className="mt-3 max-w-2xl text-stone-700">
+          every layer in the imported file gets one of three states. no need to flatten, hide, or rebuild the file. just tag and ship.
+        </p>
+
+        <div className="mt-8 grid md:grid-cols-3 gap-4">
+          {policyCards.map((card, i) => (
+            <div
+              key={card.title}
+              className="relative porter-card p-6"
+            >
+              <div className="absolute top-0 left-0 h-1 w-full rounded-t-lg bg-stone-300" />
+              <div className="rounded-full bg-stone-900/5 p-2 w-fit text-stone-700">
+                <card.icon size={18} />
+              </div>
+              <div className="mt-4 font-mono text-[10px] uppercase tracking-widest text-stone-500">
+                policy {i + 1}
+              </div>
+              <h3 className="mt-1 font-display text-2xl lowercase">{card.title}</h3>
+              <p className="mt-3 text-[13px] text-stone-600 leading-relaxed">{card.description}</p>
+            </div>
+          ))}
+        </div>
+      </section>
+
+      {/* Workflow */}
+      <section className="mt-20 md:mt-28">
+        <div className="flex items-center gap-3">
+          <div className="rounded-full bg-stone-900/5 p-2 text-stone-700">
+            <Zap size={18} />
+          </div>
+          <p className="font-mono text-[11px] uppercase tracking-[0.22em] text-stone-500">workflow</p>
+        </div>
+        <h2 className="mt-2 font-display text-3xl md:text-4xl lowercase tracking-tight">configure, preview, publish.</h2>
+
+        <div className="mt-8 grid sm:grid-cols-2 lg:grid-cols-4 gap-4">
+          {workflowCards.map((card) => (
+            <div key={card.title} className="porter-card p-5">
+              <div className="rounded-full bg-stone-900/5 p-2 w-fit text-stone-700">
+                <card.icon size={18} />
+              </div>
+              <h3 className="mt-4 font-display text-lg lowercase">{card.title}</h3>
+              <p className="mt-2 text-[13px] text-stone-600 leading-relaxed">{card.description}</p>
+            </div>
+          ))}
+        </div>
+      </section>
+
+      {/* Comparison */}
+      <section className="mt-20 md:mt-28">
+        <div className="flex items-center gap-3">
+          <div className="rounded-full bg-stone-900/5 p-2 text-stone-700">
+            <Check size={18} />
+          </div>
+          <p className="font-mono text-[11px] uppercase tracking-[0.22em] text-stone-500">the difference</p>
+        </div>
+        <h2 className="mt-2 font-display text-3xl md:text-4xl lowercase tracking-tight">with porter vs. without.</h2>
+
+        <div className="mt-8 overflow-hidden porter-card">
+          <div className="grid grid-cols-12 border-b border-stone-300 bg-stone-100/50">
+            <div className="col-span-5 p-4 font-mono text-[10px] uppercase tracking-[0.2em] text-stone-500">without porter</div>
+            <div className="col-span-7 border-l border-stone-300 p-4 font-mono text-[10px] uppercase tracking-[0.2em] text-stone-900">with porter</div>
+          </div>
+          {comparison.map((row) => (
+            <div key={row.with} className="grid grid-cols-12 border-b border-stone-300 last:border-b-0">
+              <div className="col-span-5 p-4 text-[13px] text-stone-600 flex items-start gap-2">
+                <X size={14} className="mt-1 shrink-0 text-stone-400" />
+                <span>{row.without}</span>
+              </div>
+              <div className="col-span-7 border-l border-stone-300 bg-stone-900/5 p-4 text-[13px] text-stone-800 flex items-start gap-2">
+                <Check size={14} className="mt-1 shrink-0 text-stone-700" />
+                <span>{row.with}</span>
+              </div>
+            </div>
+          ))}
+        </div>
+      </section>
+
+      {/* CTA */}
+      <section className="mt-20 md:mt-28 border-[1.5px] border-stone-900 bg-[#1c1c1c] shadow-[8px_8px_0_rgba(75,83,214,0.9)] text-stone-50 p-8 md:p-12">
+        <div className="max-w-3xl">
+          <p className="font-mono text-[10px] uppercase tracking-[0.2em] text-stone-400">ready to try?</p>
+          <h2 className="mt-3 font-display text-4xl md:text-5xl lowercase tracking-tight">{cta.headline}</h2>
+          <p className="mt-4 max-w-xl text-stone-300 leading-relaxed">{cta.body}</p>
+          <div className="mt-8 flex flex-wrap gap-3">
+            <Link
+              to="/porter/lab"
+              className="inline-flex items-center gap-2 porter-btn bg-[#e8ff4a] text-stone-900 px-5 py-2 font-mono text-[11px] uppercase tracking-[0.18em] hover:bg-stone-200"
+            >
+              open the lab
+              <ArrowRight size={14} />
+            </Link>
+            <Link
+              to="/porter/about"
+              className="porter-btn bg-stone-900/40 px-5 py-2 font-mono text-[11px] uppercase tracking-[0.18em] text-stone-300 hover:bg-stone-800"
+            >
+              about porter
+            </Link>
+          </div>
+        </div>
+      </section>
     </div>
   );
 }
