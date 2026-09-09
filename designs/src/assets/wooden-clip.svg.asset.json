@@ -1,11 +1,11 @@
 {
+  "version": 1,
   "asset_id": "4025e7e0-c155-4828-bb16-4adeef47a32f",
-  "content_type": "image/svg+xml",
-  "created_at": "2026-06-07T22:33:02Z",
-  "original_filename": "wooden-clip.svg",
-  "project_id": "17cd0b6a-b80b-4a4a-957c-0c8c786b35b1",
-  "r2_key": "a/v1/17cd0b6a-b80b-4a4a-957c-0c8c786b35b1/4025e7e0-c155-4828-bb16-4adeef47a32f/wooden-clip.svg",
-  "size": 493221,
+  "project_id": "d0c00ae9-7712-4153-bdb2-9c0fa9c3b8f9",
   "url": "/__l5e/assets-v1/4025e7e0-c155-4828-bb16-4adeef47a32f/wooden-clip.svg",
-  "version": 1
+  "r2_key": "a/v1/d0c00ae9-7712-4153-bdb2-9c0fa9c3b8f9/4025e7e0-c155-4828-bb16-4adeef47a32f/wooden-clip.svg",
+  "original_filename": "wooden-clip.svg",
+  "size": 493221,
+  "content_type": "image/svg+xml",
+  "created_at": "2026-06-07T22:33:02Z"
 }
