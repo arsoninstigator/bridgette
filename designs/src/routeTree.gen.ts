@@ -13,6 +13,7 @@ import { Route as SitemapDotxmlRouteImport } from './routes/sitemap[.]xml'
 import { Route as PurposeRouteImport } from './routes/purpose'
 import { Route as LabRouteImport } from './routes/lab'
 import { Route as FeaturesRouteImport } from './routes/features'
+import { Route as CrossvertRouteImport } from './routes/crossvert'
 import { Route as AboutRouteImport } from './routes/about'
 import { Route as IndexRouteImport } from './routes/index'
 
@@ -36,6 +37,11 @@ const FeaturesRoute = FeaturesRouteImport.update({
   path: '/features',
   getParentRoute: () => rootRouteImport,
 } as any)
+const CrossvertRoute = CrossvertRouteImport.update({
+  id: '/crossvert',
+  path: '/crossvert',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const AboutRoute = AboutRouteImport.update({
   id: '/about',
   path: '/about',
@@ -50,6 +56,7 @@ const IndexRoute = IndexRouteImport.update({
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
   '/about': typeof AboutRoute
+  '/crossvert': typeof CrossvertRoute
   '/features': typeof FeaturesRoute
   '/lab': typeof LabRoute
   '/purpose': typeof PurposeRoute
@@ -58,6 +65,7 @@ export interface FileRoutesByFullPath {
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
   '/about': typeof AboutRoute
+  '/crossvert': typeof CrossvertRoute
   '/features': typeof FeaturesRoute
   '/lab': typeof LabRoute
   '/purpose': typeof PurposeRoute
@@ -67,6 +75,7 @@ export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
   '/about': typeof AboutRoute
+  '/crossvert': typeof CrossvertRoute
   '/features': typeof FeaturesRoute
   '/lab': typeof LabRoute
   '/purpose': typeof PurposeRoute
@@ -74,13 +83,28 @@ export interface FileRoutesById {
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
-  fullPaths: '/' | '/about' | '/features' | '/lab' | '/purpose' | '/sitemap.xml'
+  fullPaths:
+    | '/'
+    | '/about'
+    | '/crossvert'
+    | '/features'
+    | '/lab'
+    | '/purpose'
+    | '/sitemap.xml'
   fileRoutesByTo: FileRoutesByTo
-  to: '/' | '/about' | '/features' | '/lab' | '/purpose' | '/sitemap.xml'
+  to:
+    | '/'
+    | '/about'
+    | '/crossvert'
+    | '/features'
+    | '/lab'
+    | '/purpose'
+    | '/sitemap.xml'
   id:
     | '__root__'
     | '/'
     | '/about'
+    | '/crossvert'
     | '/features'
     | '/lab'
     | '/purpose'
@@ -90,6 +114,7 @@ export interface FileRouteTypes {
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
   AboutRoute: typeof AboutRoute
+  CrossvertRoute: typeof CrossvertRoute
   FeaturesRoute: typeof FeaturesRoute
   LabRoute: typeof LabRoute
   PurposeRoute: typeof PurposeRoute
@@ -126,6 +151,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof FeaturesRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/crossvert': {
+      id: '/crossvert'
+      path: '/crossvert'
+      fullPath: '/crossvert'
+      preLoaderRoute: typeof CrossvertRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/about': {
       id: '/about'
       path: '/about'
@@ -146,6 +178,7 @@ declare module '@tanstack/react-router' {
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
   AboutRoute: AboutRoute,
+  CrossvertRoute: CrossvertRoute,
   FeaturesRoute: FeaturesRoute,
   LabRoute: LabRoute,
   PurposeRoute: PurposeRoute,

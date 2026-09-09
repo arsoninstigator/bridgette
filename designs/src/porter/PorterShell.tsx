@@ -1,13 +1,14 @@
 import { Link, useLocation } from "@tanstack/react-router";
 import type { ReactNode } from "react";
 
-type PorterTo = "/" | "/lab" | "/about" | "/features" | "/purpose";
+type PorterTo = "/" | "/lab" | "/crossvert" | "/about" | "/features" | "/purpose";
 
 const nav: { to: PorterTo; label: string }[] = [
   { to: "/", label: "home" },
   { to: "/features", label: "features" },
   { to: "/purpose", label: "purpose" },
   { to: "/lab", label: "lab" },
+  { to: "/crossvert", label: "crossvert" },
   { to: "/about", label: "about" },
 ];
 
