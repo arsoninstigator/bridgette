@@ -1,11 +1,11 @@
 {
-  "version": 1,
   "asset_id": "c9316ecc-725b-4ed9-9c62-5ea33c4c8f03",
-  "project_id": "d0c00ae9-7712-4153-bdb2-9c0fa9c3b8f9",
-  "url": "/__l5e/assets-v1/c9316ecc-725b-4ed9-9c62-5ea33c4c8f03/cork-tile.png",
-  "r2_key": "a/v1/d0c00ae9-7712-4153-bdb2-9c0fa9c3b8f9/c9316ecc-725b-4ed9-9c62-5ea33c4c8f03/cork-tile.png",
-  "original_filename": "cork-tile.png",
-  "size": 2387300,
   "content_type": "image/png",
-  "created_at": "2026-07-25T10:48:44Z"
+  "created_at": "2026-07-25T10:48:44Z",
+  "original_filename": "cork-tile.png",
+  "project_id": "17cd0b6a-b80b-4a4a-957c-0c8c786b35b1",
+  "r2_key": "a/v1/17cd0b6a-b80b-4a4a-957c-0c8c786b35b1/c9316ecc-725b-4ed9-9c62-5ea33c4c8f03/cork-tile.png",
+  "size": 2387300,
+  "url": "/__l5e/assets-v1/c9316ecc-725b-4ed9-9c62-5ea33c4c8f03/cork-tile.png",
+  "version": 1
 }
