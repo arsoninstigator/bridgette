@@ -14,8 +14,11 @@ import { Route as PurposeRouteImport } from './routes/purpose'
 import { Route as LabRouteImport } from './routes/lab'
 import { Route as FeaturesRouteImport } from './routes/features'
 import { Route as CrossvertRouteImport } from './routes/crossvert'
+import { Route as CatalogRouteImport } from './routes/catalog'
 import { Route as AboutRouteImport } from './routes/about'
 import { Route as IndexRouteImport } from './routes/index'
+import { Route as CatalogSlugRouteImport } from './routes/catalog.$slug'
+import { Route as ApiPublicFigmaOembedRouteImport } from './routes/api/public/figma-oembed'
 
 const SitemapDotxmlRoute = SitemapDotxmlRouteImport.update({
   id: '/sitemap.xml',
@@ -42,6 +45,11 @@ const CrossvertRoute = CrossvertRouteImport.update({
   path: '/crossvert',
   getParentRoute: () => rootRouteImport,
 } as any)
+const CatalogRoute = CatalogRouteImport.update({
+  id: '/catalog',
+  path: '/catalog',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const AboutRoute = AboutRouteImport.update({
   id: '/about',
   path: '/about',
@@ -52,73 +60,103 @@ const IndexRoute = IndexRouteImport.update({
   path: '/',
   getParentRoute: () => rootRouteImport,
 } as any)
+const CatalogSlugRoute = CatalogSlugRouteImport.update({
+  id: '/$slug',
+  path: '/$slug',
+  getParentRoute: () => CatalogRoute,
+} as any)
+const ApiPublicFigmaOembedRoute = ApiPublicFigmaOembedRouteImport.update({
+  id: '/api/public/figma-oembed',
+  path: '/api/public/figma-oembed',
+  getParentRoute: () => rootRouteImport,
+} as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
   '/about': typeof AboutRoute
+  '/catalog': typeof CatalogRouteWithChildren
   '/crossvert': typeof CrossvertRoute
   '/features': typeof FeaturesRoute
   '/lab': typeof LabRoute
   '/purpose': typeof PurposeRoute
   '/sitemap.xml': typeof SitemapDotxmlRoute
+  '/catalog/$slug': typeof CatalogSlugRoute
+  '/api/public/figma-oembed': typeof ApiPublicFigmaOembedRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
   '/about': typeof AboutRoute
+  '/catalog': typeof CatalogRouteWithChildren
   '/crossvert': typeof CrossvertRoute
   '/features': typeof FeaturesRoute
   '/lab': typeof LabRoute
   '/purpose': typeof PurposeRoute
   '/sitemap.xml': typeof SitemapDotxmlRoute
+  '/catalog/$slug': typeof CatalogSlugRoute
+  '/api/public/figma-oembed': typeof ApiPublicFigmaOembedRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
   '/about': typeof AboutRoute
+  '/catalog': typeof CatalogRouteWithChildren
   '/crossvert': typeof CrossvertRoute
   '/features': typeof FeaturesRoute
   '/lab': typeof LabRoute
   '/purpose': typeof PurposeRoute
   '/sitemap.xml': typeof SitemapDotxmlRoute
+  '/catalog/$slug': typeof CatalogSlugRoute
+  '/api/public/figma-oembed': typeof ApiPublicFigmaOembedRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
   fullPaths:
     | '/'
     | '/about'
+    | '/catalog'
     | '/crossvert'
     | '/features'
     | '/lab'
     | '/purpose'
     | '/sitemap.xml'
+    | '/catalog/$slug'
+    | '/api/public/figma-oembed'
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/'
     | '/about'
+    | '/catalog'
     | '/crossvert'
     | '/features'
     | '/lab'
     | '/purpose'
     | '/sitemap.xml'
+    | '/catalog/$slug'
+    | '/api/public/figma-oembed'
   id:
     | '__root__'
     | '/'
     | '/about'
+    | '/catalog'
     | '/crossvert'
     | '/features'
     | '/lab'
     | '/purpose'
     | '/sitemap.xml'
+    | '/catalog/$slug'
+    | '/api/public/figma-oembed'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
   AboutRoute: typeof AboutRoute
+  CatalogRoute: typeof CatalogRouteWithChildren
   CrossvertRoute: typeof CrossvertRoute
   FeaturesRoute: typeof FeaturesRoute
   LabRoute: typeof LabRoute
   PurposeRoute: typeof PurposeRoute
   SitemapDotxmlRoute: typeof SitemapDotxmlRoute
+  ApiPublicFigmaOembedRoute: typeof ApiPublicFigmaOembedRoute
 }
 
 declare module '@tanstack/react-router' {
@@ -158,6 +196,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof CrossvertRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/catalog': {
+      id: '/catalog'
+      path: '/catalog'
+      fullPath: '/catalog'
+      preLoaderRoute: typeof CatalogRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/about': {
       id: '/about'
       path: '/about'
@@ -172,17 +217,44 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof IndexRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/catalog/$slug': {
+      id: '/catalog/$slug'
+      path: '/$slug'
+      fullPath: '/catalog/$slug'
+      preLoaderRoute: typeof CatalogSlugRouteImport
+      parentRoute: typeof CatalogRoute
+    }
+    '/api/public/figma-oembed': {
+      id: '/api/public/figma-oembed'
+      path: '/api/public/figma-oembed'
+      fullPath: '/api/public/figma-oembed'
+      preLoaderRoute: typeof ApiPublicFigmaOembedRouteImport
+      parentRoute: typeof rootRouteImport
+    }
   }
 }
+
+interface CatalogRouteChildren {
+  CatalogSlugRoute: typeof CatalogSlugRoute
+}
+
+const CatalogRouteChildren: CatalogRouteChildren = {
+  CatalogSlugRoute: CatalogSlugRoute,
+}
+
+const CatalogRouteWithChildren =
+  CatalogRoute._addFileChildren(CatalogRouteChildren)
 
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
   AboutRoute: AboutRoute,
+  CatalogRoute: CatalogRouteWithChildren,
   CrossvertRoute: CrossvertRoute,
   FeaturesRoute: FeaturesRoute,
   LabRoute: LabRoute,
   PurposeRoute: PurposeRoute,
   SitemapDotxmlRoute: SitemapDotxmlRoute,
+  ApiPublicFigmaOembedRoute: ApiPublicFigmaOembedRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)

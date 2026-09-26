@@ -8,6 +8,8 @@ export const Route = createFileRoute("/purpose")({
       { name: "description", content: "porter is for the freelancer, the illustrator, the merch studio, the type designer — anyone who ships design files but keeps rebuilding the same 'change this bit' handoff. porter turns that handoff into a configurator." },
       { property: "og:title", content: "porter · purpose" },
       { property: "og:description", content: "who porter is for — freelancers, illustrators, merch studios, type designers, brand kits." },
+      { property: "og:type", content: "website" },
+      { name: "twitter:card", content: "summary" },
     ],
   }),
   component: PurposePage,

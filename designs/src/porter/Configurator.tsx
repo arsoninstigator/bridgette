@@ -33,6 +33,7 @@ export function ConfiguratorMain({ title = "figma / psd configurator", subtitle 
   const [modalStep, setModalStep] = useState<"choose" | "token" | "url">("choose");
   const [modalUrl, setModalUrl] = useState("");
   const [modalToken, setModalToken] = useState("");
+  const [publicOnly, setPublicOnly] = useState(false);
   const psdRef = useRef<HTMLInputElement>(null);
   const aiRef = useRef<HTMLInputElement>(null);
   const epsRef = useRef<HTMLInputElement>(null);
@@ -41,6 +42,12 @@ export function ConfiguratorMain({ title = "figma / psd configurator", subtitle 
     setConfigs(readConfigs());
     const t = localStorage.getItem(LS_TOKEN) || "";
     setFigmaToken(t); setModalToken(t);
+    const presetUrl = new URLSearchParams(window.location.search).get("figmaUrl");
+    if (presetUrl) {
+      setModalUrl(presetUrl);
+      setModalStep("url");
+      setFigmaModalOpen(true);
+    }
   }, []);
 
   const byId = useMemo(() => new Map(layers.map((l) => [l.id, l])), [layers]);
@@ -55,7 +62,7 @@ export function ConfiguratorMain({ title = "figma / psd configurator", subtitle 
 
   function openFigmaFlow() {
     setErr(null);
-    setModalStep(figmaToken.trim() ? "url" : "choose");
+    setModalStep("url");
     setFigmaModalOpen(true);
   }
 
@@ -79,8 +86,25 @@ export function ConfiguratorMain({ title = "figma / psd configurator", subtitle 
       setLayers(res.layers); setRootIds(res.rootIds); setSource(res.source); setPreview(res.preview);
       setExpanded(new Set(res.layers.filter((l) => l.depth < 2).map((l) => l.id)));
       setActiveSource("figma");
+      setPublicOnly(false);
       if (!name) setName(res.layers[0]?.name || "figma import");
       setFigmaModalOpen(false); setModalUrl("");
+    } catch (e: any) { setErr(e.message || String(e)); }
+    finally { setLoading(false); }
+  }
+
+  async function previewPublicFigma(url: string) {
+    const cleanUrl = url.trim();
+    if (!cleanUrl) return setErr("paste or drop a figma frame url.");
+    setLoading(true); setErr(null);
+    try {
+      const response = await fetch(`/api/public/figma-oembed?url=${encodeURIComponent(cleanUrl)}`);
+      const data = await response.json() as { title?: string; thumbnailUrl?: string | null; error?: string };
+      if (!response.ok) throw new Error(data.error || "this figma link could not be previewed.");
+      setName(data.title || "public figma frame");
+      setPreview(data.thumbnailUrl || undefined);
+      setLayers([]); setRootIds([]); setSource(null); setActiveSource("figma"); setPublicOnly(true);
+      setFigmaModalOpen(false);
     } catch (e: any) { setErr(e.message || String(e)); }
     finally { setLoading(false); }
   }
@@ -239,7 +263,7 @@ export function ConfiguratorMain({ title = "figma / psd configurator", subtitle 
                 className={`${cardBase} ${activeSource === "figma" ? cardActive : cardIdle}`}>
           <p className="font-mono text-[10px] uppercase tracking-widest text-muted-foreground">source · figma</p>
           <h3 className="font-display text-lg lowercase">import from figma</h3>
-          <p className="text-[11px] text-stone-600">authorize your figma account, or paste a personal token, then drop in a frame url.</p>
+          <p className="text-[11px] text-stone-600">paste or drop a public frame link. no account needed to preview it.</p>
           {activeSource === "figma" && source?.type === "figma" && (
             <p className="text-[10px] font-mono text-emerald-700">active · {source.fileKey.slice(0, 8)}…</p>
           )}
@@ -262,6 +286,12 @@ export function ConfiguratorMain({ title = "figma / psd configurator", subtitle 
 
       {err && <div className="mt-4 rounded border border-rose-300 bg-rose-50 text-rose-800 text-xs p-3">{err}</div>}
       {loading && <div className="mt-4 text-xs text-stone-600 font-mono">working…</div>}
+      {publicOnly && (
+        <div className="mt-4 flex flex-wrap items-center justify-between gap-3 rounded border border-[#d9d2bd] bg-white/75 p-3 text-xs text-stone-700">
+          <span>Public preview loaded. Connect Figma or use a token to read and configure its individual layers.</span>
+          <button onClick={() => { setModalStep(figmaToken ? "url" : "choose"); setFigmaModalOpen(true); }} className="porter-btn bg-[#4b53d6] px-3 py-1.5 font-mono text-[10px] uppercase tracking-widest text-stone-50">import editable layers</button>
+        </div>
+      )}
 
       {/* saved + mode toggle */}
       <div className="mt-8 flex items-center justify-between gap-4">
@@ -345,12 +375,12 @@ export function ConfiguratorMain({ title = "figma / psd configurator", subtitle 
             <DialogTitle className="lowercase">
               {modalStep === "choose" ? "connect figma"
                 : modalStep === "token" ? "paste a personal access token"
-                : "paste a figma frame url"}
+                : "paste or drop a figma frame url"}
             </DialogTitle>
             <DialogDescription className="text-xs">
               {modalStep === "choose" ? "authorize your figma account, or paste a personal token. everything is stored locally."
                 : modalStep === "token" ? "we'll call the figma api with this token — never sent anywhere else."
-                : "right-click a frame in figma → copy link to selection."}
+                : "public links preview without an account. full layer controls require figma authorization."}
             </DialogDescription>
           </DialogHeader>
 
@@ -392,15 +422,23 @@ export function ConfiguratorMain({ title = "figma / psd configurator", subtitle 
           )}
 
           {modalStep === "url" && (
-            <div className="space-y-3">
+            <div className="space-y-3" onDragOver={(event) => event.preventDefault()} onDrop={(event) => {
+              event.preventDefault();
+              const dropped = event.dataTransfer.getData("text/uri-list") || event.dataTransfer.getData("text/plain");
+              if (dropped) setModalUrl(dropped.trim());
+            }}>
               <Input value={modalUrl} onChange={(e) => setModalUrl(e.target.value)}
                      placeholder="https://www.figma.com/design/…?node-id=…" autoFocus />
+              <div className="rounded border border-dashed border-[#c9c1a8] bg-stone-50/70 px-4 py-5 text-center font-mono text-[10px] uppercase tracking-widest text-stone-500">drop frame link here</div>
               <div className="flex items-center justify-between">
                 <button onClick={() => setModalStep("choose")}
-                        className="font-mono text-[10px] uppercase tracking-widest text-stone-500 hover:text-stone-900">← change method</button>
-                <Button onClick={() => runFigmaImport(modalUrl, figmaToken)} disabled={loading || !modalUrl.trim()}>
-                  {loading ? "importing…" : "import frame"}
-                </Button>
+                        className="font-mono text-[10px] uppercase tracking-widest text-stone-500 hover:text-stone-900">connect for layers</button>
+                <div className="flex gap-2">
+                  {figmaToken && <Button variant="outline" onClick={() => runFigmaImport(modalUrl, figmaToken)} disabled={loading || !modalUrl.trim()}>full import</Button>}
+                  <Button onClick={() => previewPublicFigma(modalUrl)} disabled={loading || !modalUrl.trim()}>
+                    {loading ? "loading…" : "open public frame"}
+                  </Button>
+                </div>
               </div>
             </div>
           )}
