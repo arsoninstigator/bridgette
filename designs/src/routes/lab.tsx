@@ -2,9 +2,8 @@ import { createFileRoute } from "@tanstack/react-router";
 import { ConfiguratorMain } from "@/porter/Configurator";
 
 export const Route = createFileRoute("/lab")({
-  validateSearch: (search: Record<string, unknown>) => ({
-    figmaUrl: typeof search.figmaUrl === "string" ? search.figmaUrl : undefined,
-  }),
+  validateSearch: (search: Record<string, unknown>): { figmaUrl?: string } =>
+    typeof search.figmaUrl === "string" ? { figmaUrl: search.figmaUrl } : {},
   head: () => ({
     meta: [
       { title: "porter · lab — design-file configurator" },
