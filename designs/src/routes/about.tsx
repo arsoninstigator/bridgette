@@ -8,6 +8,8 @@ export const Route = createFileRoute("/about")({
       { name: "description", content: "porter exists because design files shouldn't be black boxes or free-for-alls. it's the middle path: layered, opinionated, configurable." },
       { property: "og:title", content: "about porter" },
       { property: "og:description", content: "why porter exists — the middle path between locked pdf and open psd." },
+      { property: "og:type", content: "website" },
+      { name: "twitter:card", content: "summary" },
     ],
   }),
   component: About,
