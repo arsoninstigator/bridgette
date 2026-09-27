@@ -42,7 +42,7 @@ function CatalogPage() {
     <div className="mt-10 grid gap-6 md:grid-cols-2 xl:grid-cols-3">
       {CATALOG_COLLECTIONS.map((collection) => {
         const Icon = collection.slug === "imessage" ? MessageCircle : collection.slug === "spotify" ? Music2 : BookOpen;
-        return <Link key={collection.slug} to={collection.href} className="group porter-card overflow-hidden">
+        const card = <>
           <CollectionArt type={collection.slug} />
           <div className="p-5">
             <div className="flex items-center justify-between"><span className="porter-chip bg-white px-2 py-1 font-mono text-[9px] uppercase tracking-widest">{collection.eyebrow}</span><Icon size={18}/></div>
@@ -50,7 +50,10 @@ function CatalogPage() {
             <p className="mt-2 text-sm leading-relaxed text-stone-600">{collection.description}</p>
             <span className="mt-5 inline-flex items-center gap-2 font-mono text-[10px] uppercase tracking-widest">{collection.presets.length} presets <ArrowRight size={13} className="transition-transform group-hover:translate-x-1"/></span>
           </div>
-        </Link>;
+        </>;
+        return collection.slug === "spotify"
+          ? <Link key={collection.slug} to="/catalog/music/spotify" className="group porter-card overflow-hidden">{card}</Link>
+          : <Link key={collection.slug} to="/catalog/$slug" params={{ slug: collection.slug }} className="group porter-card overflow-hidden">{card}</Link>;
       })}
     </div>
   </div>;
