@@ -17,7 +17,9 @@ import { Route as CrossvertRouteImport } from './routes/crossvert'
 import { Route as CatalogRouteImport } from './routes/catalog'
 import { Route as AboutRouteImport } from './routes/about'
 import { Route as IndexRouteImport } from './routes/index'
+import { Route as CatalogIndexRouteImport } from './routes/catalog.index'
 import { Route as CatalogSlugRouteImport } from './routes/catalog.$slug'
+import { Route as CatalogMusicSpotifyRouteImport } from './routes/catalog.music.spotify'
 import { Route as ApiPublicFigmaOembedRouteImport } from './routes/api/public/figma-oembed'
 
 const SitemapDotxmlRoute = SitemapDotxmlRouteImport.update({
@@ -60,9 +62,19 @@ const IndexRoute = IndexRouteImport.update({
   path: '/',
   getParentRoute: () => rootRouteImport,
 } as any)
+const CatalogIndexRoute = CatalogIndexRouteImport.update({
+  id: '/',
+  path: '/',
+  getParentRoute: () => CatalogRoute,
+} as any)
 const CatalogSlugRoute = CatalogSlugRouteImport.update({
   id: '/$slug',
   path: '/$slug',
+  getParentRoute: () => CatalogRoute,
+} as any)
+const CatalogMusicSpotifyRoute = CatalogMusicSpotifyRouteImport.update({
+  id: '/music/spotify',
+  path: '/music/spotify',
   getParentRoute: () => CatalogRoute,
 } as any)
 const ApiPublicFigmaOembedRoute = ApiPublicFigmaOembedRouteImport.update({
@@ -81,19 +93,22 @@ export interface FileRoutesByFullPath {
   '/purpose': typeof PurposeRoute
   '/sitemap.xml': typeof SitemapDotxmlRoute
   '/catalog/$slug': typeof CatalogSlugRoute
+  '/catalog/': typeof CatalogIndexRoute
   '/api/public/figma-oembed': typeof ApiPublicFigmaOembedRoute
+  '/catalog/music/spotify': typeof CatalogMusicSpotifyRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
   '/about': typeof AboutRoute
-  '/catalog': typeof CatalogRouteWithChildren
   '/crossvert': typeof CrossvertRoute
   '/features': typeof FeaturesRoute
   '/lab': typeof LabRoute
   '/purpose': typeof PurposeRoute
   '/sitemap.xml': typeof SitemapDotxmlRoute
   '/catalog/$slug': typeof CatalogSlugRoute
+  '/catalog': typeof CatalogIndexRoute
   '/api/public/figma-oembed': typeof ApiPublicFigmaOembedRoute
+  '/catalog/music/spotify': typeof CatalogMusicSpotifyRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
@@ -106,7 +121,9 @@ export interface FileRoutesById {
   '/purpose': typeof PurposeRoute
   '/sitemap.xml': typeof SitemapDotxmlRoute
   '/catalog/$slug': typeof CatalogSlugRoute
+  '/catalog/': typeof CatalogIndexRoute
   '/api/public/figma-oembed': typeof ApiPublicFigmaOembedRoute
+  '/catalog/music/spotify': typeof CatalogMusicSpotifyRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
@@ -120,19 +137,22 @@ export interface FileRouteTypes {
     | '/purpose'
     | '/sitemap.xml'
     | '/catalog/$slug'
+    | '/catalog/'
     | '/api/public/figma-oembed'
+    | '/catalog/music/spotify'
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/'
     | '/about'
-    | '/catalog'
     | '/crossvert'
     | '/features'
     | '/lab'
     | '/purpose'
     | '/sitemap.xml'
     | '/catalog/$slug'
+    | '/catalog'
     | '/api/public/figma-oembed'
+    | '/catalog/music/spotify'
   id:
     | '__root__'
     | '/'
@@ -144,7 +164,9 @@ export interface FileRouteTypes {
     | '/purpose'
     | '/sitemap.xml'
     | '/catalog/$slug'
+    | '/catalog/'
     | '/api/public/figma-oembed'
+    | '/catalog/music/spotify'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
@@ -217,11 +239,25 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof IndexRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/catalog/': {
+      id: '/catalog/'
+      path: '/'
+      fullPath: '/catalog/'
+      preLoaderRoute: typeof CatalogIndexRouteImport
+      parentRoute: typeof CatalogRoute
+    }
     '/catalog/$slug': {
       id: '/catalog/$slug'
       path: '/$slug'
       fullPath: '/catalog/$slug'
       preLoaderRoute: typeof CatalogSlugRouteImport
+      parentRoute: typeof CatalogRoute
+    }
+    '/catalog/music/spotify': {
+      id: '/catalog/music/spotify'
+      path: '/music/spotify'
+      fullPath: '/catalog/music/spotify'
+      preLoaderRoute: typeof CatalogMusicSpotifyRouteImport
       parentRoute: typeof CatalogRoute
     }
     '/api/public/figma-oembed': {
@@ -236,10 +272,14 @@ declare module '@tanstack/react-router' {
 
 interface CatalogRouteChildren {
   CatalogSlugRoute: typeof CatalogSlugRoute
+  CatalogIndexRoute: typeof CatalogIndexRoute
+  CatalogMusicSpotifyRoute: typeof CatalogMusicSpotifyRoute
 }
 
 const CatalogRouteChildren: CatalogRouteChildren = {
   CatalogSlugRoute: CatalogSlugRoute,
+  CatalogIndexRoute: CatalogIndexRoute,
+  CatalogMusicSpotifyRoute: CatalogMusicSpotifyRoute,
 }
 
 const CatalogRouteWithChildren =
