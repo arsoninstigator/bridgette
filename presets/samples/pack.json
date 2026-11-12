@@ -1,0 +1,35 @@
+{
+  "presets": [
+    {
+      "name": "Neon Night",
+      "adjustments": {
+        "exposure": 0.18,
+        "temperature": -0.35,
+        "tint": 0.22,
+        "contrast": 0.3,
+        "saturation": 0.18,
+        "clarity": 0.25,
+        "dehaze": 0.2,
+        "hue_blue": 0.1,
+        "saturation_blue": 0.35,
+        "luminance_blue": -0.12,
+        "highlights_hue": 0.78,
+        "highlights_saturation": 0.3
+      }
+    },
+    {
+      "name": "Soft Ivory",
+      "adjustments": {
+        "exposure": 0.22,
+        "contrast": -0.15,
+        "highlights": -0.2,
+        "shadows": 0.3,
+        "blacks": 0.12,
+        "temperature": 0.1,
+        "saturation": -0.18,
+        "vibrance": 0.1,
+        "clarity": -0.1
+      }
+    }
+  ]
+}

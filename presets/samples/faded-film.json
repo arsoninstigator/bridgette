@@ -1,0 +1,31 @@
+{
+  "FilterName": "Faded Film 35",
+  "adjustments": {
+    "Exposure": -6,
+    "Contrast": 14,
+    "Highlights": -30,
+    "Shadows": 42,
+    "Whites": 8,
+    "Blacks": -18,
+    "Temperature": 9,
+    "Tint": -4,
+    "Vibrance": 12,
+    "Saturation": -9,
+    "Clarity": -6,
+    "Dehaze": 4,
+    "Vignette": -22,
+    "GrainAmount": 18,
+    "GrainSize": 32,
+    "Sharpen": 24,
+    "LuminanceDenoise": 12,
+    "ColorDenoise": 6,
+    "HueYellow": -8,
+    "SaturationYellow": 15,
+    "LuminanceYellow": 6,
+    "ShadowsHue": 0.62,
+    "ShadowsSaturation": 22
+  },
+  "gamma": 1.02,
+  "distortion_horizontal": 0,
+  "fringing": 0
+}

@@ -1,0 +1,44 @@
+{
+  "name": "Copper Dusk",
+  "version": "4.2",
+  "includes_lut": false,
+  "adjustments": {
+    "exposure": -0.12,
+    "contrast": 0.18,
+    "highlights": -0.42,
+    "shadows": 0.35,
+    "whites": 0.10,
+    "blacks": -0.25,
+    "temperature": 0.22,
+    "tint": 0.05,
+    "vibrance": 0.15,
+    "saturation": -0.05,
+    "clarity": 0.12,
+    "dehaze": 0.08,
+    "vignette": -0.30,
+    "vignette_feather": 0.60,
+    "grain_amount": 0.25,
+    "grain_size": 0.40,
+    "sharpen": 0.30,
+    "luminance_denoise": 0.20,
+    "hue_red": 0.04,
+    "saturation_red": 0.20,
+    "luminance_red": -0.10,
+    "hue_orange": -0.03,
+    "saturation_orange": 0.25,
+    "luminance_orange": 0.05,
+    "shadows_hue": 0.08,
+    "shadows_saturation": 0.35,
+    "highlights_hue": 0.12,
+    "highlights_saturation": 0.25,
+    "balance": -0.20
+  },
+  "curves": {
+    "rgb": [[0, 0], [0.25, 0.18], [0.75, 0.82], [1, 1]],
+    "blue": [[0, 0.04], [0.5, 0.5], [1, 0.96]]
+  },
+  "lut": "copper-02.cube",
+  "local_adjustments": [
+    {"exposure": 0.9, "mask": "radial", "x": 0.4, "y": 0.4}
+  ]
+}
