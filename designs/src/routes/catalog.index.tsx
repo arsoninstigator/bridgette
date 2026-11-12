@@ -6,9 +6,9 @@ import { PorterStitches } from "@/porter/PorterShell";
 export const Route = createFileRoute("/catalog/")({
   head: () => ({ meta: [
     { title: "configurator catalog — porter" },
-    { name: "description", content: "Browse ready-to-configure Porter presets for chat mockups, album artwork, and more." },
+    { name: "description", content: "Browse ready-to-configure Porter templates for chat mockups, album artwork, and more." },
     { property: "og:title", content: "configurator catalog — porter" },
-    { property: "og:description", content: "Start with a preset, then decide which layers people can customize." },
+    { property: "og:description", content: "Start with a template, then decide which layers people can customize." },
     { property: "og:type", content: "website" },
     { name: "twitter:card", content: "summary" },
   ] }),
@@ -45,7 +45,7 @@ function CollectionArt({ type }: { type: string }) {
 function CatalogPage() {
   return <div className="mx-auto max-w-6xl px-6 py-16">
     <PorterStitches />
-    <p className="mt-5 font-mono text-[10px] uppercase tracking-[0.22em] text-stone-500">preset shelf · pick a starting point</p>
+    <p className="mt-5 font-mono text-[10px] uppercase tracking-[0.22em] text-stone-500">template shelf · pick a starting point</p>
     <h1 className="mt-3 max-w-3xl font-display text-5xl lowercase leading-tight">good files, already <span className="porter-highlight">set up to change</span>.</h1>
     <p className="mt-5 max-w-2xl text-stone-700">Choose a platform first, then pick the exact screen you want to configure. Supplied Figma frames open directly in the lab.</p>
     <div className="mt-10 grid gap-6 md:grid-cols-2 xl:grid-cols-3">
@@ -57,7 +57,7 @@ function CatalogPage() {
             <div className="flex items-center justify-between"><span className="porter-chip bg-white px-2 py-1 font-mono text-[9px] uppercase tracking-widest">{collection.eyebrow}</span><Icon size={18}/></div>
             <h2 className="mt-4 font-display text-2xl lowercase">{collection.name}</h2>
             <p className="mt-2 text-sm leading-relaxed text-stone-600">{collection.description}</p>
-            <span className="mt-5 inline-flex items-center gap-2 font-mono text-[10px] uppercase tracking-widest">{collection.presets.length} presets <ArrowRight size={13} className="transition-transform group-hover:translate-x-1"/></span>
+            <span className="mt-5 inline-flex items-center gap-2 font-mono text-[10px] uppercase tracking-widest">{collection.templates.length} templates <ArrowRight size={13} className="transition-transform group-hover:translate-x-1"/></span>
           </div>
         </>;
         return collection.slug === "spotify"

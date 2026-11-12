@@ -6,9 +6,9 @@ const spotify = getCatalogCollection("spotify");
 
 export const Route = createFileRoute("/catalog/music/spotify")({
   head: () => ({ meta: [
-    { title: "Spotify presets — porter" },
+    { title: "Spotify templates — porter" },
     { name: "description", content: "Configure Spotify album, playlist, and artist profile screens from a supplied Figma UI frame." },
-    { property: "og:title", content: "Spotify presets — porter" },
+    { property: "og:title", content: "Spotify templates — porter" },
     { property: "og:description", content: "Album details, playlist details, and artist profile configurators." },
     { property: "og:type", content: "website" },
     { name: "twitter:card", content: "summary" },

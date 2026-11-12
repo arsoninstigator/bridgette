@@ -9,16 +9,16 @@ export const Route = createFileRoute("/catalog/$slug")({
     return collection;
   },
   head: ({ loaderData }) => ({ meta: [
-    { title: loaderData ? `${loaderData.name} presets — porter` : "Catalog collection not found — porter" },
+    { title: loaderData ? `${loaderData.name} templates — porter` : "Catalog collection not found — porter" },
     { name: "description", content: loaderData?.description ?? "This Porter catalog collection is unavailable." },
-    { property: "og:title", content: loaderData ? `${loaderData.name} presets — porter` : "Catalog collection unavailable — porter" },
+    { property: "og:title", content: loaderData ? `${loaderData.name} templates — porter` : "Catalog collection unavailable — porter" },
     { property: "og:description", content: loaderData?.description ?? "This Porter catalog collection is unavailable." },
     { property: "og:type", content: "website" },
     { name: "twitter:card", content: "summary" },
   ] }),
-  component: PresetPage,
+  component: TemplatePage,
 });
 
-function PresetPage() {
+function TemplatePage() {
   return <CatalogCollectionPage collection={Route.useLoaderData()} />;
 }

@@ -25,7 +25,7 @@ function About() {
       <div className="mt-8 space-y-6 text-[15px] leading-relaxed text-stone-700">
         <p>
           porter is a lab experiment inside the zinegeist family — a standalone tool for
-          turning source design files into <em>configurator packs</em>: opinionated presets
+          turning source design files into <em>configurator packs</em>: opinionated templates
           where every editable knob is deliberate.
         </p>
         <p>

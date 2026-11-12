@@ -1,4 +1,4 @@
-export type CatalogPreset = {
+export type CatalogTemplate = {
   slug: string;
   name: string;
   description: string;
@@ -15,7 +15,7 @@ export type CatalogCollection = {
   description: string;
   href: "/catalog/imessage" | "/catalog/music/spotify" | "/catalog/wikipedia" | "/catalog/instagram" | "/catalog/twitter";
   accent: "blue" | "green" | "gray" | "pink";
-  presets: CatalogPreset[];
+  templates: CatalogTemplate[];
 };
 
 const IMESSAGE_URL = "https://www.figma.com/design/51YUiLmy5fO2M63fKD6FvO/Apple-chat-messages-~-iMessage--Community-?node-id=2002-456&t=VGIeyBY14HIehz6f-4";
@@ -29,7 +29,7 @@ export const CATALOG_COLLECTIONS: CatalogCollection[] = [
     description: "Direct messages and group chats built from the iMessage frame you supplied.",
     href: "/catalog/imessage",
     accent: "blue",
-    presets: [
+    templates: [
       {
         slug: "direct-message",
         name: "Direct message",
@@ -57,7 +57,7 @@ export const CATALOG_COLLECTIONS: CatalogCollection[] = [
     description: "Album, playlist, and artist views from the Spotify UI frame you supplied.",
     href: "/catalog/music/spotify",
     accent: "green",
-    presets: [
+    templates: [
       {
         slug: "album-details",
         name: "Album details",
@@ -94,7 +94,7 @@ export const CATALOG_COLLECTIONS: CatalogCollection[] = [
     description: "Profiles, posts, captions, carousels, and stories ready to connect to the right source frames.",
     href: "/catalog/instagram",
     accent: "pink",
-    presets: [
+    templates: [
       {
         slug: "profile",
         name: "Profile",
@@ -144,7 +144,7 @@ export const CATALOG_COLLECTIONS: CatalogCollection[] = [
     description: "Profiles, posts, threads, and quote posts ready to connect to the right source frames.",
     href: "/catalog/twitter",
     accent: "blue",
-    presets: [
+    templates: [
       {
         slug: "profile",
         name: "Profile",
@@ -186,7 +186,7 @@ export const CATALOG_COLLECTIONS: CatalogCollection[] = [
     description: "Encyclopedia articles and search results, ready when you supply the source frame.",
     href: "/catalog/wikipedia",
     accent: "gray",
-    presets: [
+    templates: [
       {
         slug: "article",
         name: "Article page",
