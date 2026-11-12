@@ -87,6 +87,10 @@ SPEC = {
     "balance": ("ColorGradeBalance", "bipolar"),
 }
 
+# black and white mixer (lightroom's grayscale panel)
+for _c in HSL_COLORS:
+    SPEC[f"gray_mixer_{_c}"] = (f"GrayMixer{_c.capitalize()}", "bipolar")
+
 # HSL gets generated from the eight colour names
 for _c in HSL_COLORS:
     SPEC[f"hue_{_c}"] = (f"HueAdjustment{_c.capitalize()}", "bipolar")
@@ -157,6 +161,80 @@ def is_local_key(key: str) -> bool:
     n = norm_key(key)
     return any(n == s or n.startswith(s) or n.endswith(s) for s in LOCAL_SUBTREES)
 
+
+
+# ---------------------------------------------------------------------------
+# the canonical space every source converts into
+# ---------------------------------------------------------------------------
+# Preset.values holds canonical fractions, never a source's own units:
+#
+#   bipolar keys   -1.0 .. +1.0          (lightroom -100..100)
+#   unipolar keys   0.0 .. +1.0          (lightroom 0..max)
+#   hue keys        0.0 .. +1.0 of a turn
+#
+# A reader divides its own slider range by that range's full scale; the
+# lightroom writer multiplies back out. That is the whole contract, so a new
+# source is a table of ranges, not a new pipeline.
+
+
+def clamp(value, low=-1.0, high=1.0):
+    try:
+        v = float(value)
+    except (TypeError, ValueError):
+        return None
+    if low > v:
+        return low
+    if high < v:
+        return high
+    return v
+
+
+def clamp_canonical(key, value):
+    """Clamp into the range the lightroom writer expects for that key."""
+    spec = SPEC.get(key)
+    kind = spec[1] if spec else "bipolar"
+    if kind == "unipolar":
+        return clamp(value, 0.0, 1.0)
+    if kind == "hue":
+        return clamp(value, 0.0, 1.0)
+    if kind == "temp":
+        return clamp(value, -1.0, 1.0)
+    return clamp(value, -1.0, 1.0)
+
+
+def fraction(value, full_scale=100.0):
+    """A reading as the app shows it -> canonical fraction (-1..1 or 0..1)."""
+    try:
+        v = float(str(value).replace(",", ".").strip())
+    except (TypeError, ValueError):
+        return None
+    if not full_scale:
+        return None
+    return v / float(full_scale)
+
+
+def alias_regex(names):
+    """`tool value` pairs in prose, matched on the app's own words."""
+    ordered = sorted(set(names), key=len, reverse=True)
+    body = "|".join(re.escape(n) for n in ordered)
+    return re.compile(r"\b(" + body + r")\b\s*[:=]?\s*([+-]?\d+(?:[.,]\d+)?)",
+                      re.IGNORECASE)
+
+
+def make_preset(name, values, curves=None, source="", notes=None):
+    clean = {}
+    for key, value in (values or {}).items():
+        if value is None:
+            continue
+        if key.startswith("__"):  # pseudo keys the writer understands
+            clean[key] = value
+            continue
+        if key not in SPEC:
+            continue
+        clamped = clamp_canonical(key, value)
+        if clamped is not None:
+            clean[key] = clamped
+    return Preset(name, clean, curves or {}, source, list(notes or []))
 
 
 # ---------------------------------------------------------------------------

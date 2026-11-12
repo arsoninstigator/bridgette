@@ -8,8 +8,8 @@ import re
 import sys
 import zipfile
 
+from . import router
 from .common import safe_filename, unique_path
-from .sources.polarr import load_json, parse_presets
 from .targets.lightroom import build_xmp
 
 def _is_inline_source(text):
@@ -40,7 +40,7 @@ def gather_inputs(paths):
         elif path.lower().endswith(".zip"):
             with zipfile.ZipFile(path) as zf:
                 for info in zf.infolist():
-                    if info.is_dir() or not info.filename.lower().endswith((".json", ".polarr")):
+                    if info.is_dir() or not info.filename.lower().endswith(router.TEXT_EXTENSIONS):
                         continue
                     with zf.open(info) as fh:
                         found.append((info.filename, fh.read().decode("utf-8-sig", "replace")))
@@ -54,18 +54,16 @@ def gather_inputs(paths):
     return found
 
 
-def convert(paths, out_dir, group="", report=False):
+def convert(paths, out_dir, group="", report=False, kind=None):
     os.makedirs(out_dir, exist_ok=True)
     written = []
+    errors = []
     for item in gather_inputs(paths):
-        if isinstance(item, tuple):
-            label, text = item
-            obj = load_json(text)
-            source_name = os.path.basename(label)
-        else:
-            source_name = os.path.basename(item)
-            obj = load_json(item)
-        presets = parse_presets(obj, source_name)
+        try:
+            presets = router.read(item, kind=kind)
+        except (ValueError, OSError, RuntimeError) as exc:
+            errors.append(f"{router._label(item)}: {exc}")
+            continue
         for preset in presets:
             xmp, warnings = build_xmp(preset, group=group)
             path = unique_path(out_dir, safe_filename(preset.name))
@@ -77,19 +75,24 @@ def convert(paths, out_dir, group="", report=False):
                 for msg in warnings:
                     print(f"      note: {msg}")
                 for k in sorted(preset.values):
-                    print(f"      map: {k} = {preset.values[k]}")
+                    value = preset.values[k]
+                    shown = f"{value:.4g}" if isinstance(value, float) else value
+                    print(f"      map: {k} = {shown}")
                 for ch, pts in preset.curves.items():
                     print(f"      curve {ch}: {len(pts)} points")
+    for message in errors:
+        print(f"  skipped {message}", file=sys.stderr)
     return written
 
 
 def main(argv=None):
     ap = argparse.ArgumentParser(
         prog="presets",
-        description="Convert Polarr presets into Lightroom .xmp presets.")
+        description="Convert Polarr, Snapseed and VSCO looks into Lightroom .xmp presets.")
     ap.add_argument("inputs", nargs="+",
                     help="preset .json files, folders, .zip archives, QR code images, "
-                         "share links, filter ids or base64 filter codes")
+                         "share links, filter ids, base64 filter codes, or a pasted "
+                         "Snapseed / VSCO recipe card")
     ap.add_argument("-o", "--out", default="lightroom-presets",
                     help="output folder (default: lightroom-presets)")
     ap.add_argument("-g", "--group", default="",
@@ -98,6 +101,9 @@ def main(argv=None):
                     help="also write a .zip of the generated presets")
     ap.add_argument("-r", "--report", action="store_true",
                     help="print the per-preset mapping as it converts")
+    ap.add_argument("-f", "--from", dest="kind", default=None,
+                    choices=sorted(router.SOURCES),
+                    help="force a reader instead of detecting it from the content")
     args = ap.parse_args(argv)
 
     for given in args.inputs:
@@ -111,7 +117,8 @@ def main(argv=None):
         ap.error(f"no such file: {given}")
 
     try:
-        written = convert(args.inputs, args.out, group=args.group, report=args.report)
+        written = convert(args.inputs, args.out, group=args.group,
+                          report=args.report, kind=args.kind)
     except ValueError as exc:
         print(f"error: {exc}", file=sys.stderr)
         return 1

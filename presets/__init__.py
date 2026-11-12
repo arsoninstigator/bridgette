@@ -1,14 +1,14 @@
 """presets: bridge photo-app filters into lightroom-importable develop presets.
 
-today the only source is polarr and the only target is lightroom .xmp. add a
-source by writing presets/sources/<app>.py that returns Preset objects, add a
-target by writing presets/targets/<app>.py that consumes them. see
-../../docs/bridge-contract.md.
+sources: polarr, snapseed, vsco. target: lightroom .xmp. add a source by
+writing presets/sources/<app>.py that returns Preset objects and registering it in
+presets/router.py, add a target by writing presets/targets/<app>.py that consumes
+them. see ../../docs/bridge-contract.md.
 """
 
 from __future__ import annotations
 
-__version__ = "1.2.0"
+__version__ = "1.3.0"
 
 from .common import (  # noqa: E402
     ALIASES,
@@ -30,6 +30,7 @@ from .common import (  # noqa: E402
     safe_filename,
     unique_path,
 )
+from .sources import snapseed, vsco  # noqa: E402
 from .sources.polarr import (  # noqa: E402
     POLARR_HOSTS,
     QR_EXTENSIONS,
@@ -49,6 +50,7 @@ from .targets.lightroom import (  # noqa: E402
     fmt_value,
     _lr_value,
 )
+from . import router  # noqa: E402
 from .cli import convert, gather_inputs, main  # noqa: E402
 
 __all__ = [
@@ -57,5 +59,6 @@ __all__ = [
     "USER_AGENT", "build_lightroom", "build_xmp", "convert", "curve_seq",
     "decode_qr", "fetch_filter_by_id", "fetch_filter_url", "filter_id_from_url",
     "fmt_value", "gather_inputs", "is_local_key", "load_json", "main",
-    "norm_key", "parse_presets", "safe_filename", "unique_path", "__version__",
+    "norm_key", "parse_presets", "router", "safe_filename", "snapseed",
+    "unique_path", "vsco", "__version__",
 ]
