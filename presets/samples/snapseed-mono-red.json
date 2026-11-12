@@ -1,0 +1,8 @@
+{
+  "name": "Mono Red",
+  "tools": {
+    "black and white": {"filter": "red", "contrast": 25},
+    "grain": 30,
+    "vignette": 20
+  }
+}

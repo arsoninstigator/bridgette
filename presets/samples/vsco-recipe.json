@@ -1,0 +1,14 @@
+{
+  "filter": "AL3",
+  "tools": {
+    "exposure": -0.4,
+    "contrast": 1.5,
+    "fade": 8,
+    "grain": 3,
+    "shadow hue": 205,
+    "shadow saturation": 2,
+    "red hue": 1,
+    "orange saturation": -2,
+    "blue luminance": -3
+  }
+}

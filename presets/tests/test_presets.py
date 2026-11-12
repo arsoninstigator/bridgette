@@ -577,5 +577,219 @@ class TestInlineSources(unittest.TestCase):
             p2x.main(["no-such-preset.json"])
 
 
+# ---------------------------------------------------------------------------
+# vsco reads a recipe card; snapseed reads the tools it shows; the router picks
+# ---------------------------------------------------------------------------
+
+vsco = p2x.sources.vsco
+snapseed = p2x.sources.snapseed
+router = p2x.router
+
+
+def read_look(module, text, **kw):
+    preset = module.parse(text, "look.txt", **kw)[0]
+    return preset, p2x.build_lightroom(preset)[0]
+
+
+class TestVsco(unittest.TestCase):
+    def test_exposure_reads_in_ev(self):
+        _p, fields = read_look(vsco, "A6\nExposure +1.5")
+        self.assertEqual(fields["Exposure2012"], 1.5)
+
+    def test_negative_exposure(self):
+        _p, fields = read_look(vsco, "B1\nexposure: -2")
+        self.assertEqual(fields["Exposure2012"], -2.0)
+
+    def test_contrast_scales_to_slider_range(self):
+        _p, fields = read_look(vsco, "C1\ncontrast +3")
+        self.assertEqual(fields["Contrast2012"], 50)
+
+    def test_fade_lifts_blacks(self):
+        _p, fields = read_look(vsco, "D1\nfade +12")
+        self.assertEqual(fields["Blacks2012"], 100)
+
+    def test_vignette_sign_flips(self):
+        _p, fields = read_look(vsco, "E1\nvignette +3")
+        self.assertEqual(fields["PostCropVignetteAmount"], -25)
+
+    def test_hsl_band(self):
+        _p, fields = read_look(vsco, "F1\nred hue +3\norange saturation -6")
+        self.assertEqual(fields["HueAdjustmentRed"], 50)
+        self.assertEqual(fields["SaturationAdjustmentOrange"], -100)
+
+    def test_split_tone_becomes_colour_grading(self):
+        _p, fields = read_look(vsco, "G1\nshadow hue 210\nshadow saturation 6")
+        self.assertEqual(fields["ColorGradeShadowHue"], 210)
+        self.assertEqual(fields["ColorGradeShadowSat"], 100)
+
+    def test_filter_code_is_the_name(self):
+        self.assertEqual(vsco.parse("A6\ncontrast +1")[0].name, "A6")
+
+    def test_card_with_multiple_recipes(self):
+        presets = vsco.parse("A6\ncontrast +1\nB2\ncontrast -2\nfade +6")
+        self.assertEqual([p.name for p in presets], ["A6", "B2"])
+        self.assertEqual(len(presets[1].values), 2)
+
+    def test_json_recipe(self):
+        preset = vsco.parse(json.dumps({"filter": "AL3", "tools": {"exposure": 1, "grain": 12}}))[0]
+        self.assertEqual(preset.name, "AL3")
+        self.assertAlmostEqual(preset.values["exposure"], 0.5)
+
+    def test_json_hsl_object(self):
+        preset = vsco.parse(json.dumps({"tools": {"blue": {"hue": 3, "luminance": -6}}}))[0]
+        self.assertAlmostEqual(preset.values["hue_blue"], 0.5)
+        self.assertAlmostEqual(preset.values["luminance_blue"], -1.0)
+
+    def test_black_and_white(self):
+        preset = vsco.parse("B1\nblack and white, contrast +1")[0]
+        fields = p2x.build_lightroom(preset)[0]
+        self.assertEqual(fields["ConvertToGrayscale"], "True")
+
+    def test_unsupported_tool_reported(self):
+        preset = vsco.parse("X1\nskin tone +4\nfade +2")[0]
+        self.assertTrue(any("skin tone" in note for note in preset.notes))
+
+    def test_empty_recipe_raises(self):
+        with self.assertRaises(ValueError):
+            vsco.parse("nothing to see here")
+
+
+class TestSnapseed(unittest.TestCase):
+    def test_brightness_becomes_exposure(self):
+        _p, fields = read_look(snapseed, "brightness +20")
+        self.assertEqual(fields["Exposure2012"], 0.4)
+
+    def test_tune_sliders_one_to_one(self):
+        _p, fields = read_look(snapseed, "contrast -15, saturation +10, highlights -40, shadows +25")
+        self.assertEqual(fields["Contrast2012"], -15)
+        self.assertEqual(fields["Saturation"], 10)
+        self.assertEqual(fields["Highlights2012"], -40)
+        self.assertEqual(fields["Shadows2012"], 25)
+
+    def test_ambience_spreads_over_shadows_and_clarity(self):
+        _p, fields = read_look(snapseed, "ambience +100")
+        self.assertEqual(fields["Shadows2012"], 55)
+        self.assertEqual(fields["Clarity2012"], 20)
+
+    def test_structure_spreads_over_texture_and_clarity(self):
+        _p, fields = read_look(snapseed, "structure +100")
+        self.assertEqual(fields["Texture"], 60)
+        self.assertEqual(fields["Clarity2012"], 35)
+
+    def test_warmth_moves_temperature(self):
+        _p, fields = read_look(snapseed, "Look: Warm\nwarmth +40")
+        self.assertEqual(fields["WhiteBalance"], "Custom")
+        self.assertEqual(fields["Temperature"], 6900)
+
+    def test_vignette_sign_flips(self):
+        _p, fields = read_look(snapseed, "vignette 30")
+        self.assertEqual(fields["PostCropVignetteAmount"], -30)
+
+    def test_grain_and_sharpening(self):
+        _p, fields = read_look(snapseed, "grain 20, sharpening 10")
+        self.assertEqual(fields["GrainAmount"], 20)
+        self.assertEqual(fields["Sharpness"], 10)
+
+    def test_overlapping_sliders_clamp(self):
+        _p, fields = read_look(snapseed, "shadows +100, ambience +100")
+        self.assertEqual(fields["Shadows2012"], 100)
+
+    def test_curve_points(self):
+        preset = snapseed.parse("Curves: 0,0 64,70 128,140 255,255")[0]
+        self.assertEqual(len(preset.curves["rgb"]), 4)
+        fields = p2x.build_lightroom(preset)[0]
+        self.assertEqual(fields["ToneCurveName2012"], "Custom")
+
+    def test_per_channel_curve(self):
+        preset = snapseed.parse("curves red 0,0 128,150 255,255")[0]
+        self.assertIn("red", preset.curves)
+
+    def test_black_and_white_json_with_filter(self):
+        preset = snapseed.parse(json.dumps({
+            "name": "Mono Red",
+            "tools": {"black and white": {"filter": "red", "contrast": 25}}}))[0]
+        fields = p2x.build_lightroom(preset)[0]
+        self.assertEqual(fields["ConvertToGrayscale"], "True")
+        self.assertGreater(fields["GrayMixerRed"], 50)
+
+    def test_json_tool_container(self):
+        preset = snapseed.parse(json.dumps({"tune image": {"brightness": -25, "warmth": 40}}))[0]
+        self.assertAlmostEqual(preset.values["exposure"], -0.25)
+        self.assertAlmostEqual(preset.values["temperature"], 0.4)
+
+    def test_unsupported_tool_reported(self):
+        preset = snapseed.parse("HDR Scape: 60\nbrightness +5")[0]
+        self.assertTrue(any("hdr scape" in note for note in preset.notes))
+
+    def test_name_from_look_line(self):
+        self.assertEqual(snapseed.parse("Look: Faded City\nbrightness +5")[0].name, "Faded City")
+
+    def test_empty_look_raises(self):
+        with self.assertRaises(ValueError):
+            snapseed.parse("just words")
+
+
+class TestRouter(unittest.TestCase):
+    def test_detects_polarr_json(self):
+        text = json.dumps(REAL_FILTER)
+        self.assertEqual(router.detect(text, json.loads(text)), "polarr")
+
+    def test_detects_snapseed_card(self):
+        text = "Tune Image: ambience +30, structure +20, warmth +5"
+        self.assertEqual(router.detect(text), "snapseed")
+
+    def test_detects_vsco_card(self):
+        text = "A6\nExposure +1.5\nFade +6"
+        self.assertEqual(router.detect(text), "vsco")
+
+    def test_detects_unnested_percent_polarr(self):
+        text = json.dumps({"FilterName": "F", "adjustments": {"Exposure": -6, "GrainAmount": 18}})
+        self.assertEqual(router.detect(text, json.loads(text)), "polarr")
+
+    def test_unknown_json_defaults_to_polarr(self):
+        text = json.dumps({"name": "x", "adjustments": {"contrast": 0.2}})
+        self.assertEqual(router.detect(text, json.loads(text)), "polarr")
+
+    def test_reads_a_friend_folder_mixed(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            src = os.path.join(tmp, "looks")
+            os.makedirs(src)
+            with open(os.path.join(src, "a.json"), "w") as fh:
+                json.dump({"name": "From Polarr", "adjustments": {"contrast": 0.2}}, fh)
+            with open(os.path.join(src, "b.txt"), "w") as fh:
+                fh.write("A6\ncontrast +2\nfade +6")
+            with open(os.path.join(src, "c.txt"), "w") as fh:
+                fh.write("Tune Image: ambience +30, structure +20")
+            out = os.path.join(tmp, "out")
+            written = p2x.convert([src], out)
+        names = sorted(os.path.basename(path) for path, _a, _b in written)
+        self.assertEqual(names, ["A6.xmp", "From Polarr.xmp", "Snapseed Look.xmp"])
+
+    def test_forced_reader(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            path = os.path.join(tmp, "look.json")
+            with open(path, "w") as fh:
+                json.dump({"contrast": 3, "fade": 6}, fh)
+            out = os.path.join(tmp, "out")
+            written = p2x.convert([path], out, kind="vsco")
+        self.assertEqual(len(written), 1)
+
+    def test_vsco_link_explains_itself(self):
+        with self.assertRaises(ValueError):
+            router.read("https://vsco.co/someone/gallery/abc")
+
+    def test_bad_file_does_not_stop_the_run(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            good = os.path.join(tmp, "good.json")
+            with open(good, "w") as fh:
+                json.dump({"name": "Good", "adjustments": {"contrast": 0.2}}, fh)
+            bad = os.path.join(tmp, "bad.txt")
+            with open(bad, "w") as fh:
+                fh.write("no tools here at all")
+            out = os.path.join(tmp, "out")
+            written = p2x.convert([good, bad], out)
+        self.assertEqual(len(written), 1)
+
+
 if __name__ == "__main__":
     unittest.main(verbosity=2)

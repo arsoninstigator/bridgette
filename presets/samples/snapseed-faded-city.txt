@@ -1,0 +1,6 @@
+Look: Faded City
+Tune Image: brightness +20, contrast -15, saturation +10, ambience +30, highlights -40, shadows +25, warmth +5
+Details: structure +30, sharpening +10
+Grain: 20
+Vignette: 30
+Curves: 0,0 60,55 128,140 200,205 255,255

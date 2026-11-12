@@ -1,0 +1,8 @@
+A6
+Exposure +1.5
+Contrast +2
+Saturation -1
+Fade +6
+Grain +4
+Vignette +3
+Shadows +2
