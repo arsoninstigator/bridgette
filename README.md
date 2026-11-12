@@ -7,7 +7,7 @@ importable equivalent, and says honestly what got lost on the way.
 | folder | bridges | state |
 | --- | --- | --- |
 | [`designs/`](designs) | figma frame, psd, ai, eps -> psd, svg, eps, sketch, tiff, png, json | working app (imported from [kqrla/porter](https://github.com/kqrla/porter)) |
-| [`presets/`](presets) | polarr preset (json, qr, share link, filter id) -> lightroom `.xmp` | working cli, 73 tests |
+| [`presets/`](presets) | polarr presets (json, qr, share link, filter id), vsco recipes and snapseed looks -> lightroom `.xmp` | working cli, 111 tests |
 | [`brushes/`](brushes) | ibis paint and friends -> psd / `.abr` | not built |
 | [`stamps/`](stamps) | procreate stamps -> other apps | not built |
 | [`swatches/`](swatches) | procreate palettes, `.ase`, `.aco`, `.gpl` | not built |
