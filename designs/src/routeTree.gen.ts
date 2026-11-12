@@ -9,47 +9,22 @@
 // Additionally, you should also exclude this file from your linter and/or formatter to prevent it from being checked or modified.
 
 import { Route as rootRouteImport } from './routes/__root'
-import { Route as SitemapDotxmlRouteImport } from './routes/sitemap[.]xml'
-import { Route as PurposeRouteImport } from './routes/purpose'
-import { Route as LabRouteImport } from './routes/lab'
-import { Route as FeaturesRouteImport } from './routes/features'
-import { Route as CrossvertRouteImport } from './routes/crossvert'
-import { Route as CatalogRouteImport } from './routes/catalog'
-import { Route as AboutRouteImport } from './routes/about'
 import { Route as IndexRouteImport } from './routes/index'
+import { Route as AboutRouteImport } from './routes/about'
+import { Route as CatalogRouteImport } from './routes/catalog'
+import { Route as CrossvertRouteImport } from './routes/crossvert'
+import { Route as FeaturesRouteImport } from './routes/features'
+import { Route as LabRouteImport } from './routes/lab'
+import { Route as PurposeRouteImport } from './routes/purpose'
+import { Route as SitemapDotxmlRouteImport } from './routes/sitemap[.]xml'
 import { Route as CatalogIndexRouteImport } from './routes/catalog.index'
 import { Route as CatalogSlugRouteImport } from './routes/catalog.$slug'
-import { Route as CatalogMusicSpotifyRouteImport } from './routes/catalog.music.spotify'
 import { Route as ApiPublicFigmaOembedRouteImport } from './routes/api/public/figma-oembed'
+import { Route as CatalogMusicSpotifyRouteImport } from './routes/catalog.music.spotify'
 
-const SitemapDotxmlRoute = SitemapDotxmlRouteImport.update({
-  id: '/sitemap.xml',
-  path: '/sitemap.xml',
-  getParentRoute: () => rootRouteImport,
-} as any)
-const PurposeRoute = PurposeRouteImport.update({
-  id: '/purpose',
-  path: '/purpose',
-  getParentRoute: () => rootRouteImport,
-} as any)
-const LabRoute = LabRouteImport.update({
-  id: '/lab',
-  path: '/lab',
-  getParentRoute: () => rootRouteImport,
-} as any)
-const FeaturesRoute = FeaturesRouteImport.update({
-  id: '/features',
-  path: '/features',
-  getParentRoute: () => rootRouteImport,
-} as any)
-const CrossvertRoute = CrossvertRouteImport.update({
-  id: '/crossvert',
-  path: '/crossvert',
-  getParentRoute: () => rootRouteImport,
-} as any)
-const CatalogRoute = CatalogRouteImport.update({
-  id: '/catalog',
-  path: '/catalog',
+const IndexRoute = IndexRouteImport.update({
+  id: '/',
+  path: '/',
   getParentRoute: () => rootRouteImport,
 } as any)
 const AboutRoute = AboutRouteImport.update({
@@ -57,9 +32,34 @@ const AboutRoute = AboutRouteImport.update({
   path: '/about',
   getParentRoute: () => rootRouteImport,
 } as any)
-const IndexRoute = IndexRouteImport.update({
-  id: '/',
-  path: '/',
+const CatalogRoute = CatalogRouteImport.update({
+  id: '/catalog',
+  path: '/catalog',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const CrossvertRoute = CrossvertRouteImport.update({
+  id: '/crossvert',
+  path: '/crossvert',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const FeaturesRoute = FeaturesRouteImport.update({
+  id: '/features',
+  path: '/features',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const LabRoute = LabRouteImport.update({
+  id: '/lab',
+  path: '/lab',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const PurposeRoute = PurposeRouteImport.update({
+  id: '/purpose',
+  path: '/purpose',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const SitemapDotxmlRoute = SitemapDotxmlRouteImport.update({
+  id: '/sitemap.xml',
+  path: '/sitemap.xml',
   getParentRoute: () => rootRouteImport,
 } as any)
 const CatalogIndexRoute = CatalogIndexRouteImport.update({
@@ -72,15 +72,15 @@ const CatalogSlugRoute = CatalogSlugRouteImport.update({
   path: '/$slug',
   getParentRoute: () => CatalogRoute,
 } as any)
-const CatalogMusicSpotifyRoute = CatalogMusicSpotifyRouteImport.update({
-  id: '/music/spotify',
-  path: '/music/spotify',
-  getParentRoute: () => CatalogRoute,
-} as any)
 const ApiPublicFigmaOembedRoute = ApiPublicFigmaOembedRouteImport.update({
   id: '/api/public/figma-oembed',
   path: '/api/public/figma-oembed',
   getParentRoute: () => rootRouteImport,
+} as any)
+const CatalogMusicSpotifyRoute = CatalogMusicSpotifyRouteImport.update({
+  id: '/music/spotify',
+  path: '/music/spotify',
+  getParentRoute: () => CatalogRoute,
 } as any)
 
 export interface FileRoutesByFullPath {
@@ -183,46 +183,11 @@ export interface RootRouteChildren {
 
 declare module '@tanstack/react-router' {
   interface FileRoutesByPath {
-    '/sitemap.xml': {
-      id: '/sitemap.xml'
-      path: '/sitemap.xml'
-      fullPath: '/sitemap.xml'
-      preLoaderRoute: typeof SitemapDotxmlRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/purpose': {
-      id: '/purpose'
-      path: '/purpose'
-      fullPath: '/purpose'
-      preLoaderRoute: typeof PurposeRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/lab': {
-      id: '/lab'
-      path: '/lab'
-      fullPath: '/lab'
-      preLoaderRoute: typeof LabRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/features': {
-      id: '/features'
-      path: '/features'
-      fullPath: '/features'
-      preLoaderRoute: typeof FeaturesRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/crossvert': {
-      id: '/crossvert'
-      path: '/crossvert'
-      fullPath: '/crossvert'
-      preLoaderRoute: typeof CrossvertRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/catalog': {
-      id: '/catalog'
-      path: '/catalog'
-      fullPath: '/catalog'
-      preLoaderRoute: typeof CatalogRouteImport
+    '/': {
+      id: '/'
+      path: '/'
+      fullPath: '/'
+      preLoaderRoute: typeof IndexRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/about': {
@@ -232,11 +197,46 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AboutRouteImport
       parentRoute: typeof rootRouteImport
     }
-    '/': {
-      id: '/'
-      path: '/'
-      fullPath: '/'
-      preLoaderRoute: typeof IndexRouteImport
+    '/catalog': {
+      id: '/catalog'
+      path: '/catalog'
+      fullPath: '/catalog'
+      preLoaderRoute: typeof CatalogRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/crossvert': {
+      id: '/crossvert'
+      path: '/crossvert'
+      fullPath: '/crossvert'
+      preLoaderRoute: typeof CrossvertRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/features': {
+      id: '/features'
+      path: '/features'
+      fullPath: '/features'
+      preLoaderRoute: typeof FeaturesRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/lab': {
+      id: '/lab'
+      path: '/lab'
+      fullPath: '/lab'
+      preLoaderRoute: typeof LabRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/purpose': {
+      id: '/purpose'
+      path: '/purpose'
+      fullPath: '/purpose'
+      preLoaderRoute: typeof PurposeRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/sitemap.xml': {
+      id: '/sitemap.xml'
+      path: '/sitemap.xml'
+      fullPath: '/sitemap.xml'
+      preLoaderRoute: typeof SitemapDotxmlRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/catalog/': {
@@ -253,19 +253,19 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof CatalogSlugRouteImport
       parentRoute: typeof CatalogRoute
     }
-    '/catalog/music/spotify': {
-      id: '/catalog/music/spotify'
-      path: '/music/spotify'
-      fullPath: '/catalog/music/spotify'
-      preLoaderRoute: typeof CatalogMusicSpotifyRouteImport
-      parentRoute: typeof CatalogRoute
-    }
     '/api/public/figma-oembed': {
       id: '/api/public/figma-oembed'
       path: '/api/public/figma-oembed'
       fullPath: '/api/public/figma-oembed'
       preLoaderRoute: typeof ApiPublicFigmaOembedRouteImport
       parentRoute: typeof rootRouteImport
+    }
+    '/catalog/music/spotify': {
+      id: '/catalog/music/spotify'
+      path: '/music/spotify'
+      fullPath: '/catalog/music/spotify'
+      preLoaderRoute: typeof CatalogMusicSpotifyRouteImport
+      parentRoute: typeof CatalogRoute
     }
   }
 }

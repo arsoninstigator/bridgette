@@ -1,7 +1,8 @@
 import { writePsd } from "ag-psd";
 import type { LayerNode } from "./parse";
+import { writeSketch } from "./sketch";
 
-export type FormatId = "figma" | "psd" | "ai" | "eps" | "svg" | "png" | "json";
+export type FormatId = "figma" | "psd" | "ai" | "eps" | "svg" | "png" | "json" | "sketch" | "tiff";
 
 export const FORMATS: { id: FormatId; label: string; ext: string; asSource: boolean; asTarget: boolean; note: string }[] = [
   { id: "figma", label: "figma", ext: "svg", asSource: true, asTarget: true, note: "imported through the figma api; written back out as a layered svg you can drag straight into figma." },
@@ -11,6 +12,8 @@ export const FORMATS: { id: FormatId; label: string; ext: string; asSource: bool
   { id: "svg", label: "svg", ext: "svg", asSource: false, asTarget: true, note: "layered svg with groups per layer." },
   { id: "png", label: "png", ext: "png", asSource: false, asTarget: true, note: "flattened raster preview." },
   { id: "json", label: "layer pack (.json)", ext: "json", asSource: false, asTarget: true, note: "the full parsed layer tree with effects, blend modes and geometry." },
+  { id: "sketch", label: "sketch (.sketch)", ext: "sketch", asSource: false, asTarget: true, note: "experimental native Sketch archive with a separate raster image per visible drawable layer. Names and placement preserved; text is rasterized and effects are approximated. Desktop compatibility not yet checked." },
+  { id: "tiff", label: "tiff (.tiff)", ext: "tiff", asSource: false, asTarget: true, note: "flattened, uncompressed 8-bit RGBA TIFF of the reconstructed artwork; not a layered design file." },
 ];
 
 export type Doc = {
@@ -176,19 +179,56 @@ export async function toPng(doc: Doc): Promise<Blob> {
     const c = document.createElement("canvas");
     c.width = doc.width;
     c.height = doc.height;
-    const ctx = c.getContext("2d")!;
+    const ctx = c.getContext("2d");
+    if (!ctx) throw new Error("could not create an image canvas.");
     ctx.fillStyle = "#ffffff";
     ctx.fillRect(0, 0, c.width, c.height);
     ctx.drawImage(img, 0, 0);
-    return await new Promise<Blob>((res) => c.toBlob((b) => res(b!), "image/png"));
+    return await canvasPng(c);
   } finally {
     URL.revokeObjectURL(url);
   }
 }
 
+function canvasPng(canvas: HTMLCanvasElement): Promise<Blob> {
+  return new Promise((resolve, reject) => canvas.toBlob((blob) => blob ? resolve(blob) : reject(new Error("could not encode PNG.")), "image/png"));
+}
+
+async function toTiff(doc: Doc): Promise<Blob> {
+  const { encodeImage } = await import("utif");
+  const image = await createImageBitmap(await toPng(doc));
+  try {
+    const canvas = document.createElement("canvas");
+    canvas.width = doc.width; canvas.height = doc.height;
+    const ctx = canvas.getContext("2d");
+    if (!ctx) throw new Error("could not create an image canvas.");
+    ctx.drawImage(image, 0, 0);
+    const pixels = ctx.getImageData(0, 0, doc.width, doc.height).data;
+    return new Blob([encodeImage(new Uint8Array(pixels), doc.width, doc.height)], { type: "image/tiff" });
+  } finally { image.close(); }
+}
+
+async function toSketch(doc: Doc): Promise<Blob> {
+  const layers = [];
+  for (const layer of doc.layers) {
+    const b = drawable(doc, layer);
+    const canvas = layerCanvas(doc, layer);
+    if (!b || !canvas) continue;
+    layers.push({ name: layer.name, x: b.x, y: b.y, width: b.w, height: b.h, png: await canvasPng(canvas) });
+  }
+  return writeSketch(doc.name, doc.width, doc.height, layers);
+}
+
 export async function convert(doc: Doc, target: FormatId): Promise<{ blob: Blob; filename: string }> {
   const base = doc.name.replace(/\.[a-z]+$/i, "") || "crossvert";
+  if (target !== "json" && !doc.layers.some((layer) => drawable(doc, layer))) {
+    throw new Error("this source contains layer names only, not drawable artwork. Export a layer pack, or import a PSD / connected Figma frame for image exports.");
+  }
   switch (target) {
+    case "sketch":
+      return { blob: await toSketch(doc), filename: `${base}.sketch` };
+    case "tiff":
+      return { blob: await toTiff(doc), filename: `${base}.tiff` };
     case "psd":
       return { blob: new Blob([toPsd(doc)], { type: "image/vnd.adobe.photoshop" }), filename: `${base}.psd` };
     case "eps":

@@ -269,20 +269,31 @@ export function ConfiguratorMain({ title = "figma / psd configurator", subtitle 
           )}
         </button>
 
-        <button type="button" onClick={() => psdRef.current?.click()}
-                className={`${cardBase} ${activeSource === "psd" ? cardActive : cardIdle}`}>
+        <Button variant="outline" type="button" onClick={() => psdRef.current?.click()}
+                disabled={loading}
+                className={`${cardBase} ${activeSource === "psd" ? cardActive : cardIdle} h-auto block whitespace-normal`}>
           <p className="font-mono text-[10px] uppercase tracking-widest text-muted-foreground">source · psd</p>
           <h3 className="font-display text-lg lowercase">upload .psd</h3>
           <p className="text-[11px] text-stone-600">photoshop — full layer tree with blend modes & effects.</p>
           {activeSource === "psd" && source?.type === "psd" && <p className="text-[10px] font-mono text-emerald-700">active · {source.fileName}</p>}
-          <input ref={psdRef} type="file" accept=".psd,.zip,image/vnd.adobe.photoshop,application/zip" className="hidden"
-                 onChange={(e) => { const f = e.target.files?.[0]; if (f) importFile(f, "psd"); }} />
-          <input ref={aiRef} type="file" accept=".ai,.zip,application/postscript,application/illustrator,application/zip" className="hidden"
-                 onChange={(e) => { const f = e.target.files?.[0]; if (f) importFile(f, "ai"); }} />
-          <input ref={epsRef} type="file" accept=".eps,.zip,application/postscript,application/zip" className="hidden"
-                 onChange={(e) => { const f = e.target.files?.[0]; if (f) importFile(f, "eps"); }} />
-        </button>
+        </Button>
+        {(["ai", "eps"] as const).map((kind) => (
+          <Button key={kind} variant="outline" type="button" disabled={loading}
+            onClick={() => (kind === "ai" ? aiRef : epsRef).current?.click()}
+            className={`${cardBase} ${activeSource === kind ? cardActive : cardIdle} h-auto block whitespace-normal`}>
+            <p className="font-mono text-[10px] uppercase tracking-widest text-muted-foreground">source · {kind}</p>
+            <h3 className="font-display text-lg lowercase">upload .{kind}</h3>
+            <p className="text-[11px] text-muted-foreground">{kind === "ai" ? "illustrator" : "encapsulated postscript"} — layer names only; artwork is not decoded.</p>
+            {activeSource === kind && source && "fileName" in source && <p className="text-[10px] font-mono">active · {source.fileName}</p>}
+          </Button>
+        ))}
       </div>
+      <input ref={psdRef} type="file" accept=".psd,.zip,image/vnd.adobe.photoshop,application/zip" className="hidden"
+        onChange={(e) => { const f = e.target.files?.[0]; e.target.value = ""; if (f) importFile(f, "psd"); }} />
+      <input ref={aiRef} type="file" accept=".ai,.zip,application/pdf,application/postscript,application/illustrator,application/zip" className="hidden"
+        onChange={(e) => { const f = e.target.files?.[0]; e.target.value = ""; if (f) importFile(f, "ai"); }} />
+      <input ref={epsRef} type="file" accept=".eps,.zip,application/postscript,application/zip" className="hidden"
+        onChange={(e) => { const f = e.target.files?.[0]; e.target.value = ""; if (f) importFile(f, "eps"); }} />
 
       {err && <div className="mt-4 rounded border border-rose-300 bg-rose-50 text-rose-800 text-xs p-3">{err}</div>}
       {loading && <div className="mt-4 text-xs text-stone-600 font-mono">working…</div>}

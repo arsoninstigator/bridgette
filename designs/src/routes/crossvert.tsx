@@ -5,18 +5,19 @@ import { fetchFigmaFrame, parsePsdFile, parseAiOrEps, LS_TOKEN } from "@/porter/
 import type { LayerNode } from "@/porter/parse";
 import { FORMATS, measure, convert, download } from "@/porter/convert";
 import type { Doc, FormatId } from "@/porter/convert";
+import { Button } from "@/components/ui/button";
 
 export const Route = createFileRoute("/crossvert")({
   head: () => ({
     meta: [
-      { title: "crossvert — convert figma, psd, ai & eps in any direction" },
+      { title: "porter crossvert — PSD, Sketch, TIFF & SVG exports" },
       {
         name: "description",
         content:
-          "crossvert parses figma frames, psd, ai and eps files into one layer model, then writes them back out as psd, eps, svg, png or a layer pack — any source to any target.",
+          "Convert parsed Figma and PSD layers to PSD, experimental Sketch, TIFF, EPS, SVG, PNG or JSON. AI and EPS imports currently extract names only.",
       },
-      { property: "og:title", content: "crossvert — any design file to any other" },
-      { property: "og:description", content: "figma ⇄ psd ⇄ ai ⇄ eps, layer tree preserved." },
+      { property: "og:title", content: "porter crossvert — design-file exports" },
+      { property: "og:description", content: "PSD, Sketch, TIFF and SVG exports from parsed layers, with transparent fidelity notes." },
       { property: "og:type", content: "website" },
       { name: "twitter:card", content: "summary" },
     ],
@@ -125,7 +126,7 @@ function Crossvert() {
       </h1>
       <p className="mt-5 max-w-2xl text-[15px] leading-relaxed text-stone-700">
         one layer model, every direction. bring in a figma frame, a .psd, an .ai or an .eps (zips work too),
-        then write it back out as any of the others — layer names, order, opacity and geometry carried across.
+        then export reconstructed artwork as psd, sketch, tiff, eps, svg or png. ai / eps imports currently contain names only; use a layer pack for those.
       </p>
 
       {/* direction picker */}
@@ -203,18 +204,19 @@ function Crossvert() {
           <p className="font-mono text-[10px] uppercase tracking-widest text-stone-500">to</p>
           <div className="mt-3 flex flex-wrap gap-2">
             {TARGETS.map((f) => (
-              <button
+              <Button variant="outline"
                 key={f.id}
                 onClick={() => setTarget(f.id)}
-                className={`porter-chip px-3 py-1.5 font-mono text-[11px] lowercase tracking-wide ${
-                  target === f.id ? "bg-[#e8a0b4] text-stone-900" : "bg-white text-stone-700"
+                className={`porter-chip h-auto px-3 py-1.5 font-mono text-[11px] lowercase tracking-wide ${
+                  target === f.id ? "bg-accent text-accent-foreground" : "bg-card text-card-foreground"
                 }`}
               >
                 {f.label}
-              </button>
+              </Button>
             ))}
           </div>
           <p className="mt-4 text-sm leading-relaxed text-stone-600">{targetNote}</p>
+          <p className="mt-3 text-xs text-muted-foreground">Native .fig and .xd exports are not supported. Import the Figma-ready SVG into Figma and save a local .fig there; this is not a native .fig download.</p>
           <button
             onClick={run}
             disabled={!doc || !!busy}
