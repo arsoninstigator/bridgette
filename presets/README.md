@@ -2,55 +2,66 @@
 
 convert photo-app presets into lightroom-importable `.xmp` develop presets.
 
-today: polarr in, lightroom out. snapseed and vsco are the planned next sources, each
-landing in the same lightroom output, which is why the code is split into a reader, a
-shared model and a writer instead of one file.
+three sources, one model, one target: polarr, snapseed and vsco in, lightroom out.
 
 ```
-python3 -m presets samples/copper-dusk.json -o lightroom-presets
-python3 -m presets samples/cf6-qr.png -o lightroom-presets
-python3 -m presets https://www.polarr.co/users/custom_filter/1400644 -o lightroom-presets
+python3 -m presets samples/copper-dusk.json -o lightroom-presets      # polarr
+python3 -m presets samples/cf6-qr.png -o lightroom-presets            # polarr qr code
+python3 -m presets https://www.polarr.co/users/custom_filter/1400644  # polarr link
+python3 -m presets samples/vsco-a6.txt -o lightroom-presets           # vsco recipe
+python3 -m presets samples/snapseed-faded-city.txt -o lightroom-presets
+python3 -m presets ~/Downloads/looks -o lightroom-presets             # a mixed folder
 ```
 
 ## layout
 
 ```
 presets/
-  common.py            the model (Preset), value scales, polarr key tables
-  sources/polarr.py    json, packs, zip members, qr images, share links, filter ids, codes
-  targets/lightroom.py crs fields and the xmp writer
-  cli.py               input expansion, conversion, reporting
-  samples/  tests/     73 tests, offline
+  common.py              the model (Preset), the canonical value space, key tables
+  router.py              which reader owns this input, by content not extension
+  sources/polarr.py      json, packs, zip members, qr images, links, ids, codes
+  sources/snapseed.py    tune image / details / grain / vignette / curves / b&w
+  sources/vsco.py        recipe cards, pasted settings, json recipes
+  targets/lightroom.py   crs fields and the xmp writer
+  cli.py                 input expansion, conversion, reporting
+  samples/  tests/        111 tests, offline
 ```
 
-a second source returns `Preset` objects from `common.py` and nothing else changes. a
-second target consumes them and nothing else changes.
+## how the model works
+
+every reader converts its app's own units into one canonical space:
+
+| canonical | means | lightroom |
+| --- | --- | --- |
+| bipolar `-1..1` | a slider's full negative to full positive | `-100..100` |
+| unipolar `0..1` | a slider from nothing to full | `0..max` |
+| hue `0..1` | a full turn | `0..360` degrees |
+
+so a source is a table of slider ranges, not a pipeline. the writer multiplies back out
+and is the only place that knows what a `crs:` attribute is.
 
 ## inputs
 
 | what you give it | how it is read |
 | --- | --- |
-| a `.json` preset (mobile or desktop export, flat or nested) | parsed directly |
-| a folder | walked, every `.json` / `.polarr` used |
+| a polarr `.json` (mobile or desktop, flat or nested) | parsed directly |
+| a folder | walked, every file sniffed by content |
 | a `.zip` of presets, including zips inside folders | unpacked in memory |
-| a pack file with many presets (`[...]`, `{"presets":[...]}`, `{"filters":[...]}`) | one xmp each |
-| a qr code image (`.png`, `.jpg`) | qr payload decoded, then resolved |
-| a polarr share link or filter id | resolved through polarr's scan endpoint |
-| a base64 filter code | decoded, then parsed |
+| a polarr pack file (`[...]`, `{"presets":[...]}`) | one xmp each |
+| a qr code image (`.png`, `.jpg`) | payload decoded, then resolved |
+| a polarr share link or bare filter id | polarr's scan endpoint |
+| a base64 polarr filter code | decoded, then parsed |
+| a vsco or snapseed recipe as text (`A6` + slider lines, "Tune Image: ...") | parsed as written |
+| a `.json` recipe in either app's own vocabulary | parsed as written |
 
-qr and link resolution: a polarr qr code is a url whose last path segment is a filter id.
-the reader asks polarr's own public endpoint, `https://api.polarr.co/v1/ppe/filters/<id>/scan`,
-which answers with a `contentUrl` pointing at the filter json. that json is what gets
-converted. if a qr holds raw filter json, that is used directly. as a last resort the
-reader scans fetched html or js for an embedded filter object.
+`--from polarr|vsco|snapseed` skips detection when you already know.
 
-qr image decoding needs opencv, the only optional dependency:
+qr images need opencv, the only optional dependency. everything else is standard library,
+and links and ids need only the network.
 
 ```
 pip install opencv-python-headless
 ```
-
-links, ids and filter codes need only the network, no extra packages.
 
 ## options
 
@@ -59,42 +70,76 @@ links, ids and filter codes need only the network, no extra packages.
 -g, --group   lightroom preset group name, shows as the folder in the preset panel
 -z, --zip     also write a zip of the generated xmp files
 -r, --report  print the per-key mapping and any skipped keys while converting
+-f, --from    force a reader instead of detecting it
 ```
 
 ## what maps
 
-exposure, contrast, highlights, shadows, whites, blacks, texture, clarity, dehaze,
-vibrance, saturation, temperature, tint, the eight HSL bands (hue, saturation, luminance),
-tone curves (master plus per channel), colour grading (highlights, midtones, shadows plus
-balance and blending), sharpening, luminance and colour noise reduction, grain (amount,
-size, roughness), vignette (amount, midpoint, feather, roundness), monochrome conversion.
+light: exposure, contrast, highlights, shadows, whites, blacks.
+presence: texture, clarity, dehaze, vibrance, saturation.
+white balance: temperature, tint.
+colour: the eight HSL bands (hue, saturation, luminance), colour grading (highlights,
+midtones, shadows, balance, blending), lightroom's black and white mixer.
+tone: master and per channel curves.
+detail and effects: sharpening, luminance and colour noise reduction, grain (amount, size,
+roughness), vignette (amount, midpoint, feather, roundness).
 
-polarr sends normalised values (-1..1); percent-scale (-100..100) exports are detected per
-key and accepted too.
+## what each source costs you
 
-## what cannot map
+### polarr
 
-these have no lightroom equivalent and are reported as skipped:
+values are normalised (`-1..1`); percent-scale exports are detected per key and accepted.
+what cannot cross: lut based filters, gamma, blur, diffuse, mosaic, distortion, fringing,
+rotate and flip, local adjustments and masks, spots, text, face features, vignette size and
+vignette highlights. a preset whose character comes from a lut converts to something close
+but not the same. that is a limit, not a rounding error.
 
-- lut based filters (polarr applies a cube, lightroom presets cannot carry one)
-- gamma, blur, diffuse, mosaic, distortion, fringing, rotate and flip
-- local adjustments, masks, brushes, radial and gradient filters
-- spots, text and face features
-- vignette size and vignette highlights (amount, midpoint, feather and roundness do map)
+### snapseed
 
-a preset whose whole character comes from a lut converts to a preset that is close but not
-the same. that is a real limitation, not a rounding error.
+snapseed has no preset export at all, so this reader reads the app's own vocabulary written
+down: a screenshot transcribed, a note in a chat, or a json file in the same shape. sliders
+are read on their `-100..100` scale.
+
+three tools are engines rather than sliders, so they are spread over the closest lightroom
+controls and the result approximates the look instead of porting the engine:
+
+- `ambience` -> shadows 55%, clarity 20%
+- `structure` -> texture 60%, clarity 35%
+- `tonal contrast` -> highlights / clarity / shadows at 40%
+
+`warmth` maps onto the same 3500 K window as polarr, `vignette` flips sign (snapseed
+darkens as it rises, lightroom darkens on negatives), and black and white colour filters
+become lightroom's grayscale mixer.
+
+no equivalent, reported as skipped: hdr scape, drama, glamour glow, vintage, retrolux,
+grunge, noir, lens blur, selective masks, healing, double exposure, frames, text, expand,
+perspective.
+
+### vsco
+
+vsco has no export format and no public recipe api (vsco.co answers 403 to logged-out
+requests), so a vsco look arrives the way people share them: the recipe card text, a pasted
+settings list, or json in the same shape. values are read as the app shows them, divided by
+the slider range in `RANGES` at the top of `sources/vsco.py` (exposure in EV, most sliders
+`+/-6`, fade, grain, vignette and sharpen `+/-12`). edit that table and every conversion
+follows.
+
+`fade` lifts lightroom blacks, `vignette` flips sign, and `shadow hue` / `highlight hue`
+with their saturations become lightroom colour grading. skin tone, borders and grain
+roughness have no equivalent and are reported.
 
 ## calibration
 
-two assumptions are adjustable at the top of `common.py`:
+assumptions live as constants, not as prose:
 
-- `EXPOSURE_EV_AT_FULL_SCALE = 2.0` - polarr's +/-1.0 exposure is treated as +/-2 stops
-- `TEMP_NEUTRAL_K = 5500` and `TEMP_SPAN_K = 3500` - polarr's +/-1.0 temperature spans that
-  window around the neutral point
+- `common.EXPOSURE_EV_AT_FULL_SCALE = 2.0` - a full exposure push is treated as 2 stops
+- `common.TEMP_NEUTRAL_K = 5500`, `common.TEMP_SPAN_K = 3500` - a full temperature push
+  spans that window around neutral
+- `sources.vsco.RANGES` - what counts as a full push per vsco slider
+- `sources.snapseed.MAPPING` - how much of each lightroom control a snapseed slider feeds
 
-polarr temperature 0 and tint 0 mean "leave the capture alone", so those presets keep
-lightroom's `WhiteBalance="As Shot"` instead of forcing a fixed kelvin.
+temperature 0 and tint 0 mean "leave the capture alone", so those presets keep lightroom's
+`WhiteBalance="As Shot"` instead of forcing a fixed kelvin.
 
 ## tests
 
@@ -102,7 +147,9 @@ lightroom's `WhiteBalance="As Shot"` instead of forcing a fixed kelvin.
 python3 -m unittest discover -s presets/tests
 ```
 
-73 tests: key normalisation, both value scales, every mapping family, curves in all the
-shapes polarr uses, xml well formedness and escaping, filename collisions, base64 codes,
+111 tests: key normalisation, both value scales, every mapping family, curves in all the
+shapes the apps use, xml well formedness and escaping, filename collisions, base64 codes,
 folders and nested zips, qr decoding, share link and scan endpoint resolution against a
-local http server (so the suite runs offline), and the cli end to end.
+local http server, vsco and snapseed recipes in text and json, source detection and the
+forced reader, mixed folders where one bad file does not stop the run, and the cli end to
+end. the suite runs offline.

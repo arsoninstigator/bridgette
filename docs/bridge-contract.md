@@ -14,6 +14,10 @@ targets/<dest>.py     writes the shared model into a destination format
 a source that cannot reach the model is not finished. a target that cannot consume the
 model is not finished either.
 
+a source may also have no file to read. snapseed exports nothing, so `presets/sources/`
+gains a reader for the app's own vocabulary written down rather than a reader of its files.
+the rule stays the same: it must reach the model, and it must say what it dropped.
+
 ## 2. the model has to be lossless enough to explain itself
 
 the model keeps what the source actually said, in the source's own units, plus notes for
